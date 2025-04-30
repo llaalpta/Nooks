@@ -1,50 +1,82 @@
-# Welcome to your Expo app 👋
+# Nooks
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Nooks es una aplicación móvil que te ayuda a recordar dónde has guardado tus objetos personales. A través de un sistema jerárquico de ubicaciones y etiquetas, nunca más olvidarás dónde dejaste tus pertenencias importantes.
 
-## Get started
+## 📱 Concepto
 
-1. Install dependencies
+Nooks organiza la información en tres niveles principales:
 
-   ```bash
-   npm install
-   ```
+- **Realms**: Ubicaciones generales como tu casa, oficina o almacén
+- **Nooks**: Ubicaciones específicas dentro de un Realm (cajón, estantería, armario)
+- **Treasures**: Los objetos que guardas en cada Nook
 
-2. Start the app
+Esta estructura jerárquica, combinada con geolocalización, imágenes y etiquetas, crea un sistema completo para catalogar y encontrar fácilmente tus pertenencias.
 
-   ```bash
-    npx expo start
-   ```
+## ✨ Características principales
 
-In the output, you'll find options to open the app in a
+- 🗺️ **Geolocalización**: Registra la ubicación exacta de tus Realms en un mapa interactivo
+- 📸 **Gestión de imágenes**: Añade fotos a tus Realms, Nooks y Treasures
+- 🏷️ **Sistema de etiquetas**: Organiza y filtra mediante etiquetas personalizables
+- 🔍 **Búsqueda avanzada**: Encuentra rápidamente lo que necesitas
+- 🔄 **Sincronización en la nube**: Accede a tus datos desde cualquier dispositivo
+- 🔒 **Privacidad**: Control total sobre qué información es privada
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Tecnologías
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **Frontend**: React Native con Expo
+- **UI**: React Native Paper
+- **Estado**: React Query
+- **Backend**: Supabase (Auth, PostgreSQL, Storage)
+- **Mapas**: React Native Maps + Expo Location
+- **Formularios**: React Hook Form + Zod
 
-## Get a fresh project
-
-When you're ready, run:
+## 🚀 Instalación y uso
 
 ```bash
-npm run reset-project
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/nooks.git
+cd nooks
+
+# Instalar dependencias
+npm install
+
+# Iniciar el servidor de desarrollo
+expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 📝 Variables de entorno
 
-## Learn more
+Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+EXPO_PUBLIC_SUPABASE_URL=tu-url-de-supabase
+EXPO_PUBLIC_SUPABASE_ANON_KEY=tu-clave-anon-de-supabase
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📱 Capturas de pantalla
 
-## Join the community
+[Próximamente]
 
-Join our community of developers creating universal apps.
+## 🔄 Estado del proyecto
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Este proyecto se encuentra en desarrollo activo como parte de un proyecto final de ciclo formativo DAM. La versión actual incluye las funcionalidades básicas y se irá ampliando con más características.
+
+### Roadmap
+
+- ✅ MVP con funcionalidades básicas
+- 🔄 Optimización para uso offline
+- 🔄 Búsqueda avanzada y filtros
+- 📅 Sistema de recordatorios (próximamente)
+- 📅 Compartir ubicaciones entre usuarios (próximamente)
+
+## 🤝 Contribuciones
+
+Este proyecto es actualmente un trabajo académico individual, pero las sugerencias son bienvenidas a través de issues.
+
+## 📄 Licencia
+
+[MIT License](LICENSE)
+
+---
+
+Desarrollado por [Tu Nombre] © 2025

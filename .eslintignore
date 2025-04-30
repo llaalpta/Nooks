@@ -1,0 +1,16 @@
+build/
+dist/
+public/
+**/node_modules/
+**/.expo/
+**/test/**/
+**/tests/**/
+**/__tests__/**/
+**/*.test.*
+**/*.spec.*
+**/coverage/**/
+**/jest.config.*
+**/jest.setup.*
+/expo-env.d.ts
+**/*.d.ts
+types/supabase.ts
