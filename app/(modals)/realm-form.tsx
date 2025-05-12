@@ -23,6 +23,7 @@ import {
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
+import { Colors } from '@/src/theme/colors';
 
 import { createStyles } from './styles/realm-form.styles';
 
@@ -94,7 +95,7 @@ export default function RealmForm() {
       const newTag = await createTagMutation.mutateAsync({
         name,
         user_id: user.id,
-        color: null,
+        color: Colors.lightColors.secondary, // Color por defecto
       });
       return newTag;
     } catch {
