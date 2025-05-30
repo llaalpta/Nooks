@@ -7,10 +7,9 @@ import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
 import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import LoadingScreen from '@/components/common/LoadingScreen';
+import { CircleMapPickerInput } from '@/components/forms/CircleMapPickerInput';
 import { ControlledImagePicker } from '@/components/forms/ControlledImagePicker';
-import { ControlledSwitch } from '@/components/forms/ControlledSwitch';
 import { ControlledTextInput } from '@/components/forms/ControlledTextInput';
-import { MapPickerInput } from '@/components/forms/MapPickerInput';
 import { TagSelector } from '@/components/forms/TagSelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -20,18 +19,18 @@ import {
   useRealmQuery,
   useUpdateRealmMutation,
   useCreateRealmMutation,
+  useRealmPrimaryImageUrl, // Agregar este hook
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { Colors } from '@/src/theme/colors';
 
-import { createStyles } from './styles/realm-form.styles';
+import { createStyles } from './styles/realm-form.style';
 
 interface FormValues {
   name: string;
   description: string;
   is_public: boolean;
-  location: { latitude: number | null; longitude: number | null };
+  location: { latitude: number | null; longitude: number | null; radius: number };
   image: string | null;
   tags: any[];
 }
@@ -47,6 +46,7 @@ export default function RealmForm() {
   const isOnline = useIsOnline();
 
   const realmQuery = useRealmQuery(realmId);
+  const { data: existingImageUrl } = useRealmPrimaryImageUrl(realmId); // Obtener imagen existente
   const createRealmMutation = useCreateRealmMutation();
   const updateRealmMutation = useUpdateRealmMutation();
   const uploadMediaMutation = useUploadMediaMutation();
@@ -58,44 +58,42 @@ export default function RealmForm() {
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
-
   const methods = useForm<FormValues>({
     defaultValues: {
       name: '',
       description: '',
-      is_public: false,
-      location: { latitude: null, longitude: null },
+      is_public: false, // Hardcodeado como false por defecto
+      location: { latitude: null, longitude: null, radius: 100 },
       image: null,
       tags: [],
     },
   });
 
   const { handleSubmit, reset } = methods;
-
   useEffect(() => {
     if (isEditing && realmQuery.data) {
       const realm = realmQuery.data;
       reset({
         name: realm.name,
         description: realm.description || '',
-        is_public: realm.is_public || false,
+        is_public: false, // Siempre false, no público
         location: {
           latitude: realm.latitude,
           longitude: realm.longitude,
+          radius: realm.radius || 100,
         },
-        image: null,
-        tags: [], // Cargar las etiquetas desde una consulta separada si es necesario
+        image: existingImageUrl || null, // Establecer la imagen existente
+        tags: [],
       });
     }
-  }, [isEditing, realmQuery.data, reset]);
-
-  async function handleCreateTag(name: string) {
+  }, [isEditing, realmQuery.data, existingImageUrl, reset]); // Agregar existingImageUrl a las dependencias
+  async function handleCreateTag(name: string, color: string) {
     if (!user?.id) return null;
     try {
       const newTag = await createTagMutation.mutateAsync({
         name,
         user_id: user.id,
-        color: Colors.lightColors.secondary, // Color por defecto
+        color: color,
       });
       return newTag;
     } catch {
@@ -132,6 +130,7 @@ export default function RealmForm() {
               is_public: data.is_public,
               latitude: data.location.latitude,
               longitude: data.location.longitude,
+              radius: data.location.radius,
               updated_at: new Date().toISOString(),
             },
           });
@@ -142,10 +141,11 @@ export default function RealmForm() {
             is_public: data.is_public,
             latitude: data.location.latitude,
             longitude: data.location.longitude,
+            radius: data.location.radius,
             user_id: userId,
           });
         }
-        // --- ASOCIAR TAGS AL REALM ---
+
         if (newRealm && Array.isArray(data.tags)) {
           await setTagsForRealm(newRealm.id, data.tags, isEditing);
         }
@@ -162,7 +162,9 @@ export default function RealmForm() {
         });
         return;
       }
-      if (data.image && newRealm) {
+
+      // Solo subir imagen si es diferente a la existente (nueva imagen seleccionada)
+      if (data.image && newRealm && data.image !== existingImageUrl) {
         try {
           await uploadMediaMutation.mutateAsync({
             userId,
@@ -223,33 +225,25 @@ export default function RealmForm() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.formControl}>
-            <ControlledTextInput name="name" label="Nombre" placeholder="Nombre del Realm" />
+            <ControlledTextInput name="name" label="" placeholder="Nombre del Realm" />
           </View>
-
           <View style={styles.formControl}>
             <ControlledTextInput
               name="description"
-              label="Descripción"
+              label=""
               placeholder="Descripción del Realm"
               multiline
-              numberOfLines={4}
+              numberOfLines={2}
             />
           </View>
-
           <View style={styles.formControl}>
-            <ControlledSwitch name="is_public" label="¿Es público?" />
+            {/* <Text style={styles.sectionTitle}>Ubicación</Text> */}
+            <CircleMapPickerInput name="location" label="Selecciona el área del realm" />
           </View>
-
           <View style={styles.formControl}>
-            <Text style={styles.sectionTitle}>Ubicación</Text>
-            <MapPickerInput name="location" label="Selecciona la ubicación" />
-          </View>
-
-          <View style={styles.formControl}>
-            <Text style={styles.sectionTitle}>Imagen</Text>
+            {/* <Text style={styles.sectionTitle}>Imagen</Text> */}
             <ControlledImagePicker name="image" />
           </View>
-
           <View style={styles.formControl}>
             <Text style={styles.sectionTitle}>Etiquetas</Text>
             <TagSelector
@@ -259,7 +253,6 @@ export default function RealmForm() {
               onCreateTag={handleCreateTag}
             />
           </View>
-
           <View style={styles.formControl}>
             <Button
               mode="contained"

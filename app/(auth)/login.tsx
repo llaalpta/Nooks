@@ -12,7 +12,7 @@ import { ControlledTextInput } from '@/components/forms/ControlledTextInput';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useSignInMutation } from '@/features/auth/hooks';
 
-import { createStyles } from './styles/login.styles';
+import { createStyles } from './styles/login.style';
 
 const schema = z.object({
   email: z.string().email('Email inválido'),

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { createStyles } from './styles/form.styles';
+import { createStyles } from './styles/form.style';
 
 export default function TreasureFormModal() {
   const theme = useAppTheme();

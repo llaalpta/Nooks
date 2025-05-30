@@ -2,9 +2,10 @@ import { router } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
-import { styles } from '@/app/styles/not-found.styles';
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
+
+import { styles } from './styles/not-found.style';
 
 export default function NotFoundScreen() {
   return (

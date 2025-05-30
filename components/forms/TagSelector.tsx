@@ -9,10 +9,12 @@ import {
   ScrollView,
 } from 'react-native';
 
+import { Button } from '@/components/atoms/Button';
 import { Spinner } from '@/components/atoms/Spinner';
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
+import { CreateTagModal } from './CreateTagModal';
 import { createStyles } from './styles/TagSelector.styles';
 
 import type { Tag } from '../../features/tags/hooks';
@@ -22,7 +24,7 @@ interface TagSelectorProps<T extends object> {
   label?: string;
   options: Tag[];
   loading?: boolean;
-  onCreateTag?: (name: string) => Promise<Tag | null>;
+  onCreateTag?: (name: string, color: string) => Promise<Tag | null>;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -37,118 +39,142 @@ export const TagSelector = <T extends object>({
   style,
 }: TagSelectorProps<T>) => {
   const { control } = useFormContext<T>();
-  const [input, setInput] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const theme = useAppTheme();
   const styles = createStyles(theme.colors);
 
-  // Filtra opciones por input (case-insensitive)
+  // Filtra opciones por search input (case-insensitive)
   const filteredOptions = useMemo(
-    () =>
-      options.filter(
-        (tag) => tag.name.toLowerCase().includes(input.toLowerCase()) && input.trim() !== ''
-      ),
-    [input, options]
+    () => options.filter((tag) => tag.name.toLowerCase().includes(searchInput.toLowerCase())),
+    [searchInput, options]
   );
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field: { value = [], onChange }, fieldState: { error } }) => (
-        <View style={[styles.container, style]}>
-          {label && <Text style={styles.label}>{label}</Text>}
+    <>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field: { value = [], onChange }, fieldState: { error } }) => {
+          const handleCreateTagWithCallback = async (name: string, color: string) => {
+            if (!onCreateTag) return;
 
-          <View style={[styles.inputContainer, error && { borderColor: theme.colors.error }]}>
-            {/* Tags seleccionados */}
-            {value.map((tag: Tag) => (
-              <View
-                key={tag.id}
-                style={[styles.tagChip, tag.color ? { backgroundColor: tag.color } : null]}
-              >
-                <Text style={styles.tagText}>{tag.name}</Text>
-                <TouchableOpacity
-                  onPress={() => onChange(value.filter((t: Tag) => t.id !== tag.id))}
-                >
-                  <Text style={styles.removeIcon}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+            setCreating(true);
+            try {
+              const newTag = await onCreateTag(name, color);
+              if (newTag) {
+                // Agregar el nuevo tag a la selección actual
+                onChange([...value, newTag]);
+              }
+            } catch (error) {
+              console.error('Error creating tag:', error);
+            } finally {
+              setCreating(false);
+            }
+          };
 
-            {/* Input para buscar o crear tags */}
-            <RNTextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder="Buscar o crear etiqueta..."
-              editable={!disabled}
-              style={{ flex: 1, minWidth: 120 }}
-            />
+          return (
+            <View style={[styles.container, style]}>
+              {label && <Text style={styles.label}>{label}</Text>}
 
-            {/* Indicador de carga */}
-            {(loading || creating) && <Spinner size="small" style={{ marginRight: 8 }} />}
-          </View>
-
-          {/* Sugerencias */}
-          {input.length > 0 && (
-            <View style={styles.suggestionContainer}>
-              <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
-                {filteredOptions.length > 0 &&
-                  filteredOptions.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={styles.suggestionItem}
-                      onPress={() => {
-                        if (!value.some((t: Tag) => t.id === item.id)) {
-                          onChange([...value, item]);
-                        }
-                        setInput('');
-                      }}
+              {/* Tags seleccionados */}
+              {value.length > 0 && (
+                <View style={styles.tagsContainer}>
+                  {value.map((tag: Tag) => (
+                    <View
+                      key={tag.id}
+                      style={[styles.tagChip, tag.color ? { backgroundColor: tag.color } : null]}
                     >
-                      <Text style={styles.suggestionText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                {/* Mostrar opción de crear tag si no hay coincidencia exacta y el input no está vacío */}
-                {onCreateTag &&
-                  !loading &&
-                  !creating &&
-                  input.trim() !== '' &&
-                  !options.some((tag) => tag.name.toLowerCase() === input.trim().toLowerCase()) && (
-                    <TouchableOpacity
-                      style={styles.suggestionItem}
-                      onPress={async () => {
-                        if (input.trim() === '') return;
-                        setCreating(true);
-                        const newTag = await onCreateTag(input.trim());
-                        setCreating(false);
-                        if (newTag) {
-                          onChange([...value, newTag]);
-                          setInput('');
-                        }
-                      }}
-                    >
-                      <Text style={styles.suggestionText}>Crear "{input.trim()}"</Text>
-                    </TouchableOpacity>
-                  )}
-                {/* Si no hay sugerencias ni opción de crear */}
-                {filteredOptions.length === 0 &&
-                  (!onCreateTag ||
-                    loading ||
-                    creating ||
-                    input.trim() === '' ||
-                    options.some(
-                      (tag) => tag.name.toLowerCase() === input.trim().toLowerCase()
-                    )) && (
-                    <View style={styles.suggestionItem}>
-                      <Text style={styles.noSuggestions}>No hay sugerencias</Text>
+                      <Text style={styles.tagText}>{tag.name}</Text>
+                      <TouchableOpacity
+                        onPress={() => onChange(value.filter((t: Tag) => t.id !== tag.id))}
+                      >
+                        <Text style={styles.removeIcon}>✕</Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
-              </ScrollView>
-            </View>
-          )}
+                  ))}
+                </View>
+              )}
 
-          {error && <Text style={styles.errorText}>{error?.message}</Text>}
-        </View>
-      )}
-    />
+              {/* Contenedor de búsqueda y creación */}
+              <View style={styles.searchContainer}>
+                {/* Input de búsqueda */}
+                <View style={[styles.inputContainer, error && { borderColor: theme.colors.error }]}>
+                  <RNTextInput
+                    value={searchInput}
+                    onChangeText={setSearchInput}
+                    placeholder="Buscar etiquetas..."
+                    editable={!disabled}
+                    style={styles.textInput}
+                  />
+                  {loading && <Spinner size="small" style={{ marginRight: 8 }} />}
+                </View>
+
+                {/* Botón para crear nueva etiqueta */}
+                {onCreateTag && (
+                  <Button
+                    mode="outlined"
+                    onPress={() => setShowCreateModal(true)}
+                    disabled={disabled || creating}
+                    loading={creating}
+                    style={styles.createButton}
+                    icon="plus"
+                  >
+                    Crear etiqueta
+                  </Button>
+                )}
+              </View>
+
+              {/* Lista de sugerencias */}
+              {searchInput.length > 0 && (
+                <View style={styles.suggestionContainer}>
+                  <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
+                    {filteredOptions.length > 0 ? (
+                      filteredOptions.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={styles.suggestionItem}
+                          onPress={() => {
+                            if (!value.some((t: Tag) => t.id === item.id)) {
+                              onChange([...value, item]);
+                            }
+                            setSearchInput('');
+                          }}
+                        >
+                          <View style={styles.suggestionContent}>
+                            <View
+                              style={[
+                                styles.tagColorIndicator,
+                                { backgroundColor: item.color || theme.colors.primary },
+                              ]}
+                            />
+                            <Text style={styles.suggestionText}>{item.name}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    ) : (
+                      <View style={styles.suggestionItem}>
+                        <Text style={styles.noSuggestions}>No se encontraron etiquetas</Text>
+                      </View>
+                    )}
+                  </ScrollView>
+                </View>
+              )}
+
+              {error && <Text style={styles.errorText}>{error?.message}</Text>}
+
+              {/* Modal para crear nueva etiqueta */}
+              <CreateTagModal
+                visible={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onCreateTag={handleCreateTagWithCallback}
+                loading={creating}
+              />
+            </View>
+          );
+        }}
+      />
+    </>
   );
 };

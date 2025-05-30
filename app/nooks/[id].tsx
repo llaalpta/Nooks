@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { createStyles } from './styles/layout.styles';
+import { createStyles } from './styles/layout.style';
 
 export default function NookDetailScreen() {
   const theme = useAppTheme();
