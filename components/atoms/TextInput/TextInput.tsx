@@ -27,6 +27,8 @@ export function TextInput({
   right,
   style,
   disabled,
+  multiline,
+  numberOfLines,
   ...props
 }: TextInputProps) {
   const theme = useAppTheme();
@@ -40,6 +42,7 @@ export function TextInput({
       <View
         style={[
           styles.inputContainer,
+          multiline && styles.inputContainerMultiline,
           focused && styles.inputContainerFocused,
           error && styles.inputContainerError,
           disabled && styles.disabled,
@@ -48,11 +51,21 @@ export function TextInput({
         {left && <View style={styles.leftIcon}>{left}</View>}
 
         <RNTextInput
-          style={[styles.input, style]}
+          style={[
+            styles.input,
+            multiline && styles.inputMultiline,
+            multiline && numberOfLines && numberOfLines > 0
+              ? { height: numberOfLines * 20 + 24 }
+              : undefined,
+            style,
+          ]}
           placeholderTextColor={theme.colors.onSurfaceVariant}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           editable={!disabled}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? 'top' : 'center'}
           {...props}
         />
 

@@ -25,7 +25,7 @@ export const createStyles = (colors: AppColors) =>
       marginBottom: 8,
     },
     formControl: {
-      marginBottom: 16,
+      marginBottom: 4,
     },
     inputContainer: {
       marginBottom: 16,

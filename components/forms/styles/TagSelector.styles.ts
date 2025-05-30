@@ -15,12 +15,27 @@ export const createStyles = (colors: AppColors) =>
     },
     inputContainer: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.outline,
+      borderRadius: 4,
+      backgroundColor: colors.surface,
+      flex: 1,
+    },
+    searchContainer: {
+      flexDirection: 'row',
       gap: 8,
       marginBottom: 8,
     },
-    searchContainer: {
-      marginBottom: 8,
+    createButton: {
+      flex: 0,
+      minWidth: 120,
+    },
+    textInput: {
+      flex: 1,
+      padding: 12,
+      fontSize: 16,
+      color: colors.onSurface,
     },
     tagsContainer: {
       flexDirection: 'row',
@@ -33,8 +48,6 @@ export const createStyles = (colors: AppColors) =>
       borderRadius: 16,
       paddingVertical: 6,
       paddingHorizontal: 12,
-      marginRight: 8,
-      marginBottom: 8,
       flexDirection: 'row',
       alignItems: 'center',
     },
@@ -42,8 +55,11 @@ export const createStyles = (colors: AppColors) =>
       color: colors.onSecondaryContainer,
       marginRight: 4,
     },
+    removeIcon: {
+      color: colors.onSecondaryContainer,
+      marginLeft: 4,
+    },
     suggestionContainer: {
-      padding: 8,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.outline,
@@ -52,33 +68,34 @@ export const createStyles = (colors: AppColors) =>
       marginBottom: 8,
     },
     suggestionItem: {
-      paddingVertical: 8,
-      paddingHorizontal: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.outlineVariant,
     },
-    suggestionItemLast: {
-      borderBottomWidth: 0,
+    suggestionContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    tagColorIndicator: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 8,
     },
     suggestionText: {
       color: colors.onSurface,
+      fontSize: 16,
     },
     noSuggestions: {
-      padding: 8,
+      padding: 16,
       color: colors.onSurfaceVariant,
       fontStyle: 'italic',
+      textAlign: 'center',
     },
     errorText: {
       color: colors.error,
       fontSize: 12,
       marginTop: 4,
-    },
-    removeIcon: {
-      color: colors.onSecondaryContainer,
-      marginLeft: 4,
-    },
-    loadingContainer: {
-      padding: 8,
-      alignItems: 'center',
     },
   });

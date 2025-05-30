@@ -15,16 +15,11 @@ type Tag = Tables<'tags'>;
 
 export interface RealmCardProps {
   realm: Tables<'locations'> & { imageUrl?: string | null; tags: Tag[] };
-  onEdit?: (realm: Tables<'locations'>) => void;
-  onDelete?: (realm: Tables<'locations'>) => void;
 }
 
-export function RealmCard({ realm, onEdit, onDelete }: RealmCardProps) {
+export function RealmCard({ realm }: RealmCardProps) {
   const theme = useAppTheme();
   const styles = createStyles(theme.colors);
-
-  // Depuración: mostrar los tags en consola
-  console.log('TAGS EN CARD', realm.tags);
 
   const handlePress = () => {
     router.push(`/realms/${realm.id}`);
@@ -32,73 +27,52 @@ export function RealmCard({ realm, onEdit, onDelete }: RealmCardProps) {
 
   return (
     <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.85}>
-      {realm.imageUrl ? (
-        <Image
-          source={{ uri: realm.imageUrl }}
-          style={{ width: '100%', height: 140, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}
-          resizeMode="cover"
-        />
-      ) : (
-        <View
-          style={{
-            width: '100%',
-            height: 140,
-            backgroundColor: theme.colors.surfaceVariant,
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Ionicons name="image-outline" size={40} color={theme.colors.outlineVariant} />
-          <Text style={{ color: theme.colors.onSurfaceVariant, marginTop: 4, fontSize: 12 }}>
-            Sin imagen
-          </Text>
+      <View style={styles.cardHorizontalContainer}>
+        {/* Imagen a la izquierda */}
+        <View style={styles.imageContainer}>
+          {realm.imageUrl ? (
+            <Image
+              source={{ uri: realm.imageUrl }}
+              style={styles.horizontalImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.horizontalPlaceholder}>
+              <Ionicons name="image-outline" size={24} color={theme.colors.outlineVariant} />
+            </View>
+          )}
         </View>
-      )}
-      <View style={styles.cardContent}>
-        <Text style={styles.title}>{realm.name}</Text>
-        {realm.description && (
-          <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
-            {realm.description}
-          </Text>
-        )}
-        {/* Mostrar tags como chips de color */}
-        {Array.isArray(realm.tags) && realm.tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {realm.tags.map((tag) => (
-              <View
-                key={tag.id}
-                style={[styles.tag, tag.color ? { backgroundColor: tag.color } : null]}
-              >
-                <Text style={styles.tagText}>{tag.name}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+
+        {/* Contenido a la derecha */}
+        <View style={styles.cardContent}>
+          <Text style={styles.title}>{realm.name}</Text>
+          {realm.description && (
+            <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+              {realm.description}
+            </Text>
+          )}
+          {/* Mostrar información de ubicación y radio */}
+          {realm.latitude && realm.longitude && (
+            <Text style={styles.locationInfo} numberOfLines={1} ellipsizeMode="tail">
+              📍 {realm.latitude.toFixed(4)}, {realm.longitude.toFixed(4)}
+              {realm.radius && ` • ${realm.radius.toFixed(0)}m de radio`}
+            </Text>
+          )}
+          {/* Mostrar tags como chips de color */}
+          {Array.isArray(realm.tags) && realm.tags.length > 0 && (
+            <View style={styles.tagsContainer}>
+              {realm.tags.map((tag) => (
+                <View
+                  key={tag.id}
+                  style={[styles.tag, tag.color ? { backgroundColor: tag.color } : null]}
+                >
+                  <Text style={styles.tagText}>{tag.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
-      {(onEdit || onDelete) && (
-        <View style={styles.actions}>
-          {onEdit && (
-            <TouchableOpacity
-              onPress={() => onEdit(realm)}
-              style={{ padding: 8 }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="pencil-outline" size={18} color={theme.colors.primary} />
-            </TouchableOpacity>
-          )}
-          {onDelete && (
-            <TouchableOpacity
-              onPress={() => onDelete(realm)}
-              style={{ padding: 8, marginLeft: 8 }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
     </TouchableOpacity>
   );
 }

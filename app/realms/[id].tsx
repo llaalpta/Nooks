@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Alert, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -10,9 +11,14 @@ import LoadingScreen from '@/components/common/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useNooksQuery } from '@/features/nooks/hooks';
-import { useRealmQuery, useRealmPrimaryImageUrl } from '@/features/realms/hooks';
+import { hasNooks } from '@/features/realms/api';
+import {
+  useRealmQuery,
+  useRealmPrimaryImageUrl,
+  useDeleteRealmMutation,
+} from '@/features/realms/hooks';
 
-import { createStyles } from './styles/details.styles';
+import { createStyles } from './styles/details.style';
 
 import type { Tables } from '@/types/supabase';
 
@@ -25,6 +31,7 @@ export default function RealmDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const realmId = params.id;
   const { user } = useAuth();
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
 
   // Obtener los datos del realm desde Supabase
   const { data: realm, isLoading: isLoadingRealm, isError: isErrorRealm } = useRealmQuery(realmId);
@@ -36,6 +43,46 @@ export default function RealmDetailScreen() {
     isLoading: isLoadingNooks,
     isError: isErrorNooks,
   } = useNooksQuery(realmId);
+
+  const deleteMutation = useDeleteRealmMutation();
+
+  const handleEditRealm = () => {
+    setShowOptionsMenu(false);
+    router.push({
+      pathname: '/(modals)/realm-form',
+      params: { id: realmId },
+    });
+  };
+
+  const handleDeleteRealm = async () => {
+    setShowOptionsMenu(false);
+
+    Alert.alert('Eliminar Reino', '¿Estás seguro de que quieres eliminar este reino?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const hasChildren = await hasNooks(realmId);
+            if (hasChildren) {
+              Alert.alert(
+                'No se puede eliminar',
+                'Este reino contiene nooks. Elimina los nooks primero antes de eliminar el reino.'
+              );
+              return;
+            }
+
+            await deleteMutation.mutateAsync(realmId);
+            Alert.alert('Éxito', 'Reino eliminado con éxito');
+            router.back();
+          } catch (error: any) {
+            Alert.alert('Error', error?.message || 'No se pudo eliminar el reino');
+          }
+        },
+      },
+    ]);
+  };
 
   const handleCreateNook = () => {
     if (!user) {
@@ -69,22 +116,22 @@ export default function RealmDetailScreen() {
 
   if (isErrorRealm || !realm) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <EmptyState
           message="No se pudo cargar el reino"
           actionLabel="Volver"
           onAction={() => router.back()}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {imageUrl ? (
         <Image
           source={{ uri: imageUrl }}
-          style={{ width: '100%', height: 220, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+          style={{ width: '100%', height: 220 }}
           resizeMode="cover"
         />
       ) : (
@@ -93,8 +140,6 @@ export default function RealmDetailScreen() {
             width: '100%',
             height: 220,
             backgroundColor: theme.colors.surfaceVariant,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -106,11 +151,32 @@ export default function RealmDetailScreen() {
         </View>
       )}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{realm.name}</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>{realm.name}</Text>
+          <TouchableOpacity
+            style={styles.optionsButton}
+            onPress={() => setShowOptionsMenu(!showOptionsMenu)}
+          >
+            <Ionicons name="ellipsis-vertical" size={20} color={theme.colors.onSurface} />
+          </TouchableOpacity>
+        </View>
+        {showOptionsMenu && (
+          <View style={styles.optionsMenu}>
+            <TouchableOpacity style={styles.optionItem} onPress={handleEditRealm}>
+              <Ionicons name="pencil-outline" size={18} color={theme.colors.primary} />
+              <Text style={styles.optionText}>Editar reino</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionItem} onPress={handleDeleteRealm}>
+              <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
+              <Text style={[styles.optionText, { color: theme.colors.error }]}>Eliminar reino</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         {realm.description && <Text style={styles.description}>{realm.description}</Text>}
         {realm.latitude && realm.longitude && (
           <Text style={styles.location}>
             Ubicación: {realm.latitude.toFixed(5)}, {realm.longitude.toFixed(5)}
+            {realm.radius && ` • Radio: ${realm.radius.toFixed(0)}m`}
           </Text>
         )}
         {/* Mostrar tags como chips de color */}
@@ -157,6 +223,6 @@ export default function RealmDetailScreen() {
           </Button>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
