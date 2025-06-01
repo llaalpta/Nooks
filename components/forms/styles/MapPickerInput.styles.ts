@@ -113,4 +113,29 @@ export const createStyles = (theme: AppTheme) =>
       left: '50%',
       transform: [{ translateX: -50 }, { translateY: -50 }],
     },
+
+    // Estilos para el botón de ubicación
+    topRightButton: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      right: theme.spacing.m,
+    },
+    mapButton: {
+      backgroundColor: theme.colors.primary,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: theme.spacing.s,
+      borderRadius: theme.borderRadius.m,
+      gap: theme.spacing.xs,
+      ...theme.elevation.level2,
+    },
+    mapButtonLoading: {
+      opacity: 0.8,
+    },
+    mapButtonText: {
+      color: theme.colors.onPrimary,
+      fontSize: 12,
+      fontWeight: '500',
+    },
   });

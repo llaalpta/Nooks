@@ -2,13 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Usar nuestro componente PlatformMap para mejor compatibilidad
-
 import { Button } from '@/components/atoms/Button';
-import { FloatingActionButton } from '@/components/atoms/FloatingActionButton';
 import { Text } from '@/components/atoms/Text';
 import BottomRealmsList from '@/components/common/BottomRealmsList';
 import LoadingScreen from '@/components/common/LoadingScreen';
@@ -16,9 +14,8 @@ import {
   PlatformMapView as MapView,
   PlatformMarker as Marker,
   PlatformCircle as Circle,
-  PlatformCallout as Callout,
   Region,
-  MapViewRef, // Importar el tipo correcto
+  MapViewRef,
 } from '@/components/common/PlatformMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -33,7 +30,7 @@ export default function MapScreen() {
   const { user } = useAuth();
   const theme = useAppTheme();
   const styles = createStyles(theme);
-  const mapRef = useRef<MapViewRef | null>(null); // Tipo corregido
+  const mapRef = useRef<MapViewRef | null>(null);
 
   const [region, setRegion] = useState<Region>({
     latitude: 40.4168, // Madrid por defecto
@@ -48,6 +45,8 @@ export default function MapScreen() {
     longitude: number;
   } | null>(null);
   const [showRealmsList, setShowRealmsList] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
 
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
@@ -135,26 +134,50 @@ export default function MapScreen() {
       return;
     }
 
+    setIsLoadingLocation(true);
+
     try {
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
       const newRegion = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
+
       setRegion(newRegion);
       setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-    } catch {
-      Alert.alert('Error', 'No se pudo obtener tu ubicación actual');
+
+      // Animar a la nueva región
+      mapRef.current?.animateToRegion(newRegion, 1000);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.'
+      );
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+  const handleRealmPress = (realm: Realm) => {
+    setSelectedRealm(realm);
+  };
+
+  const handleRealmDetails = () => {
+    if (selectedRealm) {
+      router.push(`/realms/${selectedRealm.id}`);
     }
   };
 
-  const handleRealmPress = (realm: Realm) => {
-    router.push(`/realms/${realm.id}`);
+  const handleMapPress = () => {
+    setSelectedRealm(null);
   };
 
   const handleCreateRealm = () => {
@@ -164,9 +187,9 @@ export default function MapScreen() {
   const toggleRealmsList = () => {
     setShowRealmsList(!showRealmsList);
   };
-
   const handleRealmSelect = (realm: Realm) => {
     setShowRealmsList(false);
+    setSelectedRealm(realm); // Seleccionar el realm para mostrar su círculo
 
     if (realm.latitude && realm.longitude) {
       // Ahora TypeScript reconoce el método animateToRegion
@@ -211,80 +234,77 @@ export default function MapScreen() {
           onRegionChangeComplete={setRegion}
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={false}
+          onPress={handleMapPress}
         >
-          {/* Mostrar ubicación del usuario si está disponible */}
-          {userLocation && (
-            <Marker coordinate={userLocation} title="Tu ubicación" pinColor="blue" />
+          {/* Círculo para mostrar el radio del realm seleccionado */}
+          {selectedRealm && selectedRealm.radius && (
+            <Circle
+              center={{
+                latitude: selectedRealm.latitude!,
+                longitude: selectedRealm.longitude!,
+              }}
+              radius={selectedRealm.radius}
+              fillColor={`${theme.colors.primary}20`}
+              strokeColor={theme.colors.primary}
+              strokeWidth={2}
+            />
           )}
-
-          {/* Mostrar realms como marcadores con círculos */}
+          {/* Mostrar realms como marcadores */}
           {validRealms.map((realm) => (
-            <React.Fragment key={realm.id}>
-              {/* Círculo para mostrar el radio del realm */}
-              {realm.radius && (
-                <Circle
-                  center={{
-                    latitude: realm.latitude!,
-                    longitude: realm.longitude!,
-                  }}
-                  radius={realm.radius}
-                  fillColor={`${theme.colors.primary}20`}
-                  strokeColor={theme.colors.primary}
-                  strokeWidth={2}
-                />
-              )}
-
-              {/* Marcador del realm */}
-              <Marker
-                coordinate={{
-                  latitude: realm.latitude!,
-                  longitude: realm.longitude!,
-                }}
-                pinColor={theme.colors.primary}
-                onPress={() => handleRealmPress(realm)}
-              >
-                <Callout onPress={() => handleRealmPress(realm)}>
-                  <View style={styles.calloutContainer}>
-                    <Text style={styles.calloutTitle}>{realm.name}</Text>
-                    {realm.description && (
-                      <Text style={styles.calloutDescription} numberOfLines={2}>
-                        {realm.description}
-                      </Text>
-                    )}
-                    {realm.radius && (
-                      <Text style={styles.calloutRadius}>Radio: {realm.radius.toFixed(0)}m</Text>
-                    )}
-                    <Text style={styles.calloutAction}>Toca para ver detalles</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            </React.Fragment>
+            <Marker
+              key={realm.id}
+              coordinate={{
+                latitude: realm.latitude!,
+                longitude: realm.longitude!,
+              }}
+              image={require('@/assets/images/marker3.png')}
+              onPress={() => handleRealmPress(realm)}
+            />
           ))}
         </MapView>
 
-        {/* Botón para centrar en ubicación del usuario */}
-        <View style={styles.locationButtonContainer}>
-          <Button
-            mode="contained"
+        {/* Columna de botones en la esquina superior derecha */}
+        <View style={styles.topRightButtons}>
+          {/* Botón de mi ubicación */}
+          <TouchableOpacity
+            style={[styles.mapButton, isLoadingLocation && styles.mapButtonLoading]}
             onPress={centerOnUserLocation}
-            icon={<Ionicons name="locate" size={16} color={theme.colors.onPrimary} />}
-            style={styles.locationButton}
+            disabled={isLoadingLocation}
           >
-            Mi ubicación
-          </Button>
-        </View>
+            {isLoadingLocation ? (
+              <>
+                <ActivityIndicator size={16} color={theme.colors.onPrimary} />
+                <Text style={styles.mapButtonText}>BUSCANDO...</Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="locate" size={16} color={theme.colors.onPrimary} />
+                <Text style={styles.mapButtonText}>MI UBICACIÓN</Text>
+              </>
+            )}
+          </TouchableOpacity>
 
-        {/* Botón para mostrar lista de realms - nuevo estilo similar a Popeye's */}
+          {/* Botón de detalles del realm seleccionado - aparece debajo */}
+          {selectedRealm && (
+            <TouchableOpacity style={styles.mapButton} onPress={handleRealmDetails}>
+              <Ionicons name="information-circle" size={16} color={theme.colors.onPrimary} />
+              <Text style={styles.mapButtonText}>VER DETALLES</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {/* Botones en la esquina inferior izquierda */}
         {validRealms.length > 0 && (
-          <View style={styles.realmsButtonContainer}>
-            <Button
-              mode="contained"
-              onPress={toggleRealmsList}
-              icon={<Ionicons name="list" size={16} color={theme.colors.onPrimary} />}
-              style={styles.realmsButton}
-            >
-              LISTA
-            </Button>
+          <View style={styles.bottomLeftButtons}>
+            {/* Botón de añadir realm (arriba) */}
+            <TouchableOpacity style={styles.addButton} onPress={handleCreateRealm}>
+              <Ionicons name="add" size={24} color={theme.colors.onPrimary} />
+            </TouchableOpacity>
+
+            {/* Botón de lista (abajo) */}
+            <TouchableOpacity style={styles.mapButton} onPress={toggleRealmsList}>
+              <Ionicons name="list" size={16} color={theme.colors.onPrimary} />
+              <Text style={styles.mapButtonText}>LISTA</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -298,9 +318,6 @@ export default function MapScreen() {
           onClose={() => setShowRealmsList(false)}
         />
       )}
-
-      {/* Botón flotante para crear nuevo realm */}
-      <FloatingActionButton onPress={handleCreateRealm} icon="add" style={styles.fab} />
     </SafeAreaView>
   );
 }

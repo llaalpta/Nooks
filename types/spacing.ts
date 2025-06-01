@@ -18,6 +18,8 @@ export interface AppBorderRadius {
   m: number; // Medium: 12dp
   l: number; // Large: 16dp
   xl: number; // Extra Large: 24dp
+  xxl: number; // Extra Extra Large: 32dp
+  xxxl: number; // Extra Extra Extra Large: 40dp
   round: number; // Completamente redondeado: 50%
 }
 

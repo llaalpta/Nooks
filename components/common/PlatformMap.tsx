@@ -40,7 +40,7 @@ const WebMapPlaceholder: React.FC<WebMapPlaceholderProps> = ({ style, children }
       ]}
     >
       <Text style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}>
-        Mapa no disponible en web.{'\n'}
+        🌐 Mapa no disponible en web.{'\n'}
         Por favor, usa la aplicación móvil para ver el mapa.
       </Text>
       {children}
@@ -291,22 +291,50 @@ EnhancedMapView.displayName = 'EnhancedMapView';
 
 // Export enhanced components
 export const PlatformMapView = EnhancedMapView;
+
 export const PlatformMarker = (props: MapComponentProps) => {
-  const { components } = useMapComponents();
-  const MarkerComponent = components.Marker;
-  return <MarkerComponent {...props} />;
+  if (Platform.OS === 'web') {
+    return <View {...props} />;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const RNMaps = require('react-native-maps');
+    const MarkerComponent = RNMaps.Marker;
+    return <MarkerComponent {...props} />;
+  } catch {
+    return <View {...props} />;
+  }
 };
 
 export const PlatformCircle = (props: MapComponentProps) => {
-  const { components } = useMapComponents();
-  const CircleComponent = components.Circle;
-  return <CircleComponent {...props} />;
+  if (Platform.OS === 'web') {
+    return <View {...props} />;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const RNMaps = require('react-native-maps');
+    const CircleComponent = RNMaps.Circle;
+    return <CircleComponent {...props} />;
+  } catch {
+    return <View {...props} />;
+  }
 };
 
 export const PlatformCallout = (props: MapComponentProps) => {
-  const { components } = useMapComponents();
-  const CalloutComponent = components.Callout;
-  return <CalloutComponent {...props} />;
+  if (Platform.OS === 'web') {
+    return <View {...props} />;
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const RNMaps = require('react-native-maps');
+    const CalloutComponent = RNMaps.Callout;
+    return <CalloutComponent {...props} />;
+  } catch {
+    return <View {...props} />;
+  }
 };
 
 // Export types

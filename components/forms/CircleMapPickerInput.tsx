@@ -3,10 +3,9 @@ import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location';
 import React, { useState } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
-import { View, StyleProp, ViewStyle } from 'react-native';
-import MapView, { Circle, MapPressEvent, Region } from 'react-native-maps';
+import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
+import MapView, { Circle, MapPressEvent, Region, Marker } from 'react-native-maps';
 
-import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
@@ -37,8 +36,8 @@ export const CircleMapPickerInput = <T extends object>({
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   },
-  minRadius = 50,
-  maxRadius = 5000,
+  minRadius = 5,
+  maxRadius = 1000,
   disabled,
   style,
 }: CircleMapPickerInputProps<T>) => {
@@ -100,30 +99,50 @@ export const CircleMapPickerInput = <T extends object>({
                 pointerEvents={disabled ? 'none' : 'auto'}
               >
                 {circleLocation?.latitude && circleLocation?.longitude && (
-                  <Circle
-                    center={{
-                      latitude: circleLocation.latitude,
-                      longitude: circleLocation.longitude,
-                    }}
-                    radius={circleLocation.radius}
-                    fillColor="rgba(0, 122, 255, 0.2)"
-                    strokeColor="rgba(0, 122, 255, 0.8)"
-                    strokeWidth={2}
-                  />
+                  <>
+                    {/* Marcador personalizado */}
+                    <Marker
+                      coordinate={{
+                        latitude: circleLocation.latitude,
+                        longitude: circleLocation.longitude,
+                      }}
+                      image={require('@/assets/images/marker3.png')} // Asegúrate de tener esta imagen
+                    ></Marker>
+
+                    {/* Círculo para mostrar el radio */}
+                    <Circle
+                      center={{
+                        latitude: circleLocation.latitude,
+                        longitude: circleLocation.longitude,
+                      }}
+                      radius={circleLocation.radius}
+                      fillColor={`${theme.colors.primary}20`}
+                      strokeColor={theme.colors.primary}
+                      strokeWidth={2}
+                    />
+                  </>
                 )}
               </MapView>
 
-              {/* Botón para centrar en ubicación actual */}
-              <View style={styles.locationButtonContainer}>
-                <Button
-                  mode="contained"
+              {/* Botón de mi ubicación estilo mapa principal */}
+              <View style={styles.topRightButton}>
+                <TouchableOpacity
+                  style={[styles.mapButton, locating && styles.mapButtonLoading]}
                   onPress={() => centerOnCurrentLocation(onChange, circleLocation)}
-                  loading={locating}
-                  icon={<Ionicons name="locate" size={16} color={theme.colors.onPrimary} />}
-                  style={styles.locationButton}
+                  disabled={locating}
                 >
-                  Mi ubicación
-                </Button>
+                  {locating ? (
+                    <>
+                      <ActivityIndicator size={16} color={theme.colors.onPrimary} />
+                      <Text style={styles.mapButtonText}>BUSCANDO...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons name="locate" size={16} color={theme.colors.onPrimary} />
+                      <Text style={styles.mapButtonText}>MI UBICACIÓN</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
               </View>
             </View>
 

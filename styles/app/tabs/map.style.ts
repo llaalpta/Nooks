@@ -8,25 +8,6 @@ export const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    header: {
-      paddingHorizontal: theme.spacing.m, // 16dp
-      paddingVertical: theme.spacing.m, // 16dp
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
-    },
-    headerTitle: {
-      fontSize: 24, // headlineSmall según MD3
-      fontWeight: '400',
-      lineHeight: 32,
-      color: theme.colors.onSurface,
-      marginBottom: theme.spacing.xs, // 4dp
-    },
-    headerSubtitle: {
-      fontSize: 16, // bodyLarge según MD3
-      lineHeight: 24,
-      color: theme.colors.onSurfaceVariant,
-    },
     mapContainer: {
       flex: 1,
       position: 'relative',
@@ -34,78 +15,140 @@ export const createStyles = (theme: AppTheme) =>
     map: {
       flex: 1,
     },
-    locationButtonContainer: {
-      position: 'absolute',
-      top: theme.spacing.m, // 16dp
-      right: theme.spacing.m, // 16dp
-      zIndex: 1,
-    },
-    locationButton: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.m, // 12dp
-      ...theme.elevation.level2, // Elevación consistente MD3
-    },
-    realmsButtonContainer: {
-      position: 'absolute',
-      right: theme.spacing.m, // 16dp
-      bottom: theme.spacing.xl, // Por encima del FAB
-      zIndex: 1,
-    },
-    realmsButton: {
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.borderRadius.s, // 8dp
-      ...theme.elevation.level2, // Sombra para botón
-    },
-    calloutContainer: {
-      minWidth: 200,
-      maxWidth: 250,
-      padding: theme.spacing.sm, // 12dp
-    },
-    calloutTitle: {
-      fontSize: 16, // bodyLarge según MD3
-      fontWeight: '600',
-      lineHeight: 24,
-      color: theme.colors.onSurface,
-      marginBottom: theme.spacing.xs, // 4dp
-    },
-    calloutDescription: {
-      fontSize: 14, // bodyMedium según MD3
-      lineHeight: 20,
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: theme.spacing.xs, // 4dp
-    },
-    calloutRadius: {
-      fontSize: 12, // bodySmall según MD3
-      lineHeight: 16,
-      color: theme.colors.primary,
-      marginBottom: theme.spacing.xs, // 4dp
-    },
-    calloutAction: {
-      fontSize: 12, // bodySmall según MD3
-      lineHeight: 16,
-      color: theme.colors.primary,
-      fontStyle: 'italic',
-    },
-    fab: {
-      position: 'absolute',
-      margin: theme.spacing.m, // 16dp
-      right: 0,
-      bottom: 0,
-      backgroundColor: theme.colors.primary,
-      borderRadius: theme.borderRadius.m, // 12dp
-      ...theme.elevation.level3, // Elevación para FAB
-    },
     errorContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: theme.spacing.l, // 24dp
+      padding: theme.spacing.l,
     },
     errorText: {
-      fontSize: 16, // bodyLarge según MD3
-      lineHeight: 24,
+      fontSize: 16,
       color: theme.colors.error,
       textAlign: 'center',
-      marginBottom: theme.spacing.m, // 16dp
+      marginBottom: theme.spacing.m,
+    },
+    calloutContainer: {
+      minWidth: 200,
+      padding: theme.spacing.s,
+    },
+    calloutTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+      marginBottom: theme.spacing.xs,
+    },
+    calloutDescription: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.xs,
+    },
+    calloutRadius: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      marginBottom: theme.spacing.xs,
+    },
+    calloutAction: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      fontWeight: '500',
+    },
+    // Contenedor de botón en esquina superior izquierda
+    topLeftButton: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      left: theme.spacing.m,
+    },
+    // Contenedor de botón en esquina superior derecha
+    topRightButton: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      right: theme.spacing.m,
+    },
+    // Estilo para los botones del mapa (lista y mi ubicación)
+    mapButton: {
+      backgroundColor: theme.colors.primary,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: theme.spacing.s,
+      borderRadius: theme.borderRadius.m,
+      gap: theme.spacing.xs,
+      ...theme.elevation.level2,
+    },
+    // Estilo para el botón cuando está cargando
+    mapButtonLoading: {
+      opacity: 0.8,
+    },
+    mapButtonText: {
+      color: theme.colors.onPrimary,
+      fontSize: 12,
+      fontWeight: '500',
+    }, // Contenedor del botón de añadir en esquina inferior derecha
+    bottomRightButton: {
+      position: 'absolute',
+      bottom: theme.spacing.m,
+      right: theme.spacing.m,
+    }, // Contenedor del botón de detalles en esquina inferior izquierda
+    bottomLeftButton: {
+      position: 'absolute',
+      bottom: theme.spacing.m,
+      left: theme.spacing.m,
+    },
+    topRightButtons: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      right: theme.spacing.m,
+      gap: theme.spacing.s, // Espacio entre botones
+    },
+    // Contenedor de múltiples botones en esquina inferior izquierda
+    bottomLeftButtons: {
+      position: 'absolute',
+      bottom: theme.spacing.m,
+      left: theme.spacing.m,
+      gap: theme.spacing.s,
+    },
+    // Estilo para botón de detalles del realm seleccionado
+    selectedRealmDetails: {
+      position: 'absolute',
+      bottom: theme.spacing.l * 2 + 56 + theme.spacing.s + 40, // Espaciado para no tapar otros botones
+      left: theme.spacing.m,
+    },
+    // Botón circular de añadir
+    addButton: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...theme.elevation.level3,
+    },
+    // Mantenemos el fab original por si lo necesitas en otro lugar
+    fab: {
+      position: 'absolute',
+      bottom: theme.spacing.l,
+      right: theme.spacing.l,
+    },
+
+    // Estilos originales que podrías necesitar (mantener si existen)
+    locationButtonContainer: {
+      position: 'absolute',
+      bottom: theme.spacing.m,
+      left: theme.spacing.m,
+    },
+    locationButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+    },
+    realmsButtonContainer: {
+      position: 'absolute',
+      top: theme.spacing.m,
+      right: theme.spacing.m,
+    },
+    realmsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
     },
   });

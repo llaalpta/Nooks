@@ -56,6 +56,8 @@ const defaultThemeSettings: Omit<AppTheme, 'colors' | 'palettes' | 'materialSche
     m: 12, // Medium
     l: 16, // Large
     xl: 24, // Extra Large
+    xxl: 32, // Extra Extra Large
+    xxxl: 40, // Extra Extra Extra Large
     round: 50, // Completamente redondeado
   },
   // Sistema de elevación MD3
