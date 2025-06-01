@@ -11,8 +11,7 @@ import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import { ControlledTextInput } from '@/components/forms/ControlledTextInput';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useSignUpMutation } from '@/features/auth/hooks';
-
-import { createStyles } from './styles/login.style';
+import { createStyles } from '@/styles/app/auth/login.style';
 
 const schema = z
   .object({
@@ -42,7 +41,7 @@ export default function RegisterScreen() {
   const mutation = useSignUpMutation();
   const router = useRouter();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   const onSubmit = async (data: RegisterForm) => {
     try {

@@ -1,32 +1,32 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     label: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     imagesContainer: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     image: {
       width: 200,
       height: 200,
-      marginBottom: 8,
-      borderRadius: 8,
+      marginBottom: theme.spacing.s,
+      borderRadius: theme.borderRadius.s,
     },
     addButton: {
-      marginTop: 8,
+      marginTop: theme.spacing.s,
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },

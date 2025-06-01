@@ -1,52 +1,52 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     label: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
     },
     inputContainerError: {
-      borderColor: colors.error,
+      borderColor: theme.colors.error,
     },
     dateButton: {
       borderWidth: 1,
-      borderRadius: 4,
-      padding: 12,
-      backgroundColor: colors.surface,
-      borderColor: colors.outline,
+      borderRadius: theme.borderRadius.xs,
+      padding: theme.spacing.sm,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
       flex: 1,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
     },
     dateButtonError: {
-      borderColor: colors.error,
+      borderColor: theme.colors.error,
     },
     dateText: {
       fontSize: 16,
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
     },
     datePlaceholder: {
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     placeholderText: {
       fontSize: 16,
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },

@@ -4,10 +4,13 @@ import { View } from 'react-native';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
-
-import { styles } from './styles/not-found.style';
+import { useAppTheme } from '@/contexts/ThemeContext';
+import { createStyles } from '@/styles/app/not-found.style';
 
 export default function NotFoundScreen() {
+  const theme = useAppTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>404</Text>

@@ -46,7 +46,7 @@ export const CircleMapPickerInput = <T extends object>({
   const [region, setRegion] = useState<Region>(initialRegion);
   const [locating, setLocating] = useState(false);
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   async function centerOnCurrentLocation(
     onChange: (coords: CircleLocation) => void,

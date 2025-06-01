@@ -1,21 +1,23 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m, // 16dp
     },
     label: {
-      marginBottom: 8,
-      fontSize: 14,
+      marginBottom: theme.spacing.s, // 8dp
+      fontSize: 14, // labelLarge según MD3
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      lineHeight: 20,
+      color: theme.colors.onSurfaceVariant,
     },
     errorText: {
-      color: colors.error,
-      fontSize: 12,
-      marginTop: 4,
+      color: theme.colors.error,
+      fontSize: 12, // bodySmall según MD3
+      lineHeight: 16,
+      marginTop: theme.spacing.xs, // 4dp
     },
   });

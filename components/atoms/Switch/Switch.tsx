@@ -15,7 +15,7 @@ export interface SwitchProps {
 
 export function Switch({ value, onValueChange, disabled, color, style }: SwitchProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   // Creamos una animación para el movimiento del thumb
   const animatedValue = React.useRef(new Animated.Value(value ? 1 : 0)).current;

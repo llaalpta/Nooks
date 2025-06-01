@@ -15,7 +15,7 @@ export function FeedbackSnackbar({
   onDismiss,
   message,
   type = 'info',
-  duration = 3000,
+  duration = 1500,
 }: FeedbackSnackbarProps) {
   // Mapear 'warning' a 'info' ya que el componente Snackbar subyacente puede no soportar 'warning'
   const mappedType = type === 'warning' ? 'info' : type;

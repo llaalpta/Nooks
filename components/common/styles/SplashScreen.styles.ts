@@ -1,14 +1,14 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
     logo: {
       width: 120,
@@ -23,11 +23,11 @@ export const createStyles = (colors: AppColors) =>
     title: {
       fontSize: 28,
       fontWeight: 'bold',
-      marginBottom: 8,
-      color: colors.primary,
+      marginBottom: theme.spacing.s,
+      color: theme.colors.primary,
     },
     subtitle: {
       fontSize: 16,
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
   });

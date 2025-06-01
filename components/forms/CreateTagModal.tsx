@@ -32,7 +32,7 @@ const PRESET_COLORS = [
 
 export function CreateTagModal({ visible, onClose, onCreateTag, loading }: CreateTagModalProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const [tagName, setTagName] = useState('');
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
 

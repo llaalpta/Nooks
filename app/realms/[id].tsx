@@ -17,8 +17,7 @@ import {
   useRealmPrimaryImageUrl,
   useDeleteRealmMutation,
 } from '@/features/realms/hooks';
-
-import { createStyles } from './styles/details.style';
+import { createStyles } from '@/styles/app/realms/details.style';
 
 import type { Tables } from '@/types/supabase';
 
@@ -27,7 +26,7 @@ type Tag = Tables<'tags'>;
 
 export default function RealmDetailScreen() {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const params = useLocalSearchParams<{ id: string }>();
   const realmId = params.id;
   const { user } = useAuth();

@@ -1,41 +1,41 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     label: {
-      marginBottom: 4,
+      marginBottom: theme.spacing.xs,
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     inputContainer: {
       borderWidth: 1,
-      borderRadius: 4,
+      borderRadius: theme.borderRadius.xs,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.surface,
-      borderColor: colors.outline,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.outline,
     },
     inputContainerMultiline: {
       alignItems: 'flex-start', // Para campos multilinea, alinear al inicio
     },
     inputContainerFocused: {
-      borderColor: colors.primary,
+      borderColor: theme.colors.primary,
       borderWidth: 2,
     },
     inputContainerError: {
-      borderColor: colors.error,
+      borderColor: theme.colors.error,
     },
     input: {
       flex: 1,
-      padding: 12,
+      padding: theme.spacing.sm,
       fontSize: 16,
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
     },
     inputMultiline: {
       minHeight: 44, // Altura mínima para campos multilinea
@@ -48,12 +48,12 @@ export const createStyles = (colors: AppColors) =>
       paddingRight: 12,
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },
     helperText: {
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
       fontSize: 12,
       marginTop: 4,
     },

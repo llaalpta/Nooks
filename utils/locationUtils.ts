@@ -15,3 +15,9 @@ export function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2
 export function formatCoords(lat: number, lon: number): string {
   return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
 }
+
+// Calcula la distancia en kilómetros entre dos coordenadas
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const distanceMeters = getDistanceMeters(lat1, lon1, lat2, lon2);
+  return distanceMeters / 1000; // Convertir a kilómetros
+}

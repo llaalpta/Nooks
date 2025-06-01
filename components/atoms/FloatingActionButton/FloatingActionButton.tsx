@@ -20,7 +20,7 @@ export function FloatingActionButton({
   style,
 }: FloatingActionButtonProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress} activeOpacity={0.8}>

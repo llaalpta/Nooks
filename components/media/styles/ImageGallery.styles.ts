@@ -1,17 +1,17 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     emptyContainer: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 16,
+      padding: theme.spacing.m,
     },
     emptyText: {
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     contentContainer: {
       paddingVertical: 8,
@@ -23,15 +23,15 @@ export const createStyles = (colors: AppColors) =>
     image: {
       width: 96,
       height: 96,
-      borderRadius: 8,
+      borderRadius: theme.borderRadius.s,
     },
     removeButton: {
       position: 'absolute',
       top: -8,
       right: -8,
       zIndex: 10,
-      backgroundColor: colors.surface,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.m,
       width: 24,
       height: 24,
       alignItems: 'center',
@@ -44,6 +44,6 @@ export const createStyles = (colors: AppColors) =>
     },
     removeIcon: {
       fontSize: 16,
-      color: colors.error,
+      color: theme.colors.error,
     },
   });

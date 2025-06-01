@@ -30,9 +30,9 @@ export function Button({
   labelStyle,
   testID,
 }: ButtonProps) {
-  // Ahora usamos nuestro hook personalizado para obtener el tema actual
+  // Ahora usamos nuestro hook personalizado para obtener el tema completo
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   const buttonStyles = [styles.button, styles[mode], disabled && styles.disabled, style];
 
@@ -44,7 +44,6 @@ export function Button({
     disabled && styles.labelDisabled,
     labelStyle,
   ];
-
   return (
     <Pressable
       style={buttonStyles}
@@ -60,7 +59,11 @@ export function Button({
         />
       )}
 
-      {icon && !loading && <View style={styles.icon}>{icon}</View>}
+      {icon && !loading && (
+        <View style={styles.icon}>
+          {typeof icon === 'string' ? <Text style={labelStyles}>{icon}</Text> : icon}
+        </View>
+      )}
 
       {typeof children === 'string' ? <Text style={labelStyles}>{children}</Text> : children}
     </Pressable>

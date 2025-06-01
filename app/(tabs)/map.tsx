@@ -1,20 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Alert } from 'react-native';
-import MapView, { Marker, Circle, Callout, Region } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// Usar nuestro componente PlatformMap para mejor compatibilidad
 
 import { Button } from '@/components/atoms/Button';
 import { FloatingActionButton } from '@/components/atoms/FloatingActionButton';
 import { Text } from '@/components/atoms/Text';
+import BottomRealmsList from '@/components/common/BottomRealmsList';
 import LoadingScreen from '@/components/common/LoadingScreen';
+import {
+  PlatformMapView as MapView,
+  PlatformMarker as Marker,
+  PlatformCircle as Circle,
+  PlatformCallout as Callout,
+  Region,
+} from '@/components/common/PlatformMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useRealmsQuery } from '@/features/realms/hooks';
-
-import { createStyles } from './styles/map.style';
+import { createStyles } from '@/styles/app/tabs/map.style';
 
 import type { Tables } from '@/types/supabase';
 
@@ -23,7 +31,8 @@ type Realm = Tables<'locations'>;
 export default function MapScreen() {
   const { user } = useAuth();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
+  const mapRef = useRef<typeof MapView | null>(null);
 
   const [region, setRegion] = useState<Region>({
     latitude: 40.4168, // Madrid por defecto
@@ -37,6 +46,7 @@ export default function MapScreen() {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [showRealmsList, setShowRealmsList] = useState(false);
 
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
@@ -149,9 +159,30 @@ export default function MapScreen() {
     router.push('/(modals)/realm-form');
   };
 
+  const toggleRealmsList = () => {
+    setShowRealmsList(!showRealmsList);
+  };
+
+  const handleRealmSelect = (realm: Realm) => {
+    setShowRealmsList(false);
+
+    if (realm.latitude && realm.longitude) {
+      mapRef.current?.animateToRegion(
+        {
+          latitude: realm.latitude,
+          longitude: realm.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        },
+        1000
+      );
+    }
+  };
+
   if (isLoading) {
     return <LoadingScreen message="Cargando mapa..." />;
   }
+
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
@@ -169,15 +200,9 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mapa de Reinos</Text>
-        <Text style={styles.headerSubtitle}>
-          {validRealms.length} reino{validRealms.length !== 1 ? 's' : ''} en el mapa
-        </Text>
-      </View>
-
       <View style={styles.mapContainer}>
         <MapView
+          ref={mapRef}
           style={styles.map}
           region={region}
           onRegionChangeComplete={setRegion}
@@ -246,20 +271,30 @@ export default function MapScreen() {
           </Button>
         </View>
 
-        {/* Botón para centrar en todos los realms */}
+        {/* Botón para mostrar lista de realms - nuevo estilo similar a Popeye's */}
         {validRealms.length > 0 && (
           <View style={styles.realmsButtonContainer}>
             <Button
-              mode="outlined"
-              onPress={centerMapOnRealms}
-              icon={<Ionicons name="map" size={16} color={theme.colors.primary} />}
+              mode="contained"
+              onPress={toggleRealmsList}
+              icon={<Ionicons name="list" size={16} color={theme.colors.onPrimary} />}
               style={styles.realmsButton}
             >
-              Ver todos
+              LISTA
             </Button>
           </View>
         )}
       </View>
+
+      {/* Lista de realms desplegable desde abajo */}
+      {showRealmsList && validRealms.length > 0 && (
+        <BottomRealmsList
+          realms={validRealms}
+          userLocation={userLocation}
+          onRealmSelect={handleRealmSelect}
+          onClose={() => setShowRealmsList(false)}
+        />
+      )}
 
       {/* Botón flotante para crear nuevo realm */}
       <FloatingActionButton onPress={handleCreateRealm} icon="add" style={styles.fab} />

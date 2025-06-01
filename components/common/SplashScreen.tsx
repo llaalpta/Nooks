@@ -1,19 +1,18 @@
 import React from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 
-// eslint-disable-next-line import/no-unresolved
-import splashIcon from '@/assets/images/splash-icon.png';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
 import { createStyles } from './styles/SplashScreen.styles';
+import AppLogo from '../icons/AppLogo';
 
 export default function SplashScreen() {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
-      <Image source={splashIcon} style={styles.image} resizeMode="contain" />
+      <AppLogo size={120} animated={true} />
     </View>
   );
 }

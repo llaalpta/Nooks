@@ -1,20 +1,22 @@
 import { StyleSheet } from 'react-native';
 
-export const createStyles = (colors: any) =>
+import { AppTheme } from '@/types';
+
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
-      backgroundColor: colors.background,
+      padding: theme.spacing.m,
+      backgroundColor: theme.colors.background,
     },
     title: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
       textAlign: 'center',
     },
     inputContainer: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     buttonContainer: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
   });

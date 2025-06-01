@@ -26,7 +26,7 @@ export const ControlledImagePicker = <T extends object>({
 }: ControlledImagePickerProps<T>) => {
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   const pickImage = async (onChange: (uri: string) => void) => {
     // Usamos 'image/*' como tipo de medio para evitar la advertencia de MediaTypeOptions

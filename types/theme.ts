@@ -1,7 +1,7 @@
 import { palettes } from '@/src/theme/theme';
 
 import { AppColors } from './colors';
-import { AppSpacing } from './spacing';
+import { AppSpacing, AppBorderRadius, AppElevation } from './spacing';
 import { AppFonts } from './typography';
 
 // Tipo para el tema completo
@@ -14,6 +14,8 @@ export interface AppTheme {
   colors: AppColors;
   fonts: AppFonts;
   spacing: AppSpacing;
+  borderRadius: AppBorderRadius;
+  elevation: AppElevation;
   palettes: typeof palettes;
   materialSchemes: {
     light: AppColors;

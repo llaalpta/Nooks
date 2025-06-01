@@ -26,7 +26,7 @@ export function Snackbar({
   action,
 }: SnackbarProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const opacity = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

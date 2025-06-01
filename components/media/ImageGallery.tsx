@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  View,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  StyleProp,
-  ViewStyle,
-  Text as RNText,
-} from 'react-native';
+import { View, FlatList, Image, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -30,7 +22,7 @@ export function ImageGallery({
   style,
 }: ImageGalleryProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   if (!images || images.length === 0) {
     return (
@@ -54,7 +46,7 @@ export function ImageGallery({
           </TouchableOpacity>
           {showRemove && onRemoveImage && item.id && (
             <TouchableOpacity style={styles.removeButton} onPress={() => onRemoveImage(item.id!)}>
-              <RNText style={styles.removeIcon}>✕</RNText>
+              <Text style={styles.removeIcon}>✕</Text>
             </TouchableOpacity>
           )}
         </View>

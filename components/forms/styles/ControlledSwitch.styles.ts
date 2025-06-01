@@ -1,11 +1,11 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     rowContainer: {
       flexDirection: 'row',
@@ -15,11 +15,11 @@ export const createStyles = (colors: AppColors) =>
     label: {
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
       flex: 1,
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },

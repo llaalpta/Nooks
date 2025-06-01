@@ -23,7 +23,7 @@ export const ControlledSwitch = <T extends object>({
 }: ControlledSwitchProps<T>) => {
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <Controller

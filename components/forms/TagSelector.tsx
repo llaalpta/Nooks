@@ -43,7 +43,7 @@ export const TagSelector = <T extends object>({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   // Filtra opciones por search input (case-insensitive)
   const filteredOptions = useMemo(
@@ -110,7 +110,6 @@ export const TagSelector = <T extends object>({
                   />
                   {loading && <Spinner size="small" style={{ marginRight: 8 }} />}
                 </View>
-
                 {/* Botón para crear nueva etiqueta */}
                 {onCreateTag && (
                   <Button

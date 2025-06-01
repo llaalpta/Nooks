@@ -59,7 +59,7 @@ export default function TabsLayout() {
               <Ionicons name="map-outline" size={size} color={color} />
             ),
           }}
-        />
+        />{' '}
         <Tabs.Screen
           name="profile"
           options={{

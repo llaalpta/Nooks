@@ -1,31 +1,31 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     label: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       borderWidth: 1,
-      borderColor: colors.outline,
-      borderRadius: 4,
-      backgroundColor: colors.surface,
+      borderColor: theme.colors.outline,
+      borderRadius: theme.borderRadius.xs,
+      backgroundColor: theme.colors.surface,
       flex: 1,
     },
     searchContainer: {
       flexDirection: 'row',
       gap: 8,
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     createButton: {
       flex: 0,
@@ -33,18 +33,18 @@ export const createStyles = (colors: AppColors) =>
     },
     textInput: {
       flex: 1,
-      padding: 12,
+      padding: theme.spacing.sm,
       fontSize: 16,
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
     },
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     tagChip: {
-      backgroundColor: colors.secondaryContainer,
+      backgroundColor: theme.colors.secondaryContainer,
       borderRadius: 16,
       paddingVertical: 6,
       paddingHorizontal: 12,
@@ -52,26 +52,26 @@ export const createStyles = (colors: AppColors) =>
       alignItems: 'center',
     },
     tagText: {
-      color: colors.onSecondaryContainer,
+      color: theme.colors.onSecondaryContainer,
       marginRight: 4,
     },
     removeIcon: {
-      color: colors.onSecondaryContainer,
+      color: theme.colors.onSecondaryContainer,
       marginLeft: 4,
     },
     suggestionContainer: {
-      backgroundColor: colors.surface,
+      backgroundColor: theme.colors.surface,
       borderWidth: 1,
-      borderColor: colors.outline,
-      borderRadius: 4,
+      borderColor: theme.colors.outline,
+      borderRadius: theme.borderRadius.xs,
       maxHeight: 200,
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     suggestionItem: {
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.m,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     suggestionContent: {
       flexDirection: 'row',
@@ -84,17 +84,17 @@ export const createStyles = (colors: AppColors) =>
       marginRight: 8,
     },
     suggestionText: {
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
       fontSize: 16,
     },
     noSuggestions: {
-      padding: 16,
-      color: colors.onSurfaceVariant,
+      padding: theme.spacing.m,
+      color: theme.colors.onSurfaceVariant,
       fontStyle: 'italic',
       textAlign: 'center',
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },

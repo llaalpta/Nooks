@@ -1,23 +1,24 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     card: {
-      backgroundColor: colors.surface,
-      borderRadius: 8,
-      marginBottom: 16,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.s, // 8dp según MD3
+      marginBottom: theme.spacing.m, // 16dp
       borderWidth: 1,
-      borderColor: colors.outlineVariant,
+      borderColor: theme.colors.outlineVariant,
       overflow: 'hidden',
+      ...theme.elevation.level1, // Elevación sutil para cards
     },
     cardHorizontalContainer: {
       flexDirection: 'row',
       height: 140,
     },
     imageContainer: {
-      width: '35%', // 1/4 del ancho total
+      width: '35%',
       height: '100%',
     },
     horizontalImage: {
@@ -27,57 +28,61 @@ export const createStyles = (colors: AppColors) =>
     horizontalPlaceholder: {
       width: '100%',
       height: '100%',
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: theme.colors.surfaceVariant,
       alignItems: 'center',
       justifyContent: 'center',
     },
     cardContent: {
       flex: 1,
-      padding: 16,
-      paddingRight: 8, // Menos padding a la derecha para hacer espacio a las acciones
+      padding: theme.spacing.m, // 16dp
+      paddingRight: theme.spacing.s, // 8dp
     },
     actionsHorizontal: {
       position: 'absolute',
-      top: 8,
-      right: 8,
+      top: theme.spacing.s, // 8dp
+      right: theme.spacing.s, // 8dp
       flexDirection: 'row',
     },
     title: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: colors.onSurface,
-      marginBottom: 4,
+      fontSize: 18, // titleMedium sería 16, pero mantenemos 18 para jerarquía
+      fontWeight: '500',
+      lineHeight: 24,
+      color: theme.colors.onSurface,
+      marginBottom: theme.spacing.xs, // 4dp
     },
     description: {
-      fontSize: 14,
-      color: colors.onSurfaceVariant,
-      marginBottom: 8,
+      fontSize: 14, // bodyMedium según MD3
+      lineHeight: 20,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.s, // 8dp
     },
     locationInfo: {
-      fontSize: 12,
-      color: colors.onSurfaceVariant,
-      marginBottom: 4,
+      fontSize: 12, // bodySmall según MD3
+      lineHeight: 16,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.xs, // 4dp
       fontStyle: 'italic',
     },
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginTop: 8,
+      marginTop: theme.spacing.s, // 8dp
     },
     tag: {
-      borderRadius: 4,
-      paddingHorizontal: 8,
+      borderRadius: theme.borderRadius.xs, // 4dp para tags pequeños
+      paddingHorizontal: theme.spacing.s, // 8dp
       paddingVertical: 2,
-      marginRight: 8,
-      marginBottom: 4,
+      marginRight: theme.spacing.s, // 8dp
+      marginBottom: theme.spacing.xs, // 4dp
     },
     tagText: {
-      fontSize: 12,
+      fontSize: 12, // labelMedium según MD3
+      lineHeight: 16,
       fontWeight: '500',
     },
     actions: {
       flexDirection: 'row',
       justifyContent: 'flex-end',
-      padding: 8,
+      padding: theme.spacing.s, // 8dp
     },
   });

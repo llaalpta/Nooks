@@ -23,8 +23,7 @@ import {
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
-
-import { createStyles } from './styles/realm-form.style';
+import { createStyles } from '@/styles/app/modals/realm-form.style';
 
 interface FormValues {
   name: string;
@@ -40,7 +39,7 @@ export default function RealmForm() {
   const realmId = params.id as string;
   const isEditing = !!realmId;
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const { user } = useAuth();
   const userId = user?.id || '';
   const isOnline = useIsOnline();

@@ -19,7 +19,7 @@ export interface RealmCardProps {
 
 export function RealmCard({ realm }: RealmCardProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   const handlePress = () => {
     router.push(`/realms/${realm.id}`);
@@ -76,3 +76,4 @@ export function RealmCard({ realm }: RealmCardProps) {
     </TouchableOpacity>
   );
 }
+

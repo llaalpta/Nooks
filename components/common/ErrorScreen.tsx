@@ -19,7 +19,7 @@ export default function ErrorScreen({
   onRetry,
 }: ErrorScreenProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>

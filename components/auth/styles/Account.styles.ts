@@ -1,17 +1,19 @@
 import { StyleSheet } from 'react-native';
 
-export const createStyles = (colors: any) =>
+import { AppTheme } from '@/types';
+
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16,
-      backgroundColor: colors.background,
+      padding: theme.spacing.m,
+      backgroundColor: theme.colors.background,
     },
     section: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     uploadingText: {
       fontSize: 14,
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
   });

@@ -1,14 +1,14 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.primary,
-      marginBottom: 16,
-      borderRadius: 8,
-      padding: 16,
+      backgroundColor: theme.colors.primary,
+      marginBottom: theme.spacing.m,
+      borderRadius: theme.borderRadius.s,
+      padding: theme.spacing.m,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -24,13 +24,13 @@ export const createStyles = (colors: AppColors) =>
       shadowRadius: 4.65,
     },
     success: {
-      backgroundColor: colors.success,
+      backgroundColor: theme.colors.success,
     },
     error: {
-      backgroundColor: colors.error,
+      backgroundColor: theme.colors.error,
     },
     info: {
-      backgroundColor: colors.info,
+      backgroundColor: theme.colors.info,
     },
     message: {
       color: '#FFFFFF',

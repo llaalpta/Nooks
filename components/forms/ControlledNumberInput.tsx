@@ -26,7 +26,7 @@ export const ControlledNumberInput = <T extends object>({
 }: ControlledNumberInputProps<T>) => {
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <Controller

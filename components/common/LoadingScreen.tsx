@@ -13,7 +13,7 @@ interface LoadingScreenProps {
 
 export default function LoadingScreen({ message = 'Cargando...' }: LoadingScreenProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>

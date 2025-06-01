@@ -34,7 +34,7 @@ export function Text({
   ...props
 }: TextProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   // Crear un array con los estilos aplicables
   const textStylesArray = [

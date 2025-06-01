@@ -32,7 +32,7 @@ export function TextInput({
   ...props
 }: TextInputProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const [focused, setFocused] = useState(false);
 
   return (

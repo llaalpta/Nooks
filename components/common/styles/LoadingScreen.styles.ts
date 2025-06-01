@@ -1,17 +1,17 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
     },
     text: {
-      marginTop: 16,
-      color: colors.onSurfaceVariant,
+      marginTop: theme.spacing.m,
+      color: theme.colors.onSurfaceVariant,
     },
   });

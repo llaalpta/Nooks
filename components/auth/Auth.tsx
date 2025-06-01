@@ -22,7 +22,7 @@ export default function Auth() {
   const signInMutation = useSignInMutation();
   const signUpMutation = useSignUpMutation();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   async function signInWithEmail() {
     try {

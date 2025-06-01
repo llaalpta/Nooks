@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     button: {
       position: 'absolute',
@@ -11,11 +11,11 @@ export const createStyles = (colors: AppColors) =>
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: colors.primary,
+      backgroundColor: theme.colors.primary,
       justifyContent: 'center',
       alignItems: 'center',
       elevation: 6,
-      shadowColor: colors.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.27,
       shadowRadius: 4.65,

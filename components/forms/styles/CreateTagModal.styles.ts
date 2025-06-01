@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
@@ -12,8 +12,8 @@ export const createStyles = (colors: AppColors) =>
       padding: 20,
     },
     modal: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.m,
       width: '100%',
       maxWidth: 400,
       maxHeight: '80%',
@@ -22,12 +22,12 @@ export const createStyles = (colors: AppColors) =>
       padding: 20,
       paddingBottom: 10,
       borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      borderBottomColor: theme.colors.outlineVariant,
     },
     title: {
       fontSize: 18,
       fontWeight: '600',
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
       textAlign: 'center',
     },
     content: {
@@ -36,12 +36,12 @@ export const createStyles = (colors: AppColors) =>
     colorLabel: {
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
-      marginTop: 16,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: theme.spacing.m,
       marginBottom: 12,
     },
     colorScroll: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     colorContainer: {
       flexDirection: 'row',
@@ -56,19 +56,19 @@ export const createStyles = (colors: AppColors) =>
       borderColor: 'transparent',
     },
     selectedColor: {
-      borderColor: colors.onSurface,
+      borderColor: theme.colors.onSurface,
       borderWidth: 3,
     },
     previewContainer: {
-      marginTop: 16,
-      padding: 12,
-      backgroundColor: colors.surfaceVariant,
-      borderRadius: 8,
+      marginTop: theme.spacing.m,
+      padding: theme.spacing.sm,
+      backgroundColor: theme.colors.surfaceVariant,
+      borderRadius: theme.borderRadius.s,
     },
     previewLabel: {
       fontSize: 12,
-      color: colors.onSurfaceVariant,
-      marginBottom: 8,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.s,
     },
     previewTag: {
       borderRadius: 16,

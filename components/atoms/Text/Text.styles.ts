@@ -1,12 +1,12 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 import { TextStyles } from '@/types/typography';
 
-export const createStyles = (colors: AppColors): TextStyles => {
+export const createStyles = (theme: AppTheme): TextStyles => {
   const styles = StyleSheet.create({
     base: {
-      color: colors.onSurface,
+      color: theme.colors.onSurface,
     },
     bodySmall: {
       fontSize: 12,
@@ -97,16 +97,16 @@ export const createStyles = (colors: AppColors): TextStyles => {
     },
     // Espaciado
     mb1: {
-      marginBottom: 4,
+      marginBottom: theme.spacing.xs,
     },
     mb2: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
     },
     mb3: {
       marginBottom: 12,
     },
     mb4: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     mb5: {
       marginBottom: 20,

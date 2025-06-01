@@ -30,7 +30,7 @@ export default function Account({ session }: { session: Session }) {
   const uploadAvatarMutation = useUploadAvatarMutation();
   const signOutMutation = useSignOutMutation();
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   const methods = useForm<ProfileForm>({
     defaultValues: { username: '', avatar_url: '' },

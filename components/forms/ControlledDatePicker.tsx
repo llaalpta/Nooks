@@ -26,7 +26,7 @@ export const ControlledDatePicker = <T extends object>({
   const { control } = useFormContext<T>();
   const [visible, setVisible] = useState(false);
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <Controller

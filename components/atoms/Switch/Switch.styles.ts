@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       alignItems: 'center',
@@ -12,18 +12,18 @@ export const createStyles = (colors: AppColors) =>
       width: 50,
       height: 30,
       borderRadius: 15,
-      backgroundColor: colors.surfaceVariant,
+      backgroundColor: theme.colors.surfaceVariant,
     },
     trackActive: {
-      backgroundColor: colors.primary,
+      backgroundColor: theme.colors.primary,
     },
     thumb: {
       width: 26,
       height: 26,
       borderRadius: 13,
-      backgroundColor: colors.surface,
+      backgroundColor: theme.colors.surface,
       elevation: 2,
-      shadowColor: colors.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.2,
       shadowRadius: 1,

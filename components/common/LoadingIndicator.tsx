@@ -13,7 +13,7 @@ interface LoadingIndicatorProps {
 
 export function LoadingIndicator({ size = 'large', style }: LoadingIndicatorProps) {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
 
   return (
     <View style={[styles.container, style]}>

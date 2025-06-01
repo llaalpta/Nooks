@@ -1,23 +1,23 @@
 import { StyleSheet } from 'react-native';
 
-import { AppColors } from '@/types/colors';
+import { AppTheme } from '@/types';
 
-export const createStyles = (colors: AppColors) =>
+export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     label: {
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     mapContainer: {
       height: 300,
-      borderRadius: 8,
+      borderRadius: theme.borderRadius.s,
       overflow: 'hidden',
-      marginBottom: 8,
+      marginBottom: theme.spacing.s,
       position: 'relative',
     },
     locationButtonContainer: {
@@ -27,42 +27,42 @@ export const createStyles = (colors: AppColors) =>
       zIndex: 1,
     },
     locationButton: {
-      backgroundColor: colors.surface,
+      backgroundColor: theme.colors.surface,
       elevation: 4,
-      shadowColor: colors.shadow,
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
     },
     button: {
-      marginTop: 8,
+      marginTop: theme.spacing.s,
     },
     coordsText: {
       fontSize: 12,
-      color: colors.onSurfaceVariant,
-      marginBottom: 8,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.s,
       textAlign: 'center',
     },
     errorText: {
-      color: colors.error,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
     },
     sliderContainer: {
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
       paddingHorizontal: 4,
     },
     sliderLabel: {
       fontSize: 14,
       fontWeight: '500',
-      color: colors.onSurfaceVariant,
-      marginBottom: 8,
+      color: theme.colors.onSurfaceVariant,
+      marginBottom: theme.spacing.s,
       textAlign: 'center',
     },
     slider: {
       width: '100%',
       height: 40,
-      marginBottom: 4,
+      marginBottom: theme.spacing.xs,
     },
     sliderLabels: {
       flexDirection: 'row',
@@ -71,13 +71,13 @@ export const createStyles = (colors: AppColors) =>
     },
     sliderRangeLabel: {
       fontSize: 12,
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
     },
     circularSliderContainer: {
       height: 300,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 16,
+      marginBottom: theme.spacing.m,
     },
     circularSlider: {
       position: 'absolute',
@@ -94,20 +94,20 @@ export const createStyles = (colors: AppColors) =>
       height: '100%',
       borderRadius: 150,
       borderWidth: 2,
-      borderColor: colors.primary,
+      borderColor: theme.colors.primary,
     },
     circularSliderThumb: {
       width: 24,
       height: 24,
-      borderRadius: 12,
-      backgroundColor: colors.primary,
+      borderRadius: theme.borderRadius.m,
+      backgroundColor: theme.colors.primary,
       borderWidth: 2,
-      borderColor: colors.surface,
+      borderColor: theme.colors.surface,
       elevation: 2,
     },
     circularSliderLabel: {
       fontSize: 12,
-      color: colors.onSurfaceVariant,
+      color: theme.colors.onSurfaceVariant,
       position: 'absolute',
       top: '50%',
       left: '50%',

@@ -11,8 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { RealmCard } from '@/features/realms/components/RealmCard';
 import { useRealmsQuery, useRealmPrimaryImageUrl } from '@/features/realms/hooks';
-
-import { createStyles } from './styles/realms.style';
+import { createStyles } from '@/styles/app/tabs/realms.style';
 
 import type { Tables } from '@/types/supabase';
 
@@ -34,7 +33,7 @@ function RealmCardWithImage({ realm }: { realm: RealmWithTags }) {
 
 export default function RealmsScreen() {
   const theme = useAppTheme();
-  const styles = createStyles(theme.colors);
+  const styles = createStyles(theme);
   const { user } = useAuth();
 
   const { data: realmsFromApi = [], isLoading, isError, refetch } = useRealmsQuery(user?.id || '');
