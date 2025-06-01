@@ -18,6 +18,7 @@ import {
   PlatformCircle as Circle,
   PlatformCallout as Callout,
   Region,
+  MapViewRef, // Importar el tipo correcto
 } from '@/components/common/PlatformMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -32,7 +33,7 @@ export default function MapScreen() {
   const { user } = useAuth();
   const theme = useAppTheme();
   const styles = createStyles(theme);
-  const mapRef = useRef<typeof MapView | null>(null);
+  const mapRef = useRef<MapViewRef | null>(null); // Tipo corregido
 
   const [region, setRegion] = useState<Region>({
     latitude: 40.4168, // Madrid por defecto
@@ -86,6 +87,7 @@ export default function MapScreen() {
         }
       }
     } catch {
+      // eslint-disable-next-line no-console
       console.error('Error al obtener ubicación');
     }
   };
@@ -167,6 +169,7 @@ export default function MapScreen() {
     setShowRealmsList(false);
 
     if (realm.latitude && realm.longitude) {
+      // Ahora TypeScript reconoce el método animateToRegion
       mapRef.current?.animateToRegion(
         {
           latitude: realm.latitude,

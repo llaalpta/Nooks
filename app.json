@@ -19,7 +19,13 @@
       },
       "package": "com.nooks.app",
       "versionCode": 1,
-      "jsEngine": "hermes"
+      "jsEngine": "hermes",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDbuTLAEQ7aHGbhPR5GCqxu4UQf3qcUCSo"
+        }
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "bundler": "metro",
@@ -28,6 +34,12 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permite a $(PRODUCT_NAME) usar tu ubicación para mostrar mapas."
+        }
+      ],
       [
         "expo-splash-screen",
         {
