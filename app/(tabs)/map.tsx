@@ -50,6 +50,16 @@ export default function MapScreen() {
 
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
+  // Utilidad para comparar regiones con tolerancia
+  function areRegionsEqual(r1: Region, r2: Region, tolerance = 0.0002) {
+    return (
+      Math.abs(r1.latitude - r2.latitude) < tolerance &&
+      Math.abs(r1.longitude - r2.longitude) < tolerance &&
+      Math.abs(r1.latitudeDelta - r2.latitudeDelta) < tolerance &&
+      Math.abs(r1.longitudeDelta - r2.longitudeDelta) < tolerance
+    );
+  }
+
   // Solicitar permisos de ubicación al cargar el componente
   useEffect(() => {
     requestLocationPermission();
@@ -168,6 +178,16 @@ export default function MapScreen() {
   };
   const handleRealmPress = (realm: Realm) => {
     setSelectedRealm(realm);
+    if (realm.latitude && realm.longitude) {
+      const newRegion = {
+        latitude: realm.latitude,
+        longitude: realm.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      // Desplazamiento en un solo paso, sin setRegion manual ni animación intermedia
+      mapRef.current?.animateToRegion(newRegion, 1200);
+    }
   };
 
   const handleRealmDetails = () => {
@@ -187,21 +207,59 @@ export default function MapScreen() {
   const toggleRealmsList = () => {
     setShowRealmsList(!showRealmsList);
   };
+  // Ref para guardar una región pendiente de animar (sin timeout)
+  const pendingRegionRef = useRef<Region | null>(null);
+
   const handleRealmSelect = (realm: Realm) => {
     setShowRealmsList(false);
-    setSelectedRealm(realm); // Seleccionar el realm para mostrar su círculo
+    setSelectedRealm(realm);
 
     if (realm.latitude && realm.longitude) {
-      // Ahora TypeScript reconoce el método animateToRegion
-      mapRef.current?.animateToRegion(
-        {
-          latitude: realm.latitude,
-          longitude: realm.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        },
-        1000
-      );
+      const latDiff = Math.abs(region.latitude - realm.latitude);
+      const lngDiff = Math.abs(region.longitude - realm.longitude);
+
+      let delta = 0.003;
+      if (latDiff > 0.2 || lngDiff > 0.2) {
+        delta = 0.05;
+      } else if (latDiff > 0.05 || lngDiff > 0.05) {
+        delta = 0.01;
+      }
+
+      const newRegion = {
+        latitude: realm.latitude,
+        longitude: realm.longitude,
+        latitudeDelta: delta,
+        longitudeDelta: delta,
+      };
+
+      if (
+        Math.abs(region.latitude - newRegion.latitude) < 0.0001 &&
+        Math.abs(region.longitude - newRegion.longitude) < 0.0001 &&
+        (region.latitudeDelta < 0.01 || region.longitudeDelta < 0.01)
+      ) {
+        // Zoom out primero, luego animar al destino real cuando el mapa termine de moverse
+        const zoomOutRegion = {
+          ...newRegion,
+          latitudeDelta: 0.2,
+          longitudeDelta: 0.2,
+        };
+        mapRef.current?.animateToRegion(zoomOutRegion, 400);
+        pendingRegionRef.current = newRegion;
+      } else if (
+        Math.abs(region.latitude - newRegion.latitude) < 0.0001 &&
+        Math.abs(region.longitude - newRegion.longitude) < 0.0001
+      ) {
+        // Pequeño cambio de delta para forzar animación
+        const tempRegion = {
+          ...newRegion,
+          latitudeDelta: newRegion.latitudeDelta + 0.002,
+          longitudeDelta: newRegion.longitudeDelta + 0.002,
+        };
+        mapRef.current?.animateToRegion(tempRegion, 200);
+        pendingRegionRef.current = newRegion;
+      } else {
+        mapRef.current?.animateToRegion(newRegion, 1200);
+      }
     }
   };
 
@@ -223,6 +281,17 @@ export default function MapScreen() {
   }
 
   const validRealms = realms?.filter((realm) => realm.latitude && realm.longitude) || [];
+  // Solo actualiza el estado si la región realmente cambió (con tolerancia)
+  const handleRegionChangeComplete = (newRegion: Region) => {
+    if (!areRegionsEqual(region, newRegion)) {
+      setRegion(newRegion);
+      // Si hay una región pendiente, animar a ella y limpiar el ref
+      if (pendingRegionRef.current) {
+        mapRef.current?.animateToRegion(pendingRegionRef.current, 1200);
+        pendingRegionRef.current = null;
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -231,7 +300,7 @@ export default function MapScreen() {
           ref={mapRef}
           style={styles.map}
           region={region}
-          onRegionChangeComplete={setRegion}
+          onRegionChangeComplete={handleRegionChangeComplete}
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={false}
           onPress={handleMapPress}

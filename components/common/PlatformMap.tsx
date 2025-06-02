@@ -271,6 +271,42 @@ const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
     const { components, error, retry } = useMapComponents();
     const MapViewComponent = components.MapView;
 
+    // Create internal ref for the actual map component
+    const internalMapRef = React.useRef<any>(null);
+
+    // Expose methods through imperative handle
+    React.useImperativeHandle(
+      ref,
+      () => ({
+        animateToRegion: (region: Region, duration?: number) => {
+          if (
+            components.success &&
+            internalMapRef.current &&
+            internalMapRef.current.animateToRegion
+          ) {
+            internalMapRef.current.animateToRegion(region, duration);
+          } else {
+            // Fallback: try to update region prop if available
+            if (props.onRegionChangeComplete) {
+              props.onRegionChangeComplete(region);
+            }
+          }
+        },
+        getCamera: () => {
+          if (components.success && internalMapRef.current && internalMapRef.current.getCamera) {
+            return internalMapRef.current.getCamera();
+          }
+          return Promise.resolve(null);
+        },
+        setCamera: (camera: any) => {
+          if (components.success && internalMapRef.current && internalMapRef.current.setCamera) {
+            internalMapRef.current.setCamera(camera);
+          }
+        },
+      }),
+      [components.success, props.onRegionChangeComplete]
+    );
+
     if (error) {
       return (
         <MapErrorComponent error={error} onRetry={retry} style={props.style}>
@@ -280,7 +316,7 @@ const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
     }
 
     return (
-      <MapViewComponent ref={ref} {...props}>
+      <MapViewComponent ref={internalMapRef} {...props}>
         {children}
       </MapViewComponent>
     );

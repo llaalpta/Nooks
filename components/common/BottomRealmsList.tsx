@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
-import { StyleSheet } from 'react-native';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -16,9 +15,10 @@ import Animated, {
 
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { AppTheme } from '@/types';
 import { Tables } from '@/types/supabase';
 import { calculateDistance } from '@/utils/locationUtils';
+
+import { createStyles } from './BottomRealmsList.styles';
 
 type Realm = Tables<'locations'>;
 
@@ -30,10 +30,15 @@ interface BottomRealmsListProps {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const INITIAL_HEIGHT = SCREEN_HEIGHT * 0.4; // 40% de la pantalla
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.8; // 80% de la pantalla
-const MIN_HEIGHT = SCREEN_HEIGHT * 0.2; // 20% de la pantalla
-const CLOSE_THRESHOLD = 150;
+
+// Snap points como porcentajes de la pantalla
+const SNAP_POINTS = {
+  COLLAPSED: SCREEN_HEIGHT * 0.25, // 25%
+  HALF: SCREEN_HEIGHT * 0.5, // 50%
+  EXPANDED: SCREEN_HEIGHT * 0.85, // 85%
+};
+
+const CLOSE_THRESHOLD = 100;
 
 const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   realms,
@@ -45,9 +50,15 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   const router = useRouter();
   const styles = createStyles(theme);
 
-  // Animated values para el arrastre y altura
-  const translateY = useSharedValue(0);
-  const height = useSharedValue(INITIAL_HEIGHT);
+  const translateY = useSharedValue(SCREEN_HEIGHT);
+
+  // Animación de entrada
+  useEffect(() => {
+    translateY.value = withSpring(SCREEN_HEIGHT - SNAP_POINTS.HALF, {
+      damping: 50,
+      stiffness: 300,
+    });
+  }, []);
 
   const getDistance = useCallback(
     (realm: Realm) => {
@@ -65,94 +76,119 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
     [userLocation]
   );
 
-  // Gesto de arrastre mejorado
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, context: any) => {
-      context.startHeight = height.value;
-      context.startTranslateY = translateY.value;
+      context.startY = translateY.value;
     },
     onActive: (event, context: any) => {
-      // Calcular nueva altura basada en el arrastre
-      const newHeight = context.startHeight - event.translationY;
+      const newY = context.startY + event.translationY;
 
-      // Limitar la altura entre MIN_HEIGHT y MAX_HEIGHT
-      height.value = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, newHeight));
+      // Limitar el movimiento
+      const minY = SCREEN_HEIGHT - SNAP_POINTS.EXPANDED;
+      const maxY = SCREEN_HEIGHT;
 
-      // Si se arrastra hacia abajo más allá del mínimo, preparar para cerrar
-      if (event.translationY > CLOSE_THRESHOLD) {
-        translateY.value = event.translationY - CLOSE_THRESHOLD;
-      } else {
-        translateY.value = 0;
-      }
+      translateY.value = Math.max(minY, Math.min(maxY, newY));
     },
     onEnd: (event) => {
-      // Si se arrastra mucho hacia abajo, cerrar
-      if (event.translationY > CLOSE_THRESHOLD) {
-        translateY.value = withSpring(SCREEN_HEIGHT, {}, () => {
-          runOnJS(onClose)();
-        });
+      'worklet';
+      const currentY = translateY.value;
+      const velocityY = event.velocityY;
+
+      // Si se arrastra hacia abajo con velocidad alta o pasa el threshold, cerrar
+      if (velocityY > 1000 || currentY > SCREEN_HEIGHT - CLOSE_THRESHOLD) {
+        translateY.value = withSpring(
+          SCREEN_HEIGHT,
+          {
+            damping: 50,
+            stiffness: 300,
+          },
+          () => {
+            runOnJS(onClose)();
+          }
+        );
         return;
       }
 
-      // Snap a posiciones predefinidas
-      const currentHeight = height.value;
-      let targetHeight: number;
+      // Definir snap points como worklet
+      const snapPointsY = [
+        SCREEN_HEIGHT - SNAP_POINTS.EXPANDED,
+        SCREEN_HEIGHT - SNAP_POINTS.HALF,
+        SCREEN_HEIGHT - SNAP_POINTS.COLLAPSED,
+      ];
 
-      if (currentHeight < MIN_HEIGHT + 50) {
-        // Cerrar si está muy abajo
-        translateY.value = withSpring(SCREEN_HEIGHT, {}, () => {
-          runOnJS(onClose)();
-        });
-        return;
-      } else if (currentHeight < INITIAL_HEIGHT - 50) {
-        targetHeight = MIN_HEIGHT;
-      } else if (currentHeight > MAX_HEIGHT - 50) {
-        targetHeight = MAX_HEIGHT;
-      } else {
-        targetHeight = INITIAL_HEIGHT;
+      // Encontrar el snap point más cercano
+      let targetY = snapPointsY[0];
+      let minDistance = Math.abs(snapPointsY[0] - currentY);
+
+      for (let i = 1; i < snapPointsY.length; i++) {
+        const distance = Math.abs(snapPointsY[i] - currentY);
+        if (distance < minDistance) {
+          minDistance = distance;
+          targetY = snapPointsY[i];
+        }
       }
 
-      // Animar a la altura objetivo
-      height.value = withSpring(targetHeight, {
-        damping: 20,
+      // Si hay velocidad considerable, ajustar el target
+      if (Math.abs(velocityY) > 500) {
+        if (velocityY > 0) {
+          // Moviendo hacia abajo - ir al siguiente snap point inferior
+          const currentIndex = snapPointsY.findIndex((point) => point >= currentY);
+          if (currentIndex >= 0 && currentIndex < snapPointsY.length - 1) {
+            targetY = snapPointsY[currentIndex + 1];
+          }
+        } else {
+          // Moviendo hacia arriba - ir al siguiente snap point superior
+          const reversedSnapPoints = [
+            SCREEN_HEIGHT - SNAP_POINTS.COLLAPSED,
+            SCREEN_HEIGHT - SNAP_POINTS.HALF,
+            SCREEN_HEIGHT - SNAP_POINTS.EXPANDED,
+          ];
+          const currentIndex = reversedSnapPoints.findIndex((point) => point <= currentY);
+          if (currentIndex >= 0 && currentIndex < reversedSnapPoints.length - 1) {
+            targetY = reversedSnapPoints[currentIndex + 1];
+          }
+        }
+      }
+
+      translateY.value = withSpring(targetY, {
+        damping: 50,
         stiffness: 300,
+        velocity: velocityY,
       });
-      translateY.value = withSpring(0);
     },
   });
 
-  // Estilo animado para el contenedor
+  // Estilo animado simplificado
   const animatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
+    const progress = interpolate(
       translateY.value,
-      [0, CLOSE_THRESHOLD],
-      [1, 0.7],
+      [SCREEN_HEIGHT - SNAP_POINTS.EXPANDED, SCREEN_HEIGHT],
+      [1, 0],
       Extrapolate.CLAMP
     );
 
     return {
-      height: height.value,
       transform: [{ translateY: translateY.value }],
-      opacity,
+      opacity: interpolate(progress, [0, 0.5, 1], [0.5, 0.8, 1], Extrapolate.CLAMP),
     };
   });
 
-  // Estilo animado para la barra de arrastre
-  const handleStyle = useAnimatedStyle(() => {
-    const progress = interpolate(height.value, [MIN_HEIGHT, MAX_HEIGHT], [0, 1], Extrapolate.CLAMP);
-
-    const backgroundColor = interpolate(
-      progress,
-      [0, 1],
-      [0.3, 0.6] // De 30% a 60% de opacidad
+  // Estilo para la barra indicadora
+  const handleBarStyle = useAnimatedStyle(() => {
+    const progress = interpolate(
+      translateY.value,
+      [SCREEN_HEIGHT - SNAP_POINTS.EXPANDED, SCREEN_HEIGHT - SNAP_POINTS.COLLAPSED],
+      [1, 0],
+      Extrapolate.CLAMP
     );
 
     return {
-      opacity: backgroundColor,
+      opacity: interpolate(progress, [0, 1], [0.3, 0.8], Extrapolate.CLAMP),
+      backgroundColor: theme.colors.outlineVariant,
     };
   });
 
-  // Ordenar realms por distancia cuando hay ubicación de usuario
+  // Ordenar realms por distancia
   const sortedRealms = [...realms].sort((a, b) => {
     const distanceA = getDistance(a) || Infinity;
     const distanceB = getDistance(b) || Infinity;
@@ -161,7 +197,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
 
   const formatDistance = (distance: number | null) => {
     if (distance === null) return '—';
-
     if (distance < 1) {
       return `${Math.round(distance * 1000)} m`;
     }
@@ -177,147 +212,80 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   };
 
   return (
-    <GestureHandlerRootView style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+    <GestureHandlerRootView style={styles.overlay}>
       <Animated.View style={[styles.container, animatedStyle]}>
+        {/* Header arrastrable - SOLO esta parte maneja el gesto */}
         <PanGestureHandler onGestureEvent={gestureHandler}>
-          <Animated.View style={styles.handle}>
-            <Animated.View style={[styles.handleBar, handleStyle]} />
+          <Animated.View style={styles.draggableHeader}>
+            {/* Handle visual */}
+            <View style={styles.handle}>
+              <Animated.View style={[styles.handleBar, handleBarStyle]} />
+            </View>
+
+            {/* Header visual */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Realms cercanos</Text>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </PanGestureHandler>
 
-        <View style={styles.header}>
-          <Text style={styles.title}>Realms cercanos</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        </View>
-
-        <FlatList
-          data={sortedRealms}
-          keyExtractor={(item) => item.id || 'unknown'}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.realmItem} onPress={() => handleRealmPress(item)}>
-              <View style={styles.realmIconContainer}>
-                <View style={styles.realmIcon}>
-                  <Ionicons name="map" size={22} color={theme.colors.onPrimary} />
-                </View>
-              </View>
-
-              <View style={styles.realmInfo}>
-                <Text style={styles.realmName}>{item.name}</Text>
-                <Text style={styles.realmAddress} numberOfLines={1}>
-                  {item.description || 'Sin descripción'}
-                </Text>
-              </View>
-
-              <View style={styles.realmActions}>
-                <Text style={styles.realmDistance}>{formatDistance(getDistance(item))}</Text>
+        {/* Lista scrolleable - SIN PanGestureHandler */}
+        <View style={styles.listContainer}>
+          <FlatList
+            data={sortedRealms}
+            keyExtractor={(item) => item.id || 'unknown'}
+            renderItem={({ item }) => (
+              <View style={styles.realmItem}>
                 <TouchableOpacity
-                  style={styles.detailsButton}
-                  onPress={() => handleRealmDetails(item)}
+                  style={{ flex: 1 }}
+                  activeOpacity={0.7}
+                  onPress={() => handleRealmPress(item)}
                 >
-                  <Text style={styles.detailsButtonText}>DETALLES</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={styles.realmIconContainer}>
+                      <View style={styles.realmIcon}>
+                        <Ionicons name="map" size={22} color={theme.colors.onPrimary} />
+                      </View>
+                    </View>
+
+                    <View style={styles.realmInfo}>
+                      <Text style={styles.realmName}>{item.name}</Text>
+                      <Text style={styles.realmAddress} numberOfLines={1}>
+                        {item.description || 'Sin descripción'}
+                      </Text>
+                    </View>
+
+                    <View style={styles.realmActions}>
+                      <Text style={styles.realmDistance}>{formatDistance(getDistance(item))}</Text>
+                      <TouchableOpacity
+                        style={styles.detailsButton}
+                        onPress={() => handleRealmDetails(item)}
+                      >
+                        <Text style={styles.detailsButtonText}>DETALLES</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+            )}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            // FORZAR que siempre sea scrolleable con bounce
+            scrollEnabled={true}
+            bounces={true}
+            alwaysBounceVertical={true}
+            // Esto es clave: fuerza un contentSize mínimo
+            contentInsetAdjustmentBehavior="never"
+            // Añade padding extra al final para forzar scroll
+            ListFooterComponent={<View style={styles.forcedScrollSpace} />}
+          />
+        </View>
       </Animated.View>
     </GestureHandlerRootView>
   );
 };
-
-const createStyles = (theme: AppTheme) =>
-  StyleSheet.create({
-    container: {
-      backgroundColor: theme.colors.surface,
-      borderTopLeftRadius: theme.borderRadius.l,
-      borderTopRightRadius: theme.borderRadius.l,
-      ...theme.elevation.level3,
-    },
-    handle: {
-      alignItems: 'center',
-      paddingVertical: theme.spacing.s,
-      paddingHorizontal: theme.spacing.m,
-    },
-    handleBar: {
-      width: 60,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: theme.colors.outlineVariant,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.s,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: '500',
-      color: theme.colors.onSurface,
-    },
-    closeButton: {
-      padding: theme.spacing.xs,
-    },
-    listContent: {
-      paddingBottom: theme.spacing.l,
-    },
-    realmItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: theme.spacing.s,
-      paddingHorizontal: theme.spacing.m,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.surfaceVariant,
-    },
-    realmIconContainer: {
-      marginRight: theme.spacing.m,
-    },
-    realmIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    realmInfo: {
-      flex: 1,
-    },
-    realmName: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: theme.colors.onSurface,
-      marginBottom: 4,
-    },
-    realmAddress: {
-      fontSize: 14,
-      color: theme.colors.onSurfaceVariant,
-    },
-    realmActions: {
-      alignItems: 'flex-end',
-    },
-    realmDistance: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: theme.colors.primary,
-      marginBottom: 4,
-    },
-    detailsButton: {
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-    },
-    detailsButtonText: {
-      fontSize: 12,
-      fontWeight: '500',
-      color: theme.colors.primary,
-    },
-  });
 
 export default BottomRealmsList;
