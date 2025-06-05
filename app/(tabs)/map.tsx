@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useRealmsQuery } from '@/features/realms/hooks';
 import { createStyles } from '@/styles/app/tabs/map.style';
+import darkMapStyle from '@/styles/app/tabs/map.style'; // Añadir esta línea
 
 import type { Tables } from '@/types/supabase';
 
@@ -303,6 +304,8 @@ export default function MapScreen() {
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={false}
           onPress={handleMapPress}
+          customMapStyle={theme.dark ? darkMapStyle : undefined} // Añadir esta línea
+          // mapType={theme.dark ? 'mutedStandard' : 'standard'}
         >
           {/* Círculo para mostrar el radio del realm seleccionado */}
           {selectedRealm && selectedRealm.radius && (
@@ -376,7 +379,6 @@ export default function MapScreen() {
           </View>
         )}
       </View>
-
       {/* Lista de realms desplegable desde abajo */}
       {showRealmsList && validRealms.length > 0 && (
         <BottomRealmsList

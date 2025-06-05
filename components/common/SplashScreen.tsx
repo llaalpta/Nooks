@@ -4,7 +4,9 @@ import { View } from 'react-native';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
 import { createStyles } from './styles/SplashScreen.styles';
-import AppLogo from '../logo/AppLogo';
+// Importar ambos logos
+import LogoLight from '../common/logo'; // logo.tsx
+import LogoDark from '../common/logo-dark'; // logo-dark.tsx
 
 export default function SplashScreen() {
   const theme = useAppTheme();
@@ -12,7 +14,8 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      <AppLogo size={120} animated={true} />
+      {/* Cargar logo según el tema */}
+      {theme.dark ? <LogoDark width={240} height={120} /> : <LogoLight width={240} height={120} />}
     </View>
   );
 }

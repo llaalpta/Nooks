@@ -8,27 +8,20 @@ import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
 
 import { createStyles } from './styles/CustomHeader.style';
 
-interface CustomHeaderProps {
-  title?: string;
-  showBackButton?: boolean;
-}
-
-export const CustomHeader: React.FC<CustomHeaderProps> = ({ showBackButton = false }) => {
+export const CustomHeader = () => {
   const theme = useAppTheme();
   const { themeMode, setThemeMode } = useThemeMode();
   const insets = useSafeAreaInsets();
   const styles = createStyles(theme);
 
-  const handleProfilePress = () => {
-    router.push('/(modals)/profile');
+  const getLogoSource = () => {
+    return theme.dark
+      ? require('@/assets/images/nooks_dark.png')
+      : require('@/assets/images/nooks.png');
   };
 
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)');
-    }
+  const handleProfilePress = () => {
+    router.push('/(modals)/profile');
   };
 
   const toggleTheme = () => {
@@ -52,34 +45,20 @@ export const CustomHeader: React.FC<CustomHeaderProps> = ({ showBackButton = fal
         return 'phone-portrait';
     }
   };
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         {/* Botón de volver */}
-        {showBackButton ? (
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="arrow-back" size={28} color={theme.colors.primary} />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 36 }} />
-        )}
+        <TouchableOpacity onPress={toggleTheme}>
+          <Ionicons name={getThemeIcon()} size={24} color={theme.colors.primary} />
+        </TouchableOpacity>
+
         {/* Logo centrado */}
         <View style={styles.logoContainer}>
-          <Image
-            source={require('@/assets/images/nooks.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
         </View>
         {/* Botones de la derecha */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {/* Botón de toggle tema */}
-          <TouchableOpacity onPress={toggleTheme}>
-            <Ionicons name={getThemeIcon()} size={24} color={theme.colors.primary} />
-          </TouchableOpacity>
-
-          {/* Botón de perfil */}
           <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
             <Ionicons name="person-circle" size={32} color={theme.colors.primary} />
           </TouchableOpacity>
