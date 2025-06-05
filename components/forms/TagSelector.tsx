@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useMemo } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import {
@@ -118,7 +119,7 @@ export const TagSelector = <T extends object>({
                     disabled={disabled || creating}
                     loading={creating}
                     style={styles.createButton}
-                    icon="plus"
+                    icon={<Ionicons name="add" size={18} color={theme.colors.primary} />}
                   >
                     Crear etiqueta
                   </Button>

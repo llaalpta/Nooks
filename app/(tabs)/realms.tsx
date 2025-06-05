@@ -41,7 +41,7 @@ export default function RealmsScreen() {
   const realms: RealmWithTags[] = realmsFromApi as RealmWithTags[];
 
   const handleCreateRealm = () => {
-    router.push('/(modals)/realm-form');
+    router.push({ pathname: '/realms/realm-form', params: { from: 'list' } });
   };
 
   const handleRetry = () => {

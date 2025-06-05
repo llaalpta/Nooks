@@ -1,7 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -19,11 +20,11 @@ import {
   useRealmQuery,
   useUpdateRealmMutation,
   useCreateRealmMutation,
-  useRealmPrimaryImageUrl, // Agregar este hook
+  useRealmPrimaryImageUrl,
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { createStyles } from '@/styles/app/modals/realm-form.style';
+import { createStyles } from '@/styles/app/realm-form.style';
 
 interface FormValues {
   name: string;
@@ -33,6 +34,43 @@ interface FormValues {
   image: string | null;
   tags: any[];
 }
+
+// Componente de sección simple
+const FormSection = ({
+  children,
+  title,
+  subtitle,
+  icon,
+  styles,
+}: {
+  children: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  icon?: string;
+  styles: any;
+}) => {
+  const theme = useAppTheme();
+
+  return (
+    <View style={styles.formSection}>
+      {/* Header de la sección */}
+      <View style={styles.sectionHeader}>
+        {icon && (
+          <View style={styles.sectionIconContainer}>
+            <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
+          </View>
+        )}
+        <View style={styles.sectionTextContainer}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
+        </View>
+      </View>
+
+      {/* Contenido */}
+      <View style={styles.sectionContent}>{children}</View>
+    </View>
+  );
+};
 
 export default function RealmForm() {
   const params = useLocalSearchParams();
@@ -45,7 +83,7 @@ export default function RealmForm() {
   const isOnline = useIsOnline();
 
   const realmQuery = useRealmQuery(realmId);
-  const { data: existingImageUrl } = useRealmPrimaryImageUrl(realmId); // Obtener imagen existente
+  const { data: existingImageUrl } = useRealmPrimaryImageUrl(realmId);
   const createRealmMutation = useCreateRealmMutation();
   const updateRealmMutation = useUpdateRealmMutation();
   const uploadMediaMutation = useUploadMediaMutation();
@@ -57,35 +95,40 @@ export default function RealmForm() {
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
+
   const methods = useForm<FormValues>({
     defaultValues: {
       name: '',
       description: '',
-      is_public: false, // Hardcodeado como false por defecto
+      is_public: false,
       location: { latitude: null, longitude: null, radius: 100 },
       image: null,
       tags: [],
     },
+    mode: 'onChange',
   });
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, watch } = methods;
+  const watchedValues = watch();
+
   useEffect(() => {
     if (isEditing && realmQuery.data) {
       const realm = realmQuery.data;
       reset({
         name: realm.name,
         description: realm.description || '',
-        is_public: false, // Siempre false, no público
+        is_public: false,
         location: {
           latitude: realm.latitude,
           longitude: realm.longitude,
           radius: realm.radius || 100,
         },
-        image: existingImageUrl || null, // Establecer la imagen existente
+        image: existingImageUrl || null,
         tags: [],
       });
     }
-  }, [isEditing, realmQuery.data, existingImageUrl, reset]); // Agregar existingImageUrl a las dependencias
+  }, [isEditing, realmQuery.data, existingImageUrl, reset]);
+
   async function handleCreateTag(name: string, color: string) {
     if (!user?.id) return null;
     try {
@@ -100,6 +143,19 @@ export default function RealmForm() {
     }
   }
 
+  // Navegación robusta para volver atrás o a la lista de Realms
+  function handleGoBackOrReplace() {
+    const from = params.from;
+    const detailsId = params.id;
+    if (from === 'map') {
+      router.replace('/map');
+    } else if (from === 'details' && detailsId) {
+      router.replace(`/realms/${detailsId}`);
+    } else {
+      router.replace('/realms');
+    }
+  }
+
   const onSubmit = async (data: FormValues) => {
     try {
       if (!isOnline) {
@@ -110,6 +166,7 @@ export default function RealmForm() {
         });
         return;
       }
+
       if (!userId) {
         setSnackbar({
           visible: true,
@@ -118,6 +175,16 @@ export default function RealmForm() {
         });
         return;
       }
+
+      if (!data.location.latitude || !data.location.longitude) {
+        Alert.alert(
+          'Ubicación requerida',
+          'Por favor, selecciona una ubicación en el mapa antes de continuar.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       let newRealm;
       try {
         if (isEditing) {
@@ -148,6 +215,7 @@ export default function RealmForm() {
         if (newRealm && Array.isArray(data.tags)) {
           await setTagsForRealm(newRealm.id, data.tags, isEditing);
         }
+
         setSnackbar({
           visible: true,
           message: isEditing ? 'Realm actualizado con éxito' : 'Realm creado con éxito',
@@ -162,7 +230,6 @@ export default function RealmForm() {
         return;
       }
 
-      // Solo subir imagen si es diferente a la existente (nueva imagen seleccionada)
       if (data.image && newRealm && data.image !== existingImageUrl) {
         try {
           await uploadMediaMutation.mutateAsync({
@@ -191,8 +258,9 @@ export default function RealmForm() {
           });
         }
       }
+
       setTimeout(() => {
-        router.back();
+        handleGoBackOrReplace();
       }, 2000);
     } catch (error: any) {
       setSnackbar({
@@ -213,53 +281,116 @@ export default function RealmForm() {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
+        {/* Header simple */}
         <View style={styles.header}>
-          <Text variant="headlineSmall" style={styles.headerTitle}>
-            {isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}
-          </Text>
+          <Button
+            mode="text"
+            onPress={handleGoBackOrReplace}
+            style={{ marginRight: 8 }}
+            icon={<Ionicons name="arrow-back" size={20} color={theme.colors.primary} />}
+          >
+            Volver
+          </Button>
+          <Text style={styles.headerTitle}>{isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}</Text>
         </View>
 
         <ScrollView
           contentContainerStyle={styles.formContainer}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.formControl}>
-            <ControlledTextInput name="name" label="" placeholder="Nombre del Realm" />
-          </View>
-          <View style={styles.formControl}>
-            <ControlledTextInput
-              name="description"
-              label=""
-              placeholder="Descripción del Realm"
-              multiline
-              numberOfLines={2}
-            />
-          </View>
-          <View style={styles.formControl}>
-            {/* <Text style={styles.sectionTitle}>Ubicación</Text> */}
-            <CircleMapPickerInput name="location" label="Selecciona el área del realm" />
-          </View>
-          <View style={styles.formControl}>
-            {/* <Text style={styles.sectionTitle}>Imagen</Text> */}
+          {/* Sección 1: Información Básica */}
+          <FormSection
+            title="Información Básica"
+            subtitle="Dale un nombre único y una descripción atractiva a tu realm"
+            icon="create-outline"
+            styles={styles}
+          >
+            <View style={styles.inputSpacing}>
+              <ControlledTextInput
+                name="name"
+                label="Nombre del Realm"
+                placeholder="Ej: Mi Lugar Secreto"
+              />
+            </View>
+            <View style={styles.inputSpacingLast}>
+              <ControlledTextInput
+                name="description"
+                label="Descripción"
+                placeholder="Describe qué hace especial a este lugar..."
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+          </FormSection>
+
+          {/* Sección 2: Ubicación y Área */}
+          <FormSection
+            title="Ubicación y Área"
+            subtitle="Define la ubicación geográfica y el radio de tu realm"
+            icon="location-outline"
+            styles={styles}
+          >
+            <CircleMapPickerInput name="location" label="Selecciona ubicación y ajusta el radio" />
+          </FormSection>
+
+          {/* Sección 3: Imagen Representativa */}
+          <FormSection
+            title="Imagen Representativa"
+            subtitle="Una buena imagen que te ayuda a identificar tu realm"
+            icon="image-outline"
+            styles={styles}
+          >
             <ControlledImagePicker name="image" />
-          </View>
-          <View style={styles.formControl}>
-            <Text style={styles.sectionTitle}>Etiquetas</Text>
+          </FormSection>
+
+          {/* Sección 4: Etiquetas */}
+          <FormSection
+            title="Etiquetas"
+            subtitle="Ayuda a otros a encontrar tu realm con etiquetas descriptivas"
+            icon="pricetag-outline"
+            styles={styles}
+          >
             <TagSelector
               name="tags"
               options={tags}
               loading={createTagMutation.isPending}
               onCreateTag={handleCreateTag}
             />
-          </View>
-          <View style={styles.formControl}>
+          </FormSection>
+
+          {/* Botones de acción */}
+          <View style={styles.actionContainer}>
+            {!isOnline && (
+              <View style={styles.connectionWarning}>
+                <Ionicons name="wifi-outline" size={20} color={theme.colors.onErrorContainer} />
+                <Text style={styles.connectionWarningText}>Sin conexión a internet</Text>
+              </View>
+            )}
+
             <Button
               mode="contained"
               onPress={handleSubmit(onSubmit)}
               loading={loading}
-              disabled={loading}
+              disabled={loading || !isOnline || !watchedValues.name?.trim()}
+              style={styles.primaryButton}
             >
-              {isEditing ? 'Actualizar' : 'Crear'}
+              {loading
+                ? isEditing
+                  ? 'Actualizando...'
+                  : 'Creando...'
+                : isEditing
+                  ? 'Actualizar Realm'
+                  : 'Crear Realm'}
+            </Button>
+
+            <Button
+              mode="outlined"
+              onPress={handleGoBackOrReplace}
+              disabled={loading}
+              style={styles.secondaryButton}
+            >
+              Cancelar
             </Button>
           </View>
         </ScrollView>

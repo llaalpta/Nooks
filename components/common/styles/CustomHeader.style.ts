@@ -16,23 +16,23 @@ export const createStyles = (theme: AppTheme) =>
       paddingVertical: theme.spacing.sm,
       minHeight: 62,
     },
-    titleContainer: {
-      flex: 1,
-      paddingVertical: theme.spacing.xs,
+    backButton: {
+      padding: theme.spacing.xs,
+      borderRadius: theme.borderRadius.s,
+      marginRight: theme.spacing.s,
     },
-    title: {
-      fontSize: 26,
-      fontWeight: '800',
-      color: theme.colors.primary,
-      letterSpacing: -0.8,
-      textTransform: 'uppercase',
-      textShadowColor: 'rgba(0, 0, 0, 0.15)',
-      textShadowOffset: { width: 0.5, height: 1 },
-      textShadowRadius: 2,
-      lineHeight: 32,
+    logoContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logo: {
+      width: '100%',
+      height: 40,
     },
     profileButton: {
       padding: theme.spacing.xs,
       borderRadius: theme.borderRadius.s,
+      marginLeft: theme.spacing.s,
     },
   });

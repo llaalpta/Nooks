@@ -4,7 +4,6 @@ import React from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { CustomHeader } from '@/components/common/CustomHeader';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
 export default function TabsLayout() {
@@ -13,9 +12,6 @@ export default function TabsLayout() {
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-        {/* Cabecera personalizada que aparece en todas las tabs */}
-        <CustomHeader />
-
         <Tabs
           screenOptions={{
             tabBarActiveTintColor: theme.colors.primary,

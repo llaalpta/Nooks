@@ -1,6 +1,4 @@
-// Mejoras sugeridas para tu CircleMapPickerInput existente
-// Archivo: components/forms/CircleMapPickerInput.tsx
-
+// components/forms/EnhancedMapPickerInput.tsx
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location';
@@ -12,7 +10,7 @@ import MapView, { Circle, MapPressEvent, Region, Marker } from 'react-native-map
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { createStyles } from './styles/MapPickerInput.styles';
+import { createEnhancedMapStyles } from './styles/EnhancedMapPickerInput.styles';
 
 type CircleLocation = {
   latitude: number;
@@ -20,7 +18,7 @@ type CircleLocation = {
   radius: number;
 };
 
-interface CircleMapPickerInputProps<T extends object> {
+interface EnhancedMapPickerInputProps<T extends object> {
   name: Path<T>;
   label?: string;
   initialRegion?: Region;
@@ -30,7 +28,7 @@ interface CircleMapPickerInputProps<T extends object> {
   style?: StyleProp<ViewStyle>;
 }
 
-export const CircleMapPickerInput = <T extends object>({
+export const EnhancedMapPickerInput = <T extends object>({
   name,
   label,
   initialRegion = {
@@ -43,12 +41,12 @@ export const CircleMapPickerInput = <T extends object>({
   maxRadius = 1000,
   disabled,
   style,
-}: CircleMapPickerInputProps<T>) => {
+}: EnhancedMapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
   const [region, setRegion] = useState<Region>(initialRegion);
   const [locating, setLocating] = useState(false);
   const theme = useAppTheme();
-  const styles = createStyles(theme);
+  const styles = createEnhancedMapStyles(theme);
 
   async function centerOnCurrentLocation(
     onChange: (coords: CircleLocation) => void,
@@ -87,7 +85,7 @@ export const CircleMapPickerInput = <T extends object>({
 
             <View style={styles.mapContainer}>
               <MapView
-                style={{ flex: 1 }}
+                style={styles.map}
                 region={region}
                 onRegionChangeComplete={setRegion}
                 onPress={(e: MapPressEvent) => {
@@ -103,16 +101,14 @@ export const CircleMapPickerInput = <T extends object>({
               >
                 {circleLocation?.latitude && circleLocation?.longitude && (
                   <>
-                    {/* Marcador personalizado */}
                     <Marker
                       coordinate={{
                         latitude: circleLocation.latitude,
                         longitude: circleLocation.longitude,
                       }}
-                      image={require('@/assets/images/realm-marker.png')} // Asegúrate de tener esta imagen
-                    ></Marker>
+                      image={require('@/assets/images/marker3.png')}
+                    />
 
-                    {/* Círculo para mostrar el radio */}
                     <Circle
                       center={{
                         latitude: circleLocation.latitude,
@@ -127,7 +123,7 @@ export const CircleMapPickerInput = <T extends object>({
                 )}
               </MapView>
 
-              {/* Botón de mi ubicación estilo mapa principal */}
+              {/* Botón de mi ubicación */}
               <View style={styles.topRightButton}>
                 <TouchableOpacity
                   style={[styles.mapButton, locating && styles.mapButtonLoading]}
@@ -183,7 +179,7 @@ export const CircleMapPickerInput = <T extends object>({
               )}
             </View>
 
-            {/* Información de coordenadas mejorada */}
+            {/* Información de coordenadas */}
             <View style={styles.infoContainer}>
               <Text style={styles.coordsText}>
                 {circleLocation?.latitude && circleLocation?.longitude

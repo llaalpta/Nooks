@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle } from 'react-native';
 import MapView, { Marker, MapPressEvent, Region } from 'react-native-maps';
@@ -34,6 +34,27 @@ export const MapPickerInput = <T extends object>({
 }: MapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
   const [region, setRegion] = useState<Region>(initialRegion);
+  // Al montar, intenta obtener la ubicación actual
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({});
+        if (isMounted) {
+          setRegion({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const [locating, setLocating] = useState(false);
   const theme = useAppTheme();
   const styles = createStyles(theme);
@@ -96,7 +117,7 @@ export const MapPickerInput = <T extends object>({
               mode="outlined"
               onPress={() => centerOnCurrentLocation(onChange)}
               loading={locating}
-              style={styles.button}
+              style={{ marginTop: theme.spacing.s }}
             >
               Usar mi ubicación
             </Button>

@@ -48,8 +48,8 @@ export default function RealmDetailScreen() {
   const handleEditRealm = () => {
     setShowOptionsMenu(false);
     router.push({
-      pathname: '/(modals)/realm-form',
-      params: { id: realmId },
+      pathname: '/realms/realm-form',
+      params: { id: realmId, from: 'details' },
     });
   };
 

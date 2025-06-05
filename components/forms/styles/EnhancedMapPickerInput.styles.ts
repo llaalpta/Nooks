@@ -1,9 +1,9 @@
-// components/forms/styles/MapPickerInput.styles.ts - Versión mejorada manteniendo estructura
+// components/forms/styles/EnhancedMapPickerInput.styles.ts
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';
 
-export const createStyles = (theme: AppTheme) =>
+export const createEnhancedMapStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       marginBottom: 0, // Manejado por el contenedor padre
@@ -15,14 +15,17 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
     },
     mapContainer: {
-      height: 320, // Más alto para incluir controles del radio
+      height: 320, // Más alto para incluir controles
       borderRadius: theme.spacing.m,
       overflow: 'hidden',
       marginBottom: theme.spacing.m,
-      ...theme.elevation.level2, // Usando elevación del theme
+      ...theme.elevation.level2,
       borderWidth: 1,
       borderColor: theme.colors.outline,
       position: 'relative',
+    },
+    map: {
+      flex: 1,
     },
     topRightButton: {
       position: 'absolute',
@@ -50,7 +53,7 @@ export const createStyles = (theme: AppTheme) =>
       letterSpacing: 0.5,
     },
 
-    // NUEVOS ESTILOS: Panel de control de radio integrado en el mapa
+    // Panel de control de radio integrado en el mapa
     radiusControlPanel: {
       position: 'absolute',
       bottom: 0,
@@ -98,7 +101,7 @@ export const createStyles = (theme: AppTheme) =>
       textAlign: 'right',
     },
 
-    // MEJORADO: Contenedor de información
+    // Contenedor de información
     infoContainer: {
       backgroundColor: theme.colors.surfaceVariant,
       padding: theme.spacing.s,
@@ -116,16 +119,5 @@ export const createStyles = (theme: AppTheme) =>
       fontSize: 12,
       marginTop: theme.spacing.xs,
       textAlign: 'center',
-    },
-
-    // MANTENER ESTILOS ORIGINALES para compatibilidad
-    sliderLabels: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.spacing.s,
-    },
-    sliderRangeLabel: {
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
     },
   });

@@ -1,7 +1,7 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 import { AppTheme } from '@/types';
-// Snap points como porcentajes de la pantalla
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const createStyles = (theme: AppTheme) =>

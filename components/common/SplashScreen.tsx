@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
 import { createStyles } from './styles/SplashScreen.styles';
-import AppLogo from '../icons/AppLogo';
+import AppLogo from '../logo/AppLogo';
 
 export default function SplashScreen() {
   const theme = useAppTheme();

@@ -1,9 +1,11 @@
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Slot, useSegments, useRouter } from 'expo-router';
+import { Slot, useSegments, useRouter, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState, useCallback } from 'react';
 import { View } from 'react-native';
 
+import { CustomHeader } from '@/components/common/CustomHeader';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -36,6 +38,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     async function prepare() {
@@ -66,16 +69,36 @@ export default function RootLayout() {
 
   if (!appIsReady) {
     return null;
-  }
+  } // Determinar si mostrar el header y el botón de volver
+  const isAuthScreen = pathname.startsWith('/(auth)');
+
+  // El botón de volver se muestra en:
+  // - Modales (/(modals)/)
+  // - Formularios y pantallas de detalles fuera de tabs principales
+  // - NO en las tabs principales ni en auth
+  const isMainTabScreen =
+    pathname === '/(tabs)' ||
+    pathname === '/(tabs)/' ||
+    pathname === '/(tabs)/index' ||
+    pathname === '/(tabs)/search' ||
+    pathname === '/(tabs)/realms' ||
+    pathname === '/(tabs)/map';
+
+  const shouldShowBackButton = !isAuthScreen && !isMainTabScreen;
+
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AuthGate>
-            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-              <Slot />
-            </View>
-          </AuthGate>
+          <ActionSheetProvider>
+            <AuthGate>
+              <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                {/* Solo mostrar header si NO es pantalla de auth */}
+                {!isAuthScreen && <CustomHeader showBackButton={shouldShowBackButton} />}
+                <Slot />
+              </View>
+            </AuthGate>
+          </ActionSheetProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

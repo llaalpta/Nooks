@@ -18,7 +18,7 @@ import { useAppTheme } from '@/contexts/ThemeContext';
 import { Tables } from '@/types/supabase';
 import { calculateDistance } from '@/utils/locationUtils';
 
-import { createStyles } from './BottomRealmsList.styles';
+import { createStyles } from '../forms/styles/BottomRealmsList.styles';
 
 type Realm = Tables<'locations'>;
 

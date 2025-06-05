@@ -47,7 +47,6 @@ export default function MapScreen() {
   const [showRealmsList, setShowRealmsList] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
-
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
   // Utilidad para comparar regiones con tolerancia
@@ -201,7 +200,7 @@ export default function MapScreen() {
   };
 
   const handleCreateRealm = () => {
-    router.push('/(modals)/realm-form');
+    router.push({ pathname: '/realms/realm-form', params: { from: 'map' } });
   };
 
   const toggleRealmsList = () => {
@@ -326,8 +325,8 @@ export default function MapScreen() {
                 latitude: realm.latitude!,
                 longitude: realm.longitude!,
               }}
-              image={require('@/assets/images/marker3.png')}
               onPress={() => handleRealmPress(realm)}
+              image={require('@/assets/images/realm-marker.png')}
             />
           ))}
         </MapView>

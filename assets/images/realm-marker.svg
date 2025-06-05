@@ -1,0 +1,16 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pin de ubicación simple y sólido -->
+  <g transform="translate(100, 100)">
+    <!-- Cuerpo principal del pin -->
+    <path d="M 0 40 Q -35 5 -35 -25 Q -35 -60 0 -60 Q 35 -60 35 -25 Q 35 5 0 40 Z" 
+          fill="#6366f1"/>
+    
+    <!-- Círculo interior blanco -->
+    <circle cx="0" cy="-25" r="25" fill="#ffffff"/>
+    
+    <!-- Texto "realm" -->
+    <text x="0" y="-20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6366f1">
+      realm
+    </text>
+  </g>
+</svg>

@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
-import Svg, { Rect, Circle, Text } from 'react-native-svg';
+import Svg, { Circle, Text, G, Path } from 'react-native-svg';
 
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface AppLogoProps {
@@ -73,15 +72,12 @@ const AppLogo: React.FC<AppLogoProps> = ({ size = 100, animated = true }) => {
     inputRange: [0, 0.5, 1],
     outputRange: [0.3, 0.8, 0.3],
   });
-
   const shineScale = shineAnim.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [1, 1.3, 1],
   });
 
   // Calcular tamaños proporcionales
-  const borderRadius = size * 0.25;
-  const fontSize = size * 0.5;
   const shineSize = size * 0.3;
 
   return (
@@ -92,60 +88,51 @@ const AppLogo: React.FC<AppLogoProps> = ({ size = 100, animated = true }) => {
         height: size,
       }}
     >
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Fondo del logo con gradiente simulado */}
-        <AnimatedRect
-          x="0"
-          y="0"
-          width={size}
-          height={size}
-          rx={borderRadius}
-          ry={borderRadius}
-          fill="#667eea"
-        />
-
-        {/* Overlay para simular gradiente */}
-        <Rect
-          x="0"
-          y="0"
-          width={size}
-          height={size * 0.6}
-          rx={borderRadius}
-          ry={borderRadius}
-          fill="#764ba2"
-          opacity="0.7"
-        />
-
-        {/* Letra N */}
+      <Svg width={size} height={size} viewBox="0 0 300 100">
         <Text
-          x={size / 2}
-          y={size / 2 + fontSize * 0.35}
-          fontSize={fontSize}
+          x={20}
+          y={70}
+          fontFamily="Arial, sans-serif"
+          fontSize={60}
           fontWeight="bold"
-          fill="#ffffff"
-          textAnchor="middle"
-          fontFamily="Arial Black, sans-serif"
+          fill="#374151"
         >
-          N
+          {'n'}
+        </Text>
+        <G transform="matrix(.4 0 0 .4 68 55)">
+          <Path d="M0 40Q-35 5-35-25q0-35 35-35t35 35Q35 5 0 40" fill="#6366f1" />
+          <Circle cy={-25} r={25} fill="#fff" />
+          <Text
+            y={-20}
+            textAnchor="middle"
+            fontFamily="Arial, sans-serif"
+            fontSize={16}
+            fontWeight="bold"
+            fill="#6366f1"
+          >
+            {'nook'}
+          </Text>
+        </G>
+        <Text
+          x={85}
+          y={70}
+          fontFamily="Arial, sans-serif"
+          fontSize={60}
+          fontWeight="bold"
+          fill="#374151"
+        >
+          {'oks'}
         </Text>
 
-        {/* Efecto de brillo animado */}
-        {animated ? (
+        {/* Efecto de brillo animado opcional */}
+        {animated && (
           <AnimatedCircle
-            cx={size * 0.25}
-            cy={size * 0.25}
+            cx={150}
+            cy={50}
             r={shineSize / 2}
             fill="#ffffff"
             opacity={shineOpacity}
             transform={[{ scale: shineScale }]}
-          />
-        ) : (
-          <Circle
-            cx={size * 0.25}
-            cy={size * 0.25}
-            r={shineSize / 2}
-            fill="#ffffff"
-            opacity="0.4"
           />
         )}
       </Svg>
