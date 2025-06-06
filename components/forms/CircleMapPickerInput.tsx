@@ -7,12 +7,29 @@ import * as Location from 'expo-location';
 import React, { useState } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
-import MapView, { Circle, MapPressEvent, Region, Marker } from 'react-native-maps';
 
+// ✅ Import corregido - quitar MapPressEvent
 import { Text } from '@/components/atoms/Text';
+import {
+  PlatformMapView as MapView,
+  PlatformMarker as Marker,
+  PlatformCircle as Circle,
+  Region,
+} from '@/components/common/PlatformMap';
 import { useAppTheme } from '@/contexts/ThemeContext';
+import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import { createStyles } from './styles/MapPickerInput.styles';
+
+// ✅ Comprobación del marcador - Al principio del archivo
+let realmMarkerImage;
+try {
+  realmMarkerImage = require('@/assets/images/realm-marker.png');
+} catch (error) {
+  // eslint-disable-next-line no-console
+  console.error('Imagen del marcador no encontrada, usando default', error);
+  realmMarkerImage = null;
+}
 
 type CircleLocation = {
   latitude: number;
@@ -55,24 +72,38 @@ export const CircleMapPickerInput = <T extends object>({
     currentValue?: CircleLocation
   ) {
     setLocating(true);
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        // eslint-disable-next-line no-console
+        console.log('Permisos de ubicación denegados');
+        setLocating(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const newRegion = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setRegion(newRegion);
+      onChange({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        radius: currentValue?.radius || 100,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error al obtener ubicación:', error);
+    } finally {
       setLocating(false);
-      return;
     }
-    const location = await Location.getCurrentPositionAsync({});
-    setRegion({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
-    onChange({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      radius: currentValue?.radius || 100,
-    });
-    setLocating(false);
   }
 
   return (
@@ -90,7 +121,8 @@ export const CircleMapPickerInput = <T extends object>({
                 style={{ flex: 1 }}
                 region={region}
                 onRegionChangeComplete={setRegion}
-                onPress={(e: MapPressEvent) => {
+                onPress={(e: any) => {
+                  // ✅ Cambiar tipo a any
                   if (disabled) return;
                   const { latitude, longitude } = e.nativeEvent.coordinate;
                   onChange({
@@ -100,17 +132,20 @@ export const CircleMapPickerInput = <T extends object>({
                   });
                 }}
                 pointerEvents={disabled ? 'none' : 'auto'}
+                customMapStyle={theme.dark ? darkMapStyle : undefined}
               >
                 {circleLocation?.latitude && circleLocation?.longitude && (
                   <>
-                    {/* Marcador personalizado */}
+                    {/* ✅ Marcador mejorado con fallback */}
                     <Marker
                       coordinate={{
                         latitude: circleLocation.latitude,
                         longitude: circleLocation.longitude,
                       }}
-                      image={require('@/assets/images/realm-marker.png')} // Asegúrate de tener esta imagen
-                    ></Marker>
+                      {...(realmMarkerImage
+                        ? { image: realmMarkerImage }
+                        : { pinColor: '#6366f1' })}
+                    />
 
                     {/* Círculo para mostrar el radio */}
                     <Circle
@@ -132,7 +167,7 @@ export const CircleMapPickerInput = <T extends object>({
                 <TouchableOpacity
                   style={[styles.mapButton, locating && styles.mapButtonLoading]}
                   onPress={() => centerOnCurrentLocation(onChange, circleLocation)}
-                  disabled={locating}
+                  disabled={locating || disabled}
                 >
                   {locating ? (
                     <>

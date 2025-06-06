@@ -28,6 +28,13 @@ import type { Tables } from '@/types/supabase';
 type Realm = Tables<'locations'>;
 
 export default function MapScreen() {
+  let realmMarkerImage;
+  try {
+    realmMarkerImage = require('@/assets/images/realm-marker.png');
+  } catch (error) {
+    console.error('Error loading realm marker image:', error);
+    realmMarkerImage = null;
+  }
   const { user } = useAuth();
   const theme = useAppTheme();
   const styles = createStyles(theme);
@@ -329,7 +336,7 @@ export default function MapScreen() {
                 longitude: realm.longitude!,
               }}
               onPress={() => handleRealmPress(realm)}
-              image={require('@/assets/images/realm-marker.png')}
+              {...(realmMarkerImage ? { image: realmMarkerImage } : { pinColor: '#6366f1' })}
             />
           ))}
         </MapView>

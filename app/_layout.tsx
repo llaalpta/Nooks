@@ -40,7 +40,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       } catch (e) {
         console.error('Error al preparar la app:', e);
       } finally {
