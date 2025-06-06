@@ -89,7 +89,7 @@ export default function RealmDetailScreen() {
       return;
     }
     router.push({
-      pathname: '/(modals)/nook-form',
+      pathname: '/nooks/nook-form',
       params: { realmId },
     });
   };
