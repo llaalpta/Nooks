@@ -1,14 +1,10 @@
-// Mejoras sugeridas para tu CircleMapPickerInput existente
-// Archivo: components/forms/CircleMapPickerInput.tsx
-
+// components/forms/CircleMapPickerInput.tsx
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import * as Location from 'expo-location';
 import React, { useState } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
 
-// ✅ Import corregido - quitar MapPressEvent
 import { Text } from '@/components/atoms/Text';
 import {
   PlatformMapView as MapView,
@@ -17,19 +13,11 @@ import {
   Region,
 } from '@/components/common/PlatformMap';
 import { useAppTheme } from '@/contexts/ThemeContext';
+import { useLocationService } from '@/hooks/useLocationService';
+import { useMapMarkers } from '@/hooks/useMapMarkers';
 import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import { createStyles } from './styles/MapPickerInput.styles';
-
-// ✅ Comprobación del marcador - Al principio del archivo
-let realmMarkerImage;
-try {
-  realmMarkerImage = require('@/assets/images/realm-marker.png');
-} catch (error) {
-  // eslint-disable-next-line no-console
-  console.error('Imagen del marcador no encontrada, usando default', error);
-  realmMarkerImage = null;
-}
 
 type CircleLocation = {
   latitude: number;
@@ -63,48 +51,36 @@ export const CircleMapPickerInput = <T extends object>({
 }: CircleMapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
   const [region, setRegion] = useState<Region>(initialRegion);
-  const [locating, setLocating] = useState(false);
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  async function centerOnCurrentLocation(
-    onChange: (coords: CircleLocation) => void,
-    currentValue?: CircleLocation
-  ) {
-    setLocating(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        // eslint-disable-next-line no-console
-        console.log('Permisos de ubicación denegados');
-        setLocating(false);
-        return;
-      }
+  // Usar hooks unificados
+  const { handleMapReady, getMarkerProps } = useMapMarkers();
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
+  const { isLocating, getCurrentLocation } = useLocationService({
+    onLocationObtained: (coords) => {
       const newRegion = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        ...coords,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
-
       setRegion(newRegion);
+    },
+  });
+
+  const centerOnCurrentLocation = async (
+    onChange: (coords: CircleLocation) => void,
+    currentValue?: CircleLocation
+  ) => {
+    const location = await getCurrentLocation();
+    if (location) {
       onChange({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
         radius: currentValue?.radius || 100,
       });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error al obtener ubicación:', error);
-    } finally {
-      setLocating(false);
     }
-  }
+  };
 
   return (
     <Controller
@@ -119,10 +95,9 @@ export const CircleMapPickerInput = <T extends object>({
             <View style={styles.mapContainer}>
               <MapView
                 style={{ flex: 1 }}
-                region={region}
-                onRegionChangeComplete={setRegion}
+                initialRegion={region}
+                onMapReady={handleMapReady}
                 onPress={(e: any) => {
-                  // ✅ Cambiar tipo a any
                   if (disabled) return;
                   const { latitude, longitude } = e.nativeEvent.coordinate;
                   onChange({
@@ -134,17 +109,16 @@ export const CircleMapPickerInput = <T extends object>({
                 pointerEvents={disabled ? 'none' : 'auto'}
                 customMapStyle={theme.dark ? darkMapStyle : undefined}
               >
+                {/* Contenido del mapa */}
                 {circleLocation?.latitude && circleLocation?.longitude && (
                   <>
-                    {/* ✅ Marcador mejorado con fallback */}
+                    {/* Marcador con hooks unificados */}
                     <Marker
                       coordinate={{
                         latitude: circleLocation.latitude,
                         longitude: circleLocation.longitude,
                       }}
-                      {...(realmMarkerImage
-                        ? { image: realmMarkerImage }
-                        : { pinColor: '#6366f1' })}
+                      {...getMarkerProps()}
                     />
 
                     {/* Círculo para mostrar el radio */}
@@ -162,14 +136,14 @@ export const CircleMapPickerInput = <T extends object>({
                 )}
               </MapView>
 
-              {/* Botón de mi ubicación estilo mapa principal */}
+              {/* Botón de mi ubicación */}
               <View style={styles.topRightButton}>
                 <TouchableOpacity
-                  style={[styles.mapButton, locating && styles.mapButtonLoading]}
+                  style={[styles.mapButton, isLocating && styles.mapButtonLoading]}
                   onPress={() => centerOnCurrentLocation(onChange, circleLocation)}
-                  disabled={locating || disabled}
+                  disabled={isLocating || disabled}
                 >
-                  {locating ? (
+                  {isLocating ? (
                     <>
                       <ActivityIndicator size={16} color={theme.colors.onPrimary} />
                       <Text style={styles.mapButtonText}>BUSCANDO...</Text>
@@ -218,7 +192,7 @@ export const CircleMapPickerInput = <T extends object>({
               )}
             </View>
 
-            {/* Información de coordenadas mejorada */}
+            {/* Información de coordenadas */}
             <View style={styles.infoContainer}>
               <Text style={styles.coordsText}>
                 {circleLocation?.latitude && circleLocation?.longitude

@@ -7,6 +7,37 @@ import { AppTheme } from '@/types';
 
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.m,
+      paddingTop: theme.spacing.s,
+      paddingBottom: theme.spacing.m,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outlineVariant,
+      ...theme.elevation.level1,
+    },
+    headerTitle: {
+      flex: 1,
+      fontSize: 22,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+      textAlign: 'center',
+    },
+    mapCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.spacing.l,
+      overflow: 'hidden',
+      marginBottom: theme.spacing.l,
+      elevation: 2,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
     map: {
       height: 300,
       borderRadius: theme.spacing.l,
@@ -37,9 +68,6 @@ export const createStyles = (theme: AppTheme) =>
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
       textAlign: 'center',
-      backgroundColor: theme.colors.surfaceVariant,
-      padding: theme.spacing.s,
-      borderRadius: theme.spacing.s,
       lineHeight: 16,
     },
     realmButton: {
@@ -55,8 +83,10 @@ export const createStyles = (theme: AppTheme) =>
       zIndex: 10,
     },
     coordsContainer: {
-      marginTop: 8,
-      alignItems: 'center',
+      backgroundColor: theme.colors.surfaceVariant,
+      padding: theme.spacing.s,
+      borderRadius: theme.spacing.s,
+      marginBottom: theme.spacing.s,
     },
     container: {
       flex: 1,
@@ -65,21 +95,6 @@ export const createStyles = (theme: AppTheme) =>
     formContainer: {
       padding: theme.spacing.m,
       paddingBottom: theme.spacing.xl,
-    },
-    header: {
-      paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.l,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outlineVariant,
-      ...theme.elevation.level1,
-    },
-    headerTitle: {
-      fontSize: 28,
-      fontWeight: '600',
-      lineHeight: 36,
-      color: theme.colors.onSurface,
-      textAlign: 'center',
     },
     formSection: {
       marginBottom: theme.spacing.xl,

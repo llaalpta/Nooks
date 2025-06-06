@@ -1,11 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Usar nuestro componente PlatformMap para mejor compatibilidad
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
 import BottomRealmsList from '@/components/common/BottomRealmsList';
@@ -20,21 +18,16 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useRealmsQuery } from '@/features/realms/hooks';
+import { useLocationService } from '@/hooks/useLocationService';
+import { useMapMarkers } from '@/hooks/useMapMarkers';
 import { createStyles } from '@/styles/app/tabs/map.style';
-import darkMapStyle from '@/styles/app/tabs/map.style'; // Añadir esta línea
+import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import type { Tables } from '@/types/supabase';
 
 type Realm = Tables<'locations'>;
 
 export default function MapScreen() {
-  let realmMarkerImage;
-  try {
-    realmMarkerImage = require('@/assets/images/realm-marker.png');
-  } catch (error) {
-    console.error('Error loading realm marker image:', error);
-    realmMarkerImage = null;
-  }
   const { user } = useAuth();
   const theme = useAppTheme();
   const styles = createStyles(theme);
@@ -47,15 +40,36 @@ export default function MapScreen() {
     longitudeDelta: 0.1,
   });
 
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [showRealmsList, setShowRealmsList] = useState(false);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
+
+  // Ref para guardar una región pendiente de animar
+  const pendingRegionRef = useRef<Region | null>(null);
+
+  // Usar hooks unificados
+  const { handleMapReady, getMarkerProps } = useMapMarkers();
+
+  const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } =
+    useLocationService({
+      onLocationObtained: (coords) => {
+        setUserLocation(coords);
+
+        // Si no hay realms, centrar en la ubicación del usuario
+        if (!realms || realms.length === 0) {
+          const newRegion = {
+            ...coords,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          };
+          setRegion(newRegion);
+        }
+      },
+    });
 
   // Utilidad para comparar regiones con tolerancia
   function areRegionsEqual(r1: Region, r2: Region, tolerance = 0.0002) {
@@ -69,7 +83,15 @@ export default function MapScreen() {
 
   // Solicitar permisos de ubicación al cargar el componente
   useEffect(() => {
-    requestLocationPermission();
+    const initializeLocation = async () => {
+      await requestLocationPermission();
+      // Obtener ubicación inicial si hay permisos
+      if (hasPermission) {
+        await getCurrentLocation();
+      }
+    };
+
+    initializeLocation();
   }, []);
 
   // Centrar el mapa en los realms cuando se cargan
@@ -78,35 +100,6 @@ export default function MapScreen() {
       centerMapOnRealms();
     }
   }, [realms]);
-
-  const requestLocationPermission = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      setHasLocationPermission(status === 'granted');
-
-      if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({});
-        const userCoords = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
-        setUserLocation(userCoords);
-
-        // Si no hay realms, centrar en la ubicación del usuario
-        if (!realms || realms.length === 0) {
-          setRegion({
-            latitude: userCoords.latitude,
-            longitude: userCoords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          });
-        }
-      }
-    } catch {
-      // eslint-disable-next-line no-console
-      console.error('Error al obtener ubicación');
-    }
-  };
 
   const centerMapOnRealms = () => {
     if (!realms || realms.length === 0) return;
@@ -139,7 +132,7 @@ export default function MapScreen() {
   };
 
   const centerOnUserLocation = async () => {
-    if (!hasLocationPermission) {
+    if (!hasPermission) {
       Alert.alert(
         'Permisos requeridos',
         'La aplicación necesita acceso a tu ubicación para centrarse en tu posición.',
@@ -151,38 +144,22 @@ export default function MapScreen() {
       return;
     }
 
-    setIsLoadingLocation(true);
-
-    try {
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
+    const location = await getCurrentLocation();
+    if (location) {
       const newRegion = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        ...location,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
 
       setRegion(newRegion);
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+      setUserLocation(location);
 
       // Animar a la nueva región
       mapRef.current?.animateToRegion(newRegion, 1000);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.'
-      );
-    } finally {
-      setIsLoadingLocation(false);
     }
   };
+
   const handleRealmPress = (realm: Realm) => {
     setSelectedRealm(realm);
     if (realm.latitude && realm.longitude) {
@@ -192,7 +169,6 @@ export default function MapScreen() {
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
-      // Desplazamiento en un solo paso, sin setRegion manual ni animación intermedia
       mapRef.current?.animateToRegion(newRegion, 1200);
     }
   };
@@ -214,8 +190,6 @@ export default function MapScreen() {
   const toggleRealmsList = () => {
     setShowRealmsList(!showRealmsList);
   };
-  // Ref para guardar una región pendiente de animar (sin timeout)
-  const pendingRegionRef = useRef<Region | null>(null);
 
   const handleRealmSelect = (realm: Realm) => {
     setShowRealmsList(false);
@@ -244,7 +218,7 @@ export default function MapScreen() {
         Math.abs(region.longitude - newRegion.longitude) < 0.0001 &&
         (region.latitudeDelta < 0.01 || region.longitudeDelta < 0.01)
       ) {
-        // Zoom out primero, luego animar al destino real cuando el mapa termine de moverse
+        // Zoom out primero, luego animar al destino real
         const zoomOutRegion = {
           ...newRegion,
           latitudeDelta: 0.2,
@@ -270,6 +244,18 @@ export default function MapScreen() {
     }
   };
 
+  // Solo actualiza el estado si la región realmente cambió
+  const handleRegionChangeComplete = (newRegion: Region) => {
+    if (!areRegionsEqual(region, newRegion)) {
+      setRegion(newRegion);
+      // Si hay una región pendiente, animar a ella y limpiar el ref
+      if (pendingRegionRef.current) {
+        mapRef.current?.animateToRegion(pendingRegionRef.current, 1200);
+        pendingRegionRef.current = null;
+      }
+    }
+  };
+
   if (isLoading) {
     return <LoadingScreen message="Cargando mapa..." />;
   }
@@ -288,17 +274,6 @@ export default function MapScreen() {
   }
 
   const validRealms = realms?.filter((realm) => realm.latitude && realm.longitude) || [];
-  // Solo actualiza el estado si la región realmente cambió (con tolerancia)
-  const handleRegionChangeComplete = (newRegion: Region) => {
-    if (!areRegionsEqual(region, newRegion)) {
-      setRegion(newRegion);
-      // Si hay una región pendiente, animar a ella y limpiar el ref
-      if (pendingRegionRef.current) {
-        mapRef.current?.animateToRegion(pendingRegionRef.current, 1200);
-        pendingRegionRef.current = null;
-      }
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -308,11 +283,11 @@ export default function MapScreen() {
           style={styles.map}
           region={region}
           onRegionChangeComplete={handleRegionChangeComplete}
-          showsUserLocation={hasLocationPermission}
+          onMapReady={handleMapReady}
+          showsUserLocation={hasPermission}
           showsMyLocationButton={false}
           onPress={handleMapPress}
-          customMapStyle={theme.dark ? darkMapStyle : undefined} // Añadir esta línea
-          // mapType={theme.dark ? 'mutedStandard' : 'standard'}
+          customMapStyle={theme.dark ? darkMapStyle : undefined}
         >
           {/* Círculo para mostrar el radio del realm seleccionado */}
           {selectedRealm && selectedRealm.radius && (
@@ -327,7 +302,8 @@ export default function MapScreen() {
               strokeWidth={2}
             />
           )}
-          {/* Mostrar realms como marcadores */}
+
+          {/* Mostrar realms como marcadores con hooks unificados */}
           {validRealms.map((realm) => (
             <Marker
               key={realm.id}
@@ -336,7 +312,7 @@ export default function MapScreen() {
                 longitude: realm.longitude!,
               }}
               onPress={() => handleRealmPress(realm)}
-              {...(realmMarkerImage ? { image: realmMarkerImage } : { pinColor: '#6366f1' })}
+              {...getMarkerProps()}
             />
           ))}
         </MapView>
@@ -345,11 +321,11 @@ export default function MapScreen() {
         <View style={styles.topRightButtons}>
           {/* Botón de mi ubicación */}
           <TouchableOpacity
-            style={[styles.mapButton, isLoadingLocation && styles.mapButtonLoading]}
+            style={[styles.mapButton, isLocating && styles.mapButtonLoading]}
             onPress={centerOnUserLocation}
-            disabled={isLoadingLocation}
+            disabled={isLocating}
           >
-            {isLoadingLocation ? (
+            {isLocating ? (
               <>
                 <ActivityIndicator size={16} color={theme.colors.onPrimary} />
                 <Text style={styles.mapButtonText}>BUSCANDO...</Text>
@@ -362,7 +338,7 @@ export default function MapScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Botón de detalles del realm seleccionado - aparece debajo */}
+          {/* Botón de detalles del realm seleccionado */}
           {selectedRealm && (
             <TouchableOpacity style={styles.mapButton} onPress={handleRealmDetails}>
               <Ionicons name="information-circle" size={16} color={theme.colors.onPrimary} />
@@ -370,15 +346,16 @@ export default function MapScreen() {
             </TouchableOpacity>
           )}
         </View>
+
         {/* Botones en la esquina inferior izquierda */}
         {validRealms.length > 0 && (
           <View style={styles.bottomLeftButtons}>
-            {/* Botón de añadir realm (arriba) */}
+            {/* Botón de añadir realm */}
             <TouchableOpacity style={styles.addButton} onPress={handleCreateRealm}>
               <Ionicons name="add" size={24} color={theme.colors.onPrimary} />
             </TouchableOpacity>
 
-            {/* Botón de lista (abajo) */}
+            {/* Botón de lista */}
             <TouchableOpacity style={styles.mapButton} onPress={toggleRealmsList}>
               <Ionicons name="list" size={16} color={theme.colors.onPrimary} />
               <Text style={styles.mapButtonText}>LISTA</Text>
@@ -386,6 +363,7 @@ export default function MapScreen() {
           </View>
         )}
       </View>
+
       {/* Lista de realms desplegable desde abajo */}
       {showRealmsList && validRealms.length > 0 && (
         <BottomRealmsList

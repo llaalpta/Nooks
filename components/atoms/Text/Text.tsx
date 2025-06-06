@@ -36,21 +36,21 @@ export function Text({
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Crear un array con los estilos aplicables
-  const textStylesArray = [
-    styles.base,
-    styles[variant],
-    center && styles.textCenter,
-    left && styles.textLeft,
-    right && styles.textRight,
-    mb1 && styles.mb1,
-    mb2 && styles.mb2,
-    mb3 && styles.mb3,
-    mb4 && styles.mb4,
-    mb5 && styles.mb5,
-    color && ({ color } as TextStyle),
-    style,
-  ].filter(Boolean) as TextStyle[];
+  // Crear objeto de estilos de manera más segura
+  const textStyles: TextStyle = {
+    ...styles.base,
+    ...(styles[variant] || {}),
+    ...(center && styles.textCenter),
+    ...(left && styles.textLeft),
+    ...(right && styles.textRight),
+    ...(mb1 && styles.mb1),
+    ...(mb2 && styles.mb2),
+    ...(mb3 && styles.mb3),
+    ...(mb4 && styles.mb4),
+    ...(mb5 && styles.mb5),
+    ...(color && { color }),
+    ...(style as TextStyle),
+  };
 
-  return <RNText style={textStylesArray} {...props} />;
+  return <RNText style={textStyles} {...props} />;
 }

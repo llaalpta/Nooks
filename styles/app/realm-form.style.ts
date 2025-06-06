@@ -16,7 +16,7 @@ export const createStyles = (theme: AppTheme) =>
     },
     header: {
       paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.l, // Más espacio vertical
+      paddingVertical: theme.spacing.m, // Menos espacio vertical
       backgroundColor: theme.colors.surface,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,

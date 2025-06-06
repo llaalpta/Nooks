@@ -6,6 +6,7 @@ import { View, ScrollView, Alert } from 'react-native';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
+import { CustomFormHeader } from '@/components/common/CustomFormHeader';
 import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { CircleMapPickerInput } from '@/components/forms/CircleMapPickerInput';
@@ -24,7 +25,7 @@ import {
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { createStyles } from '@/styles/app/realm-form.style';
+import { createRealmFormStyles } from '@/styles/app/modals/form.style';
 
 interface FormValues {
   name: string;
@@ -35,7 +36,7 @@ interface FormValues {
   tags: any[];
 }
 
-// Componente de sección simple
+// Componente de sección unificado (igual que en nook-form)
 const FormSection = ({
   children,
   title,
@@ -77,7 +78,7 @@ export default function RealmForm() {
   const realmId = params.id as string;
   const isEditing = !!realmId;
   const theme = useAppTheme();
-  const styles = createStyles(theme);
+  const styles = createRealmFormStyles(theme);
   const { user } = useAuth();
   const userId = user?.id || '';
   const isOnline = useIsOnline();
@@ -281,18 +282,11 @@ export default function RealmForm() {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        {/* Header simple */}
-        <View style={styles.header}>
-          <Button
-            mode="text"
-            onPress={handleGoBackOrReplace}
-            style={{ marginRight: 8 }}
-            icon={<Ionicons name="arrow-back" size={20} color={theme.colors.primary} />}
-          >
-            Volver
-          </Button>
-          <Text style={styles.headerTitle}>{isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}</Text>
-        </View>
+        {/* Header unificado */}
+        <CustomFormHeader
+          title={isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}
+          onBack={handleGoBackOrReplace}
+        />
 
         <ScrollView
           contentContainerStyle={styles.formContainer}

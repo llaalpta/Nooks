@@ -4,6 +4,12 @@ import { AppTheme } from '@/types';
 
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    headerTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+      textAlign: 'center',
+    },
     container: {
       backgroundColor: theme.colors.surface,
       ...theme.elevation.level1,

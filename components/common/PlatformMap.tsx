@@ -9,12 +9,14 @@ import { useAppTheme } from '@/contexts/ThemeContext';
 interface MapComponentProps {
   style?: any;
   children?: React.ReactNode;
+  onMapReady?: () => void;
   [key: string]: any;
 }
 
 interface WebMapPlaceholderProps {
   style?: any;
   children?: React.ReactNode;
+  onMapReady?: () => void;
 }
 
 interface ErrorBoundaryState {
@@ -23,8 +25,15 @@ interface ErrorBoundaryState {
   errorDetails: string;
 }
 
-const WebMapPlaceholder: React.FC<WebMapPlaceholderProps> = ({ style, children }) => {
+const WebMapPlaceholder: React.FC<WebMapPlaceholderProps> = ({ style, children, onMapReady }) => {
   const theme = useAppTheme();
+
+  // Simular que el mapa está listo en web inmediatamente
+  React.useEffect(() => {
+    if (onMapReady) {
+      onMapReady();
+    }
+  }, [onMapReady]);
 
   return (
     <View
@@ -140,11 +149,25 @@ const MapErrorComponent: React.FC<{
 };
 
 // Generic fallback component for non-web platforms when maps are not available
-const GenericMapComponent: React.FC<MapComponentProps> = ({ style, children, ...props }) => (
-  <View style={style} {...props}>
-    {children}
-  </View>
-);
+const GenericMapComponent: React.FC<MapComponentProps> = ({
+  style,
+  children,
+  onMapReady,
+  ...props
+}) => {
+  // Simular que el mapa está listo inmediatamente
+  React.useEffect(() => {
+    if (onMapReady) {
+      onMapReady();
+    }
+  }, [onMapReady]);
+
+  return (
+    <View style={style} {...props}>
+      {children}
+    </View>
+  );
+};
 
 // Enhanced dynamic import function with better error handling
 const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
@@ -177,10 +200,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
       throw new Error('Marker component not found in react-native-maps');
     }
 
-    // Log de éxito para debugging
-    // eslint-disable-next-line no-console
-    console.log('react-native-maps loaded successfully');
-
     return {
       MapView: MapView,
       Marker: RNMaps.Marker,
@@ -190,7 +209,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
     };
   } catch (error) {
     // Error detallado para debugging
-    // eslint-disable-next-line no-console
     console.error('Error loading react-native-maps:', error);
 
     let errorMessage = 'Error desconocido cargando Google Maps';
@@ -267,12 +285,19 @@ const useMapComponents = () => {
 
 // Enhanced MapView wrapper with error boundary
 const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
-  ({ children, ...props }, ref) => {
+  ({ children, onMapReady, ...props }, ref) => {
     const { components, error, retry } = useMapComponents();
     const MapViewComponent = components.MapView;
 
     // Create internal ref for the actual map component
     const internalMapRef = React.useRef<any>(null);
+
+    // Manejar cuando el mapa real está listo
+    const handleMapReady = React.useCallback(() => {
+      if (onMapReady) {
+        onMapReady();
+      }
+    }, [onMapReady]);
 
     // Expose methods through imperative handle
     React.useImperativeHandle(
@@ -315,8 +340,14 @@ const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
       );
     }
 
+    // Propagar onMapReady solo a componentes nativos
+    const mapProps =
+      components.success && Platform.OS !== 'web'
+        ? { ...props, onMapReady: handleMapReady }
+        : { ...props, onMapReady };
+
     return (
-      <MapViewComponent ref={internalMapRef} {...props}>
+      <MapViewComponent ref={internalMapRef} {...mapProps}>
         {children}
       </MapViewComponent>
     );
@@ -329,32 +360,38 @@ EnhancedMapView.displayName = 'EnhancedMapView';
 export const PlatformMapView = EnhancedMapView;
 
 export const PlatformMarker = (props: MapComponentProps) => {
+  // Eliminar cualquier children para evitar warnings de texto
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { children: _children, ...rest } = props;
   if (Platform.OS === 'web') {
-    return <View {...props} />;
+    return <View {...rest} />;
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const RNMaps = require('react-native-maps');
     const MarkerComponent = RNMaps.Marker;
-    return <MarkerComponent {...props} />;
+    return <MarkerComponent {...rest} />;
   } catch {
-    return <View {...props} />;
+    return <View {...rest} />;
   }
 };
 
 export const PlatformCircle = (props: MapComponentProps) => {
+  // Eliminar cualquier children para evitar warnings de texto
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { children: _children, ...rest } = props;
   if (Platform.OS === 'web') {
-    return <View {...props} />;
+    return <View {...rest} />;
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const RNMaps = require('react-native-maps');
     const CircleComponent = RNMaps.Circle;
-    return <CircleComponent {...props} />;
+    return <CircleComponent {...rest} />;
   } catch {
-    return <View {...props} />;
+    return <View {...rest} />;
   }
 };
 
