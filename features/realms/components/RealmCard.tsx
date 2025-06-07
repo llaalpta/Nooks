@@ -76,4 +76,3 @@ export function RealmCard({ realm }: RealmCardProps) {
     </TouchableOpacity>
   );
 }
-

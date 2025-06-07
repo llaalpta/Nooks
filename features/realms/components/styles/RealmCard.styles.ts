@@ -18,12 +18,17 @@ export const createStyles = (theme: AppTheme) =>
       height: 140,
     },
     imageContainer: {
-      width: '35%',
+      width: 120, // Fijo para evitar deformaciones
       height: '100%',
+      borderTopLeftRadius: theme.borderRadius.s,
+      borderBottomLeftRadius: theme.borderRadius.s,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.surfaceVariant,
     },
     horizontalImage: {
       width: '100%',
       height: '100%',
+      resizeMode: 'cover', // Importante para evitar deformación
     },
     horizontalPlaceholder: {
       width: '100%',
@@ -31,6 +36,8 @@ export const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surfaceVariant,
       alignItems: 'center',
       justifyContent: 'center',
+      borderTopLeftRadius: theme.borderRadius.s,
+      borderBottomLeftRadius: theme.borderRadius.s,
     },
     cardContent: {
       flex: 1,
@@ -66,7 +73,7 @@ export const createStyles = (theme: AppTheme) =>
     tagsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginTop: theme.spacing.s, // 8dp
+      marginTop: theme.spacing.xs, // Menos margen superior entre contenido y etiquetas
     },
     tag: {
       borderRadius: theme.borderRadius.xs, // 4dp para tags pequeños

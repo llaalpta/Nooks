@@ -20,6 +20,8 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     image: {
       width: '100%',
       height: '100%',
+      borderTopLeftRadius: theme.borderRadius.l,
+      borderTopRightRadius: theme.borderRadius.l,
     },
     placeholderImage: {
       width: '100%',

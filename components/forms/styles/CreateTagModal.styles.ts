@@ -15,8 +15,10 @@ export const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
       width: '100%',
-      maxWidth: 400,
-      maxHeight: '80%',
+      maxWidth: '100%',
+      maxHeight: '100%',
+      alignSelf: 'stretch',
+      marginTop: 0,
     },
     header: {
       padding: 20,
@@ -31,22 +33,30 @@ export const createStyles = (theme: AppTheme) =>
       textAlign: 'center',
     },
     content: {
-      padding: 20,
+      padding: 16,
+      paddingTop: 0,
     },
     colorLabel: {
       fontSize: 14,
       fontWeight: '500',
       color: theme.colors.onSurfaceVariant,
-      marginTop: theme.spacing.m,
+      marginTop: theme.spacing.xs,
       marginBottom: 12,
     },
     colorScroll: {
-      marginBottom: theme.spacing.m,
+      marginBottom: theme.spacing.s,
     },
-    colorContainer: {
+    colorGridContainer: {
+      flexDirection: 'column',
+      gap: 8,
+      marginBottom: theme.spacing.s,
+    },
+    colorGridRow: {
       flexDirection: 'row',
       gap: 12,
-      paddingHorizontal: 4,
+      justifyContent: 'flex-start',
+      marginBottom: 0,
+      paddingHorizontal: 0,
     },
     colorOption: {
       width: 40,
@@ -60,7 +70,7 @@ export const createStyles = (theme: AppTheme) =>
       borderWidth: 3,
     },
     previewContainer: {
-      marginTop: theme.spacing.m,
+      marginTop: theme.spacing.xs,
       padding: theme.spacing.sm,
       backgroundColor: theme.colors.surfaceVariant,
       borderRadius: theme.borderRadius.s,

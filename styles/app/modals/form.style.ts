@@ -1,3 +1,5 @@
+// === BOTONES FLOTANTES ===
+
 // styles/app/shared/form.style.ts
 // Estilos compartidos y unificados para realm-form y nook-form
 
@@ -33,10 +35,30 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       color: theme.colors.onSurface,
       textAlign: 'center',
     },
+    floatingActionContainer: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme.colors.background,
+      paddingBottom: theme.spacing.s, // Espacio para SafeArea
+      paddingTop: theme.spacing.s,
+      paddingHorizontal: theme.spacing.m,
+      shadowColor: theme.colors.shadow,
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 2,
+      zIndex: 100,
+    },
+    floatingActionInner: {
+      flexDirection: 'column',
+      gap: theme.spacing.m,
+    },
 
     // === SECCIONES DEL FORMULARIO ===
     formSection: {
-      marginBottom: theme.spacing.xl, // Separación consistente entre secciones
+      marginBottom: theme.spacing.m, // Menos separación entre secciones
     },
     sectionHeader: {
       flexDirection: 'row',

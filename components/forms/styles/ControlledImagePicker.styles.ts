@@ -19,18 +19,18 @@ export const createStyles = (theme: AppTheme) =>
     // NUEVOS ESTILOS PARA MEJOR UX
     imageContainer: {
       alignItems: 'center',
-      marginBottom: theme.spacing.m,
+      marginBottom: theme.spacing.xs, // Mucho menor separación con lo siguiente
     },
     imagePreview: {
       position: 'relative',
-      marginBottom: theme.spacing.m,
+      marginBottom: 0, // Sin separación extra bajo la imagen
+      width: '100%',
+      // Elimina alignSelf para que ocupe todo el ancho del padre
     },
     image: {
       width: '100%',
-      aspectRatio: 16 / 9, // Ratio más moderno
-      maxWidth: 300,
-      maxHeight: 200,
-      borderRadius: theme.spacing.m, // Usando spacing para consistencia
+      // La altura la define el aspectRatio en el componente
+      borderRadius: theme.spacing.m,
       backgroundColor: theme.colors.surfaceVariant,
     },
     imageOverlay: {
@@ -44,9 +44,7 @@ export const createStyles = (theme: AppTheme) =>
     },
     placeholderContainer: {
       width: '100%',
-      aspectRatio: 16 / 9,
-      maxWidth: 300,
-      maxHeight: 200,
+      // La altura la define el aspectRatio en el componente
       borderRadius: theme.spacing.m,
       borderWidth: 2,
       borderStyle: 'dashed',
@@ -54,7 +52,8 @@ export const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surfaceVariant,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: theme.spacing.m,
+      marginBottom: theme.spacing.xs, // Mucho menor separación con lo siguiente
+      // Elimina alignSelf para que ocupe todo el ancho del padre
     },
     placeholderContent: {
       alignItems: 'center',

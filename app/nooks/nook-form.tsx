@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +30,7 @@ import {
   useRemoveTagFromLocationMutation,
   useLocationTagsQuery,
 } from '@/features/tags/hooks';
+import { useInvalidateTagsOnFocus } from '@/hooks/useInvalidateTagsOnFocus';
 import { createNookFormStyles } from '@/styles/app/modals/form.style';
 
 import type { Tables } from '@/types/supabase';
@@ -99,6 +100,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   const styles = createNookFormStyles(theme);
   const createTagMutation = useCreateTagMutation();
   const { data: tags = [] } = useTagsQuery(user?.id || '');
+  useInvalidateTagsOnFocus(user?.id || '');
 
   // Cargar datos del nook si es edición
   const { data: nook, isLoading: isLoadingNook } = useNookQuery(nookId || '');
@@ -133,9 +135,11 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   });
   const { handleSubmit, setValue, watch, reset } = methods;
   const watched = watch();
+  // Ref para el ScrollView principal
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Si es edición, setear los valores cuando nook esté disponible
-  React.useEffect(() => {
+  useEffect(() => {
     if (mode === 'edit' && nook && !isLoadingNookTags) {
       try {
         reset({
@@ -348,7 +352,9 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           onBack={handleBackNavigation}
         />
 
+        {/* Ref para scroll automático al enfocar el input de búsqueda de etiquetas */}
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={styles.formContainer}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -474,25 +480,15 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                   </View>
                 ) : (
                   <>
-                    {/* console.log('[NookForm] render TagSelector, tags en form:', watched.tags) */}
+                    {/* Ref y función para scroll automático al enfocar el input de búsqueda */}
                     <TagSelector
                       name="tags"
                       label="Etiquetas"
                       options={tags}
                       loading={createTagMutation.isPending}
                       disabled={isLoadingNookTags && mode === 'edit'}
-                      onCreateTag={async (name, color) => {
-                        if (!user?.id) return null;
-                        try {
-                          const result = await createTagMutation.mutateAsync({
-                            name,
-                            color,
-                            user_id: user.id,
-                          });
-                          return result as any;
-                        } catch {
-                          return null;
-                        }
+                      onSearchFocus={() => {
+                        scrollViewRef.current?.scrollTo({ y: 3000, animated: true });
                       }}
                     />
                   </>

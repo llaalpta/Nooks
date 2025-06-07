@@ -24,6 +24,7 @@ import {
   useRealmPrimaryImageUrl,
 } from '@/features/realms/hooks';
 import { useTagsQuery, useCreateTagMutation, useLocationTagsQuery } from '@/features/tags/hooks';
+import { useInvalidateTagsOnFocus } from '@/hooks/useInvalidateTagsOnFocus';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { createRealmFormStyles } from '@/styles/app/modals/form.style';
 
@@ -54,17 +55,17 @@ const FormSection = ({
 
   return (
     <View style={styles.formSection}>
-      {/* Header de la sección */}
+      {/* Header de la sección (icono al final) */}
       <View style={styles.sectionHeader}>
-        {icon && (
-          <View style={styles.sectionIconContainer}>
-            <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
-          </View>
-        )}
         <View style={styles.sectionTextContainer}>
           <Text style={styles.sectionTitle}>{title}</Text>
           {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
         </View>
+        {icon && (
+          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.m }]}>
+            <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
+          </View>
+        )}
       </View>
 
       {/* Contenido */}
@@ -89,6 +90,7 @@ export default function RealmForm() {
   const updateRealmMutation = useUpdateRealmMutation();
   const uploadMediaMutation = useUploadMediaMutation();
   const { data: tags = [] } = useTagsQuery(userId);
+  useInvalidateTagsOnFocus(userId);
   const createTagMutation = useCreateTagMutation();
 
   const [snackbar, setSnackbar] = useState({
@@ -149,19 +151,7 @@ export default function RealmForm() {
     }
   }, [isEditing, isLoadingRealmTags, realmTags, setValue]);
 
-  async function handleCreateTag(name: string, color: string) {
-    if (!user?.id) return null;
-    try {
-      const newTag = await createTagMutation.mutateAsync({
-        name,
-        user_id: user.id,
-        color: color,
-      });
-      return newTag;
-    } catch {
-      return null;
-    }
-  }
+  // handleCreateTag eliminado: ya no se usa, la creación es en página aparte
 
   // Navegación robusta para volver atrás o a la lista de Realms
   function handleGoBackOrReplace() {
@@ -308,7 +298,7 @@ export default function RealmForm() {
         />
 
         <ScrollView
-          contentContainerStyle={styles.formContainer}
+          contentContainerStyle={[styles.formContainer, { paddingBottom: 120 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -354,7 +344,8 @@ export default function RealmForm() {
             icon="image-outline"
             styles={styles}
           >
-            <ControlledImagePicker name="image" />
+            {/* Usamos aspectRatio 120/140 para que la previsualización sea igual que en la card */}
+            <ControlledImagePicker name="image" aspectRatio={16 / 9} />
           </FormSection>
 
           {/* Sección 4: Etiquetas */}
@@ -371,25 +362,23 @@ export default function RealmForm() {
             ) : (
               <>
                 {/* console.log('[RealmForm] render TagSelector, tags en form:', watchedValues.tags) */}
-                <TagSelector
-                  name="tags"
-                  options={tags}
-                  loading={createTagMutation.isPending}
-                  onCreateTag={handleCreateTag}
-                />
+                <TagSelector name="tags" options={tags} loading={createTagMutation.isPending} />
               </>
             )}
           </FormSection>
 
-          {/* Botones de acción */}
-          <View style={styles.actionContainer}>
+          {/* El bloque de botones ahora es flotante y fijo abajo */}
+        </ScrollView>
+
+        {/* Botones de acción flotantes */}
+        <View style={styles.floatingActionContainer} pointerEvents="box-none">
+          <View style={styles.floatingActionInner}>
             {!isOnline && (
               <View style={styles.connectionWarning}>
                 <Ionicons name="wifi-outline" size={20} color={theme.colors.onErrorContainer} />
                 <Text style={styles.connectionWarningText}>Sin conexión a internet</Text>
               </View>
             )}
-
             <Button
               mode="contained"
               onPress={handleSubmit(onSubmit)}
@@ -405,7 +394,6 @@ export default function RealmForm() {
                   ? 'Actualizar Realm'
                   : 'Crear Realm'}
             </Button>
-
             <Button
               mode="outlined"
               onPress={handleGoBackOrReplace}
@@ -415,7 +403,7 @@ export default function RealmForm() {
               Cancelar
             </Button>
           </View>
-        </ScrollView>
+        </View>
 
         <FeedbackSnackbar
           visible={snackbar.visible}

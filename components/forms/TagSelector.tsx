@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState, useMemo } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import {
@@ -15,7 +16,6 @@ import { Spinner } from '@/components/atoms/Spinner';
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { CreateTagModal } from './CreateTagModal';
 import { createStyles } from './styles/TagSelector.styles';
 
 import type { Tag } from '../../features/tags/hooks';
@@ -25,30 +25,34 @@ interface TagSelectorProps<T extends object> {
   label?: string;
   options: Tag[];
   loading?: boolean;
-  onCreateTag?: (name: string, color: string) => Promise<Tag | null>;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  onSearchFocus?: () => void;
 }
-
 export const TagSelector = <T extends object>({
   name,
   label,
   options,
   loading,
-  onCreateTag,
   disabled,
   style,
+  onSearchFocus,
 }: TagSelectorProps<T>) => {
   const { control } = useFormContext<T>();
   const [searchInput, setSearchInput] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [creating, setCreating] = useState(false);
+  const router = useRouter();
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Filtra opciones por search input (case-insensitive)
+  // Filtra opciones por search input (case-insensitive, ignora tildes y espacios)
+  function normalize(str: string) {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); // quita acentos      .replace(/\s+/g, ''); // quita espacios
+  }
   const filteredOptions = useMemo(
-    () => options.filter((tag) => tag.name.toLowerCase().includes(searchInput.toLowerCase())),
+    () => options.filter((tag) => normalize(tag.name).includes(normalize(searchInput))),
     [searchInput, options]
   );
 
@@ -58,22 +62,7 @@ export const TagSelector = <T extends object>({
         control={control}
         name={name}
         render={({ field: { value = [], onChange }, fieldState: { error } }) => {
-          const handleCreateTagWithCallback = async (name: string, color: string) => {
-            if (!onCreateTag) return;
-
-            setCreating(true);
-            try {
-              const newTag = await onCreateTag(name, color);
-              if (newTag) {
-                // Agregar el nuevo tag a la selección actual
-                onChange([...value, newTag]);
-              }
-            } catch (error) {
-              console.error('Error creating tag:', error);
-            } finally {
-              setCreating(false);
-            }
-          };
+          // handleCreateTagWithCallback eliminado: ya no se usa, la creación es en página aparte
 
           return (
             <View style={[styles.container, style]}>
@@ -99,31 +88,38 @@ export const TagSelector = <T extends object>({
               )}
 
               {/* Contenedor de búsqueda y creación */}
-              <View style={styles.searchContainer}>
-                {/* Input de búsqueda */}
-                <View style={[styles.inputContainer, error && { borderColor: theme.colors.error }]}>
+              <View
+                style={[
+                  styles.searchContainer,
+                  { flexDirection: 'row', alignItems: 'center', gap: 8 },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { flex: 1 },
+                    error && { borderColor: theme.colors.error },
+                  ]}
+                >
                   <RNTextInput
                     value={searchInput}
                     onChangeText={setSearchInput}
                     placeholder="Buscar etiquetas..."
                     editable={!disabled}
                     style={styles.textInput}
+                    onFocus={onSearchFocus}
                   />
                   {loading && <Spinner size="small" style={{ marginRight: 8 }} />}
                 </View>
-                {/* Botón para crear nueva etiqueta */}
-                {onCreateTag && (
-                  <Button
-                    mode="outlined"
-                    onPress={() => setShowCreateModal(true)}
-                    disabled={disabled || creating}
-                    loading={creating}
-                    style={styles.createButton}
-                    icon={<Ionicons name="add" size={18} color={theme.colors.primary} />}
-                  >
-                    Crear etiqueta
-                  </Button>
-                )}
+                <Button
+                  mode="outlined"
+                  onPress={() => router.push('/tags/create')}
+                  disabled={disabled}
+                  style={[styles.createButton, { flex: 0.25, minWidth: 80, maxWidth: 120 }]}
+                  icon={<Ionicons name="add" size={18} color={theme.colors.primary} />}
+                >
+                  Crear
+                </Button>
               </View>
 
               {/* Lista de sugerencias */}
@@ -164,13 +160,7 @@ export const TagSelector = <T extends object>({
 
               {error && <Text style={styles.errorText}>{error?.message}</Text>}
 
-              {/* Modal para crear nueva etiqueta */}
-              <CreateTagModal
-                visible={showCreateModal}
-                onClose={() => setShowCreateModal(false)}
-                onCreateTag={handleCreateTagWithCallback}
-                loading={creating}
-              />
+              {/* Modal para crear nueva etiqueta eliminado: ahora es una página independiente */}
             </View>
           );
         }}

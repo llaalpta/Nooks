@@ -38,8 +38,7 @@ export const ControlledImagePicker = <T extends object>({
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'images',
-        allowsEditing: true,
-        aspect: [16, 9],
+        allowsEditing: false, // No crop, subida directa
         quality: 0.8,
       });
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
@@ -76,8 +75,7 @@ export const ControlledImagePicker = <T extends object>({
     try {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: 'images',
-        allowsEditing: true,
-        aspect: [16, 9],
+        allowsEditing: false, // No crop, subida directa
         quality: 0.8,
       });
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
@@ -135,16 +133,16 @@ export const ControlledImagePicker = <T extends object>({
       control={control}
       name={name}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <View style={[styles.container, style]}>
+        <View style={[styles.container, { width: '100%' }, style]}>
           {label && <Text style={styles.label}>{label}</Text>}
 
-          <View style={styles.imageContainer}>
+          <View style={[styles.imageContainer, { width: '100%' }]}>
             {value ? (
               // Imagen seleccionada
-              <View style={styles.imagePreview}>
+              <View style={[styles.imagePreview, { width: '100%' }]}>
                 <Image
                   source={{ uri: value }}
-                  style={[styles.image, { aspectRatio }]}
+                  style={[styles.image, { aspectRatio, width: '100%' }]}
                   resizeMode="cover"
                 />
                 <TouchableOpacity
@@ -158,7 +156,7 @@ export const ControlledImagePicker = <T extends object>({
             ) : (
               // Placeholder cuando no hay imagen
               <TouchableOpacity
-                style={[styles.placeholderContainer, { aspectRatio }]}
+                style={[styles.placeholderContainer, { aspectRatio, width: '100%' }]}
                 onPress={() => handleImagePickerPress(onChange)}
                 disabled={disabled}
               >

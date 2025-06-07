@@ -322,19 +322,6 @@ export default function TreasureFormScreen() {
               options={tags}
               loading={createTagMutation.isPending}
               disabled={isLoadingTreasureTags && mode === 'edit'}
-              onCreateTag={async (name, color) => {
-                if (!user?.id) return null;
-                try {
-                  const result = await createTagMutation.mutateAsync({
-                    name,
-                    color,
-                    user_id: user.id,
-                  });
-                  return result as any;
-                } catch {
-                  return null;
-                }
-              }}
             />
           )}
           <Button
