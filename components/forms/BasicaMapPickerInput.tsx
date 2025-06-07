@@ -4,16 +4,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
-import {
-  View,
-  StyleProp,
-  ViewStyle,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
+import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import {
   PlatformMapView as MapView,
   PlatformMarker as Marker,
@@ -83,18 +77,23 @@ export const BasicMapPickerInput = <T extends object>({
   // Usar hooks unificados
   const { handleMapReady: originalHandleMapReady, getMarkerProps } = useMapMarkers();
 
+  const [snackbar, setSnackbar] = useState({
+    visible: false,
+    message: '',
+    type: 'error' as 'error' | 'success' | 'info',
+  });
   const { isLocating, getCurrentLocation, isLocationInArea } = useLocationService({
     onLocationObtained: (coords) => {
-      // Solo actualizar región si no hay realm específico o si está dentro del área
       if (!realmCenter || !realmRadius || isLocationInArea(coords, realmCenter, realmRadius)) {
         const newRegion = {
           ...coords,
-          latitudeDelta: region.latitudeDelta, // Mantener el zoom actual
+          latitudeDelta: region.latitudeDelta,
           longitudeDelta: region.longitudeDelta,
         };
         setRegion(newRegion);
       }
     },
+    onLocationError: (msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),
     validateArea:
       realmCenter && realmRadius
         ? (coords) => isLocationInArea(coords, realmCenter, realmRadius)
@@ -194,6 +193,12 @@ export const BasicMapPickerInput = <T extends object>({
 
         return (
           <View style={[styles.container, style]}>
+            <FeedbackSnackbar
+              visible={snackbar.visible}
+              onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+              message={snackbar.message}
+              type={snackbar.type}
+            />
             {label && <Text style={styles.label}>{label}</Text>}
 
             <View style={styles.mapContainer}>
@@ -216,13 +221,13 @@ export const BasicMapPickerInput = <T extends object>({
                     );
 
                     if (!isValid) {
-                      Alert.alert(
-                        'Ubicación inválida',
-                        'La ubicación debe estar dentro del área del realm.'
-                      );
+                      setSnackbar({
+                        visible: true,
+                        message: 'La ubicación debe estar dentro del área del realm.',
+                        type: 'error',
+                      });
                       return;
                     }
-
                     // Notificar validación
                     if (onLocationValidation) {
                       onLocationValidation(isValid, { latitude, longitude });
@@ -237,7 +242,7 @@ export const BasicMapPickerInput = <T extends object>({
                 showsMyLocationButton={false}
                 showsCompass={false}
                 showsScale={false}
-                showsBuildings={true}
+                showsBuildings={false}
                 showsTraffic={false}
                 showsIndoors={true}
                 rotateEnabled={true}

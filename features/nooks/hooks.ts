@@ -1,8 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { getNooks, getNookById, createNook, updateNook, deleteNook } from './api';
+import {
+  getNooks,
+  getNookById,
+  createNook,
+  updateNook,
+  deleteNook,
+  getNookPrimaryImageUrl,
+} from './api';
 
 import type { Database } from '../../types/supabase';
+
+// Hook para obtener la URL pública de la imagen principal de un Nook
+export function useNookPrimaryImageUrl(nookId: string) {
+  return useQuery({
+    queryKey: ['nook-primary-image', nookId],
+    queryFn: () => getNookPrimaryImageUrl(nookId),
+    enabled: !!nookId,
+  });
+}
 
 export type Nook = Database['public']['Tables']['locations']['Row'];
 export type NookInsert = Database['public']['Tables']['locations']['Insert'];

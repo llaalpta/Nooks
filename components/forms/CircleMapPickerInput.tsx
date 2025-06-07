@@ -6,6 +6,7 @@ import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
+import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import {
   PlatformMapView as MapView,
   PlatformMarker as Marker,
@@ -51,12 +52,18 @@ export const CircleMapPickerInput = <T extends object>({
 }: CircleMapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
   const [region, setRegion] = useState<Region>(initialRegion);
+
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
   // Usar hooks unificados
   const { handleMapReady, getMarkerProps } = useMapMarkers();
 
+  const [snackbar, setSnackbar] = useState({
+    visible: false,
+    message: '',
+    type: 'error' as 'error' | 'success' | 'info',
+  });
   const { isLocating, getCurrentLocation } = useLocationService({
     onLocationObtained: (coords) => {
       const newRegion = {
@@ -66,6 +73,7 @@ export const CircleMapPickerInput = <T extends object>({
       };
       setRegion(newRegion);
     },
+    onLocationError: (msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),
   });
 
   const centerOnCurrentLocation = async (
@@ -74,6 +82,15 @@ export const CircleMapPickerInput = <T extends object>({
   ) => {
     const location = await getCurrentLocation();
     if (location) {
+      const newRegion = {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta,
+      };
+      setRegion(() => {
+        return newRegion;
+      });
       onChange({
         latitude: location.latitude,
         longitude: location.longitude,
@@ -90,12 +107,18 @@ export const CircleMapPickerInput = <T extends object>({
         const circleLocation = value as CircleLocation | undefined;
         return (
           <View style={[styles.container, style]}>
+            <FeedbackSnackbar
+              visible={snackbar.visible}
+              onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+              message={snackbar.message}
+              type={snackbar.type}
+            />
             {label && <Text style={styles.label}>{label}</Text>}
 
             <View style={styles.mapContainer}>
               <MapView
                 style={{ flex: 1 }}
-                initialRegion={region}
+                region={region}
                 onMapReady={handleMapReady}
                 onPress={(e: any) => {
                   if (disabled) return;
@@ -185,6 +208,7 @@ export const CircleMapPickerInput = <T extends object>({
                       maximumTrackTintColor={theme.colors.outline}
                       thumbTintColor={theme.colors.primary}
                       disabled={disabled}
+                      step={1}
                     />
                     <Text style={styles.sliderMaxLabel}>{maxRadius}m</Text>
                   </View>

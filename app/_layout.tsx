@@ -1,3 +1,4 @@
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Slot, useSegments, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -65,11 +66,13 @@ export default function RootLayout() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AuthGate>
-            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-              <Slot />
-            </View>
-          </AuthGate>
+          <ActionSheetProvider>
+            <AuthGate>
+              <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                <Slot />
+              </View>
+            </AuthGate>
+          </ActionSheetProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

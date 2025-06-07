@@ -58,22 +58,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       color: theme.colors.onSurfaceVariant,
       marginBottom: theme.spacing.m,
     },
-    tagsContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing.s,
-    },
-    tag: {
-      backgroundColor: theme.colors.primaryContainer,
-      paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.s,
-      borderRadius: theme.borderRadius.m,
-    },
-    tagText: {
-      fontSize: 12,
-      fontWeight: '500',
-      color: theme.colors.onPrimaryContainer,
-    },
     sectionHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -101,8 +85,8 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       fontWeight: '500',
       color: theme.colors.onPrimaryContainer,
     },
-    // Cards de nooks
-    nookCard: {
+    // Cards de treasures
+    treasureCard: {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
       padding: theme.spacing.l,
@@ -112,13 +96,13 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       borderColor: theme.colors.outlineVariant,
       ...theme.elevation.level2,
     },
-    nookTitle: {
+    treasureTitle: {
       fontSize: 18,
       fontWeight: '700',
       color: theme.colors.onSurface,
       marginBottom: theme.spacing.s,
     },
-    nookDescription: {
+    treasureDescription: {
       fontSize: 14,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 20,

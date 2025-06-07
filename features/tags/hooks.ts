@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { getLocationTags } from './api';
 import {
   getTags,
   getTagById,
@@ -13,6 +14,14 @@ import {
 } from './api';
 
 import type { Database } from '../../types/supabase';
+// Obtener los tags asociados a una ubicación (Nook o Realm)
+export function useLocationTagsQuery(locationId: string | undefined) {
+  return useQuery({
+    queryKey: ['location-tags', locationId],
+    queryFn: () => getLocationTags(locationId!),
+    enabled: !!locationId,
+  });
+}
 
 export type Tag = Database['public']['Tables']['tags']['Row'];
 export type TagInsert = Database['public']['Tables']['tags']['Insert'];

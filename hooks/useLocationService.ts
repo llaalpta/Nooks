@@ -3,7 +3,6 @@
 
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { Alert } from 'react-native';
 
 interface LocationCoords {
   latitude: number;
@@ -44,11 +43,7 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       const hasPermissionGranted = hasPermission ?? (await requestLocationPermission());
 
       if (!hasPermissionGranted) {
-        Alert.alert(
-          'Permiso requerido',
-          'Activa los permisos de ubicación para usar esta función.',
-          [{ text: 'OK' }]
-        );
+        console.error('Activa los permisos de ubicación para usar esta función.');
         setIsLocating(false);
         return null;
       }
@@ -65,8 +60,7 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
 
       // Validar área si se proporciona validador
       if (options.validateArea && !options.validateArea(coords)) {
-        Alert.alert(
-          'Fuera del área',
+        console.error(
           options.areaValidationMessage || 'Tu ubicación actual está fuera del área permitida.'
         );
         setIsLocating(false);
@@ -85,7 +79,7 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       const errorMessage =
         'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.';
 
-      Alert.alert('Error', errorMessage);
+      console.error(errorMessage);
 
       if (options.onLocationError) {
         options.onLocationError(errorMessage);

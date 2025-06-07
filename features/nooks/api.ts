@@ -1,6 +1,20 @@
+// Obtener la URL de la imagen principal de un Nook
 import { supabase } from '../../utils/supabase';
 
 import type { TablesInsert, TablesUpdate } from '../../types/supabase';
+export const getNookPrimaryImageUrl = async (nookId: string): Promise<string | null> => {
+  const { data, error } = await supabase
+    .from('media')
+    .select('storage_path')
+    .eq('entity_type', 'location')
+    .eq('entity_id', nookId)
+    .order('is_primary', { ascending: false })
+    .limit(1)
+    .single();
+  if (error || !data) return null;
+  const { data: urlData } = supabase.storage.from('media').getPublicUrl(data.storage_path);
+  return urlData?.publicUrl ?? null;
+};
 
 // CRUD Nooks (ubicaciones específicas dentro de un Realm)
 export const getNooks = async (realmId: string) => {

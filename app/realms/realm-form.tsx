@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView } from 'react-native';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -23,7 +23,7 @@ import {
   useCreateRealmMutation,
   useRealmPrimaryImageUrl,
 } from '@/features/realms/hooks';
-import { useTagsQuery, useCreateTagMutation } from '@/features/tags/hooks';
+import { useTagsQuery, useCreateTagMutation, useLocationTagsQuery } from '@/features/tags/hooks';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { createRealmFormStyles } from '@/styles/app/modals/form.style';
 
@@ -97,6 +97,9 @@ export default function RealmForm() {
     type: 'success' as 'success' | 'error' | 'warning',
   });
 
+  // Obtener tags asociados al realm en edición
+  const { data: realmTags = [], isLoading: isLoadingRealmTags } = useLocationTagsQuery(realmId);
+
   const methods = useForm<FormValues>({
     defaultValues: {
       name: '',
@@ -104,31 +107,47 @@ export default function RealmForm() {
       is_public: false,
       location: { latitude: null, longitude: null, radius: 100 },
       image: null,
-      tags: [],
+      tags: realmTags,
     },
     mode: 'onChange',
   });
 
-  const { handleSubmit, reset, watch } = methods;
+  const { handleSubmit, reset, watch, setValue } = methods;
   const watchedValues = watch();
 
   useEffect(() => {
-    if (isEditing && realmQuery.data) {
+    if (isEditing && realmQuery.data && !isLoadingRealmTags) {
       const realm = realmQuery.data;
-      reset({
-        name: realm.name,
-        description: realm.description || '',
-        is_public: false,
-        location: {
-          latitude: realm.latitude,
-          longitude: realm.longitude,
-          radius: realm.radius || 100,
-        },
-        image: existingImageUrl || null,
-        tags: [],
-      });
+      try {
+        reset({
+          name: realm.name,
+          description: realm.description || '',
+          is_public: false,
+          location: {
+            latitude: realm.latitude,
+            longitude: realm.longitude,
+            radius: realm.radius || 100,
+          },
+          image: existingImageUrl || null,
+          tags: realmTags,
+        });
+      } catch {
+        setSnackbar({
+          visible: true,
+          message: 'Error al cargar las etiquetas del realm.',
+          type: 'error',
+        });
+      }
     }
-  }, [isEditing, realmQuery.data, existingImageUrl, reset]);
+  }, [isEditing, realmQuery.data, existingImageUrl, realmTags, isLoadingRealmTags, reset]);
+
+  // Forzar la precarga de tags en edición cuando realmTags cambian
+  useEffect(() => {
+    if (isEditing && !isLoadingRealmTags && realmTags) {
+      // console.log('[RealmForm] setValue tags:', realmTags);
+      setValue('tags', realmTags);
+    }
+  }, [isEditing, isLoadingRealmTags, realmTags, setValue]);
 
   async function handleCreateTag(name: string, color: string) {
     if (!user?.id) return null;
@@ -178,11 +197,11 @@ export default function RealmForm() {
       }
 
       if (!data.location.latitude || !data.location.longitude) {
-        Alert.alert(
-          'Ubicación requerida',
-          'Por favor, selecciona una ubicación en el mapa antes de continuar.',
-          [{ text: 'OK' }]
-        );
+        setSnackbar({
+          visible: true,
+          message: 'Por favor, selecciona una ubicación en el mapa antes de continuar.',
+          type: 'error',
+        });
         return;
       }
 
@@ -345,12 +364,21 @@ export default function RealmForm() {
             icon="pricetag-outline"
             styles={styles}
           >
-            <TagSelector
-              name="tags"
-              options={tags}
-              loading={createTagMutation.isPending}
-              onCreateTag={handleCreateTag}
-            />
+            {isLoadingRealmTags && isEditing ? (
+              <View style={{ alignItems: 'center', padding: 16 }}>
+                <Text>Cargando etiquetas...</Text>
+              </View>
+            ) : (
+              <>
+                {/* console.log('[RealmForm] render TagSelector, tags en form:', watchedValues.tags) */}
+                <TagSelector
+                  name="tags"
+                  options={tags}
+                  loading={createTagMutation.isPending}
+                  onCreateTag={handleCreateTag}
+                />
+              </>
+            )}
           </FormSection>
 
           {/* Botones de acción */}

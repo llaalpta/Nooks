@@ -1,6 +1,15 @@
+// Obtener todas las etiquetas de una ubicación (Nook o Realm)
 import { supabase } from '../../utils/supabase';
 
 import type { TablesInsert, TablesUpdate } from '../../types/supabase';
+export const getLocationTags = async (locationId: string) => {
+  const { data, error } = await supabase
+    .from('location_tags')
+    .select('tag_id, tags:tag_id (id, name, color)')
+    .eq('location_id', locationId);
+  if (error) throw new Error(error.message || 'Error al obtener los tags de la ubicación');
+  return (data || []).map((item) => item.tags);
+};
 
 // CRUD Tags (etiquetas)
 export const getTags = async (userId: string) => {
