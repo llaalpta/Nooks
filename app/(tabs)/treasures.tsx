@@ -11,35 +11,50 @@ import { EmptyState } from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { RealmCard } from '@/features/realms/components/RealmCard';
-import { useRealmsQuery, useRealmPrimaryImageUrl } from '@/features/realms/hooks';
-import { useSearchRealmsQuery } from '@/features/search/hooks'; // 🔥 Importar hook de búsqueda
+import { useSearchTreasuresQuery, useAllTreasuresQuery } from '@/features/search/hooks'; // 🔥 IMPORT CORREGIDO
+import { TreasureCard } from '@/features/treasures/components/TreasureCard';
+import { useTreasurePrimaryImageUrl } from '@/features/treasures/hooks';
 import { createStyles } from '@/styles/app/tabs/realms.style';
 
 import type { Tables } from '@/types/supabase';
 
+// Tipo para treasures con tags
 type Tag = Tables<'tags'>;
-type RealmWithTags = Tables<'locations'> & { tags: Tag[] };
+type TreasureWithTags = Tables<'treasures'> & { tags: Tag[]; imageUrl?: string | null };
 
-function RealmCardWithImage({ realm }: { realm: RealmWithTags }) {
-  const { data: imageUrl } = useRealmPrimaryImageUrl(realm.id);
+function TreasureCardWithImage({ treasure }: { treasure: TreasureWithTags }) {
+  const theme = useAppTheme(); // 🔥 USAR useAppTheme() EN LUGAR DE IMPORT
 
-  if (!realm || !realm.id) {
-    return null;
-  }
+  // Obtener imagen principal
+  const { data: imageUrl } = useTreasurePrimaryImageUrl(treasure.id);
+
+  // Validar y mapear tags igual que en NookDetailScreen
+  const validTags = (treasure.tags || [])
+    .filter((tag: any) => tag && tag.name && typeof tag.name === 'string' && tag.id && tag.user_id)
+    .map((tag: any) => ({
+      ...tag,
+      color: tag.color ?? null,
+    }));
 
   return (
-    <RealmCard
-      realm={{
-        ...realm,
-        imageUrl,
-        tags: Array.isArray(realm.tags) ? realm.tags : [],
-      }}
-    />
+    <View style={{ paddingHorizontal: theme.spacing.m }}>
+      <TreasureCard
+        treasure={{
+          ...treasure,
+          name: treasure.name || 'Sin nombre',
+          description:
+            treasure.description && typeof treasure.description === 'string'
+              ? treasure.description
+              : null,
+          imageUrl,
+          tags: validTags,
+        }}
+      />
+    </View>
   );
 }
 
-export default function RealmsScreen() {
+export default function TreasuresScreen() {
   const theme = useAppTheme();
   const styles = createStyles(theme);
   const { user } = useAuth();
@@ -48,49 +63,54 @@ export default function RealmsScreen() {
   const [searchText, setSearchText] = useState('');
   const [tagSearchText, setTagSearchText] = useState('');
 
-  // Queries principales
-  const { data: realmsFromApi = [], isLoading, isError, refetch } = useRealmsQuery(user?.id || '');
+  // 🔥 Queries principales - USAR HOOK CORRECTO
+  const {
+    data: treasuresFromApi = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useAllTreasuresQuery(user?.id || ''); // 🔥 HOOK CORRECTO
 
   // 🔥 Query de búsqueda por nombre (solo se ejecuta cuando hay texto)
-  const { data: searchResults = [] } = useSearchRealmsQuery(user?.id || '', searchText.trim());
+  const { data: searchResults = [] } = useSearchTreasuresQuery(user?.id || '', searchText.trim());
 
-  // 🔥 Determinar qué datos mostrar
-  const realmsToShow = useMemo(() => {
-    let filteredRealms: RealmWithTags[];
+  // 🔥 Determinar qué datos mostrar - IGUAL QUE REALMS
+  const treasuresToShow = useMemo(() => {
+    let filteredTreasures: TreasureWithTags[];
 
     // Si hay búsqueda por nombre, usar resultados de búsqueda
     if (searchText.trim()) {
-      filteredRealms = searchResults as RealmWithTags[];
+      filteredTreasures = searchResults as TreasureWithTags[];
     } else {
-      // Si no hay búsqueda por nombre, usar todos los realms
-      filteredRealms = realmsFromApi as RealmWithTags[];
+      // Si no hay búsqueda por nombre, usar todos los treasures
+      filteredTreasures = treasuresFromApi as TreasureWithTags[];
     }
 
     // 🔥 Filtrar por nombre de etiqueta (búsqueda local)
     if (tagSearchText.trim()) {
       const normalizedTagSearch = tagSearchText.toLowerCase().trim();
-      filteredRealms = filteredRealms.filter((realm) => {
-        if (!Array.isArray(realm.tags)) return false;
-        return realm.tags.some(
+      filteredTreasures = filteredTreasures.filter((treasure) => {
+        if (!Array.isArray(treasure.tags)) return false;
+        return treasure.tags.some(
           (tag) => tag.name && tag.name.toLowerCase().includes(normalizedTagSearch)
         );
       });
     }
 
-    // Validar realms
-    return filteredRealms.filter((realm) => {
+    // Validar treasures
+    return filteredTreasures.filter((treasure) => {
       return (
-        realm &&
-        realm.id &&
-        typeof realm.id === 'string' &&
-        realm.name !== null &&
-        realm.name !== undefined
+        treasure &&
+        treasure.id &&
+        typeof treasure.id === 'string' &&
+        treasure.name !== null &&
+        treasure.name !== undefined
       );
     });
-  }, [searchText, searchResults, realmsFromApi, tagSearchText]);
+  }, [searchText, searchResults, treasuresFromApi, tagSearchText]);
 
-  const handleCreateRealm = () => {
-    router.push({ pathname: '/realms/realm-form', params: { from: 'list' } });
+  const handleCreateTreasure = () => {
+    router.push({ pathname: '/(modals)/treasure-form', params: { from: 'list' } });
   };
 
   const handleRetry = () => {
@@ -102,11 +122,9 @@ export default function RealmsScreen() {
     setTagSearchText('');
   };
 
-  const renderItem = ({ item }: { item: RealmWithTags }) => {
-    if (!item || !item.id) {
-      return null;
-    }
-    return <RealmCardWithImage realm={item} />;
+  const renderItem = ({ item }: { item: TreasureWithTags }) => {
+    if (!item || !item.id) return null;
+    return <TreasureCardWithImage treasure={item} />;
   };
 
   if (isLoading) {
@@ -117,7 +135,7 @@ export default function RealmsScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <EmptyState
-          message="Ocurrió un error al cargar los realms."
+          message="Ocurrió un error al cargar los treasures."
           actionLabel="Reintentar"
           onAction={handleRetry}
         />
@@ -131,8 +149,8 @@ export default function RealmsScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header con título */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mis Realms</Text>
-        <Text style={styles.headerSubtitle}>Reinos donde guardas tus tesoros</Text>
+        <Text style={styles.headerTitle}>Mis Treasures</Text>
+        <Text style={styles.headerSubtitle}>Todos tus objetos guardados</Text>
       </View>
 
       {/* 🔥 Sección de búsqueda - DOS CAMPOS */}
@@ -141,7 +159,7 @@ export default function RealmsScreen() {
         <TextInput
           value={searchText}
           onChangeText={setSearchText}
-          placeholder="Buscar por nombre del realm..."
+          placeholder="Buscar por nombre del treasure..."
           style={styles.searchInput}
           rightElement={
             searchText ? (
@@ -175,8 +193,8 @@ export default function RealmsScreen() {
         {hasActiveSearch && (
           <View style={styles.resultsIndicator}>
             <Text style={styles.resultsText}>
-              {realmsToShow.length} realm{realmsToShow.length !== 1 ? 's' : ''} encontrado
-              {realmsToShow.length !== 1 ? 's' : ''}
+              {treasuresToShow.length} treasure{treasuresToShow.length !== 1 ? 's' : ''} encontrado
+              {treasuresToShow.length !== 1 ? 's' : ''}
             </Text>
             <TouchableOpacity onPress={handleClearSearch}>
               <Text style={styles.clearFiltersText}>Limpiar búsqueda</Text>
@@ -185,14 +203,13 @@ export default function RealmsScreen() {
         )}
       </View>
 
-      {/* Lista de realms */}
-      {realmsToShow.length > 0 ? (
+      {/* Lista de treasures */}
+      {treasuresToShow.length > 0 ? (
         <FlatList
-          data={realmsToShow}
+          data={treasuresToShow}
           renderItem={renderItem}
           keyExtractor={(item) => item?.id || Math.random().toString()}
           contentContainerStyle={{
-            marginHorizontal: theme.spacing.m,
             paddingTop: 10,
             gap: 10,
             paddingBottom: 85,
@@ -208,16 +225,16 @@ export default function RealmsScreen() {
           <EmptyState
             message={
               hasActiveSearch
-                ? 'No se encontraron realms con esos criterios'
-                : 'No tienes realms todavía'
+                ? 'No se encontraron treasures con esos criterios'
+                : 'No tienes treasures todavía'
             }
-            actionLabel={hasActiveSearch ? 'Limpiar búsqueda' : 'Crear nuevo realm'}
-            onAction={hasActiveSearch ? handleClearSearch : handleCreateRealm}
+            actionLabel={hasActiveSearch ? 'Limpiar búsqueda' : 'Crear nuevo treasure'}
+            onAction={hasActiveSearch ? handleClearSearch : handleCreateTreasure}
           />
         </View>
       )}
 
-      <FloatingActionButton onPress={handleCreateRealm} icon="add" />
+      <FloatingActionButton onPress={handleCreateTreasure} icon="add" />
     </SafeAreaView>
   );
 }

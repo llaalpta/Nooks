@@ -141,4 +141,44 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     listFooter: {
       height: 80,
     },
+    nooksCard: {
+      marginHorizontal: theme.spacing.m,
+      backgroundColor: theme.colors.surface,
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: theme.spacing.m,
+      borderRadius: theme.spacing.m,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      ...theme.elevation.level2, // Elevación para destacar
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    nooksTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    nooksCounter: {
+      backgroundColor: theme.colors.primaryContainer,
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.spacing.l,
+      minWidth: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    nooksCounterText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.colors.onPrimaryContainer,
+    },
+
+    nooksTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+      marginRight: theme.spacing.s,
+    },
   });

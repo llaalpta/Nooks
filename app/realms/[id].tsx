@@ -184,6 +184,14 @@ export default function RealmDetailScreen() {
               realm.description.trim() && (
                 <Text style={styles.description}>{realm.description}</Text>
               )}
+
+            <Text
+              style={{ marginTop: theme.spacing.s, color: theme.colors.primary }}
+              variant="titleSmall"
+            >
+              Localizacion
+            </Text>
+
             <View
               style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
             >
@@ -204,53 +212,66 @@ export default function RealmDetailScreen() {
             </View>
 
             {Array.isArray((realm as any).tags) && (realm as any).tags.length > 0 && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: theme.spacing.s,
-                  marginTop: theme.spacing.m,
-                }}
-              >
-                {(realm as any).tags.map((tag: Tag) => {
-                  // Validar que el tag tenga nombre válido
-                  if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+              <>
+                <Text
+                  style={{ marginTop: theme.spacing.s, color: theme.colors.primary }}
+                  variant="titleSmall"
+                >
+                  Tags
+                </Text>
 
-                  return (
-                    <View
-                      key={tag.id || `tag-${Math.random()}`}
-                      style={{
-                        backgroundColor: tag.color || theme.colors.primaryContainer,
-                        paddingHorizontal: theme.spacing.m,
-                        paddingVertical: theme.spacing.s,
-                        borderRadius: theme.borderRadius.m,
-                      }}
-                    >
-                      <Text
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: theme.spacing.s,
+                    marginTop: theme.spacing.m,
+                  }}
+                >
+                  {(realm as any).tags.map((tag: Tag) => {
+                    // Validar que el tag tenga nombre válido
+                    if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+
+                    return (
+                      <View
+                        key={tag.id || `tag-${Math.random()}`}
                         style={{
-                          fontSize: 12,
-                          fontWeight: '500',
-                          color: theme.colors.onSurface,
+                          backgroundColor: tag.color || theme.colors.primaryContainer,
+                          paddingHorizontal: theme.spacing.m,
+                          paddingVertical: theme.spacing.s,
+                          borderRadius: theme.borderRadius.m,
                         }}
                       >
-                        {tag.name}
-                      </Text>
-                    </View>
-                  );
-                })}
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '500',
+                            color: theme.colors.onSurface,
+                          }}
+                        >
+                          {tag.name}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+        {/* Sección de nooks con validación */}
+        <View style={styles.nooksCard}>
+          <View style={styles.nooksTitleContainer}>
+            <Text style={styles.nooksTitle}>Nooks</Text>
+            {nooks && nooks.length !== undefined && (
+              <View style={styles.nooksCounter}>
+                <Text style={styles.nooksCounterText}>{nooks.length}</Text>
               </View>
             )}
           </View>
-
-          {/* Sección de nooks con validación */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              Nooks{nooks && nooks.length !== undefined ? ` (${nooks.length})` : ''}
-            </Text>
-            <Button mode="contained" onPress={handleCreateNook}>
-              Crear Nook
-            </Button>
-          </View>
+          <Button mode="contained" onPress={handleCreateNook}>
+            Crear Nook
+          </Button>
         </View>
       </>
     );
@@ -375,7 +396,6 @@ export default function RealmDetailScreen() {
             nooks.length === 0
               ? { flexGrow: 1 }
               : {
-                  marginHorizontal: 8,
                   paddingTop: 10,
                   gap: 10,
                   paddingBottom: 85,

@@ -140,9 +140,6 @@ export default function NookDetailScreen() {
     );
   }
 
-  // Render item actualizado con TreasureCard
-  const renderTreasureItem = ({ item }: { item: any }) => <TreasureCardWithImage treasure={item} />;
-
   // Componente Header para FlatList
   const renderHeader = () => {
     if (!nook) return null;
@@ -161,8 +158,6 @@ export default function NookDetailScreen() {
             </View>
           )}
         </View>
-
-        {/* Contenido principal */}
         <View style={styles.contentContainer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{nook.name || 'Sin nombre'}</Text>
@@ -170,7 +165,12 @@ export default function NookDetailScreen() {
             {nook.description &&
               typeof nook.description === 'string' &&
               nook.description.trim() && <Text style={styles.description}>{nook.description}</Text>}
-
+            <Text
+              style={{ marginTop: theme.spacing.s, color: theme.colors.primary }}
+              variant="titleSmall"
+            >
+              Localizacion
+            </Text>
             <View
               style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
             >
@@ -191,57 +191,78 @@ export default function NookDetailScreen() {
 
             {/* Tags con validación COMPLETA - usando estilos inline ya que eliminaste los del archivo */}
             {Array.isArray((nook as any).tags) && (nook as any).tags.length > 0 && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: theme.spacing.s,
-                  marginTop: theme.spacing.m,
-                }}
-              >
-                {(nook as any).tags.map((tag: Tag) => {
-                  // Validar que el tag tenga nombre válido
-                  if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+              <>
+                <Text
+                  style={{ marginTop: theme.spacing.s, color: theme.colors.primary }}
+                  variant="titleSmall"
+                >
+                  Tags
+                </Text>
 
-                  return (
-                    <View
-                      key={tag.id || `tag-${Math.random()}`}
-                      style={{
-                        backgroundColor: tag.color || theme.colors.primaryContainer,
-                        paddingHorizontal: theme.spacing.m,
-                        paddingVertical: theme.spacing.s,
-                        borderRadius: theme.borderRadius.m,
-                      }}
-                    >
-                      <Text
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: theme.spacing.s,
+                    marginTop: theme.spacing.m,
+                  }}
+                >
+                  {(nook as any).tags.map((tag: Tag) => {
+                    // Validar que el tag tenga nombre válido
+                    if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+
+                    return (
+                      <View
+                        key={tag.id || `tag-${Math.random()}`}
                         style={{
-                          fontSize: 12,
-                          fontWeight: '500',
-                          color: theme.colors.onSurface,
+                          backgroundColor: tag.color || theme.colors.primaryContainer,
+                          paddingHorizontal: theme.spacing.m,
+                          paddingVertical: theme.spacing.s,
+                          borderRadius: theme.borderRadius.m,
                         }}
                       >
-                        {tag.name}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '500',
+                            color: theme.colors.onSurface,
+                          }}
+                        >
+                          {tag.name}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
             )}
           </View>
 
           {/* Sección de treasures con validación */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              Treasures{treasures && treasures.length !== undefined ? ` (${treasures.length})` : ''}
-            </Text>
-            <Button mode="contained" onPress={handleCreateTreasure}>
-              Crear Treasure
-            </Button>
+        </View>
+        <View style={styles.nooksCard}>
+          <View style={styles.nooksTitleContainer}>
+            <Text style={styles.nooksTitle}>Treasures</Text>
+            {treasures && treasures.length !== undefined && (
+              <View style={styles.nooksCounter}>
+                <Text style={styles.nooksCounterText}>{treasures.length}</Text>
+              </View>
+            )}
           </View>
+          <Button mode="contained" onPress={handleCreateTreasure}>
+            Crear Treasure
+          </Button>
         </View>
       </>
     );
   };
+
+  // ✅ ÚNICA DEFINICIÓN - Render item con wrapper para padding
+  const renderTreasureItem = ({ item }: { item: any }) => (
+    <View style={{ paddingHorizontal: theme.spacing.m }}>
+      <TreasureCardWithImage treasure={item} />
+    </View>
+  );
 
   // Componente Empty para cuando no hay treasures
   const renderEmptyComponent = () => (
@@ -361,7 +382,6 @@ export default function NookDetailScreen() {
             treasures.length === 0
               ? { flexGrow: 1 }
               : {
-                  marginHorizontal: 8,
                   paddingTop: 10,
                   gap: 10,
                   paddingBottom: 85,

@@ -21,10 +21,19 @@ export const getNooks = async (realmId: string) => {
   const { data, error } = await supabase
     .from('locations')
     .select(
-      '*, location_tags ( tag_id, tags:tag_id (id, name, color) ), treasures:treasures(count)'
+      `
+      *, 
+      location_tags ( 
+        tag_id, 
+        tags:tag_id (id, name, color) 
+      ), 
+      treasures:treasures(count)
+    `
     )
     .eq('parent_location_id', realmId);
+
   if (error) throw new Error(error.message || 'Error al obtener los Nooks');
+
   // Mapea los tags y el count de treasures para cada nook
   return (data || []).map((nook) => ({
     ...nook,

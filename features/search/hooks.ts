@@ -1,6 +1,13 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { searchItems, searchRealms, searchNooks, searchTreasures, SearchParams } from './api';
+import {
+  searchItems,
+  searchRealms,
+  searchNooks,
+  searchTreasures,
+  getAllTreasures,
+  SearchParams,
+} from './api';
 
 export function useSearchItemsQuery(
   params: SearchParams
@@ -19,7 +26,7 @@ export function useSearchRealmsQuery(
   return useQuery({
     queryKey: ['search-realms', userId, searchText],
     queryFn: () => searchRealms(userId, searchText),
-    enabled: !!userId && !!searchText,
+    enabled: !!userId && !!searchText, // ✅ Ya está correcto
   });
 }
 
@@ -30,10 +37,11 @@ export function useSearchNooksQuery(
   return useQuery({
     queryKey: ['search-nooks', userId, searchText],
     queryFn: () => searchNooks(userId, searchText),
-    enabled: !!userId && !!searchText,
+    enabled: !!userId && !!searchText, // ✅ Ya está correcto
   });
 }
 
+// 🔥 HOOK CORREGIDO - Solo busca cuando hay texto
 export function useSearchTreasuresQuery(
   userId: string,
   searchText: string
@@ -41,6 +49,17 @@ export function useSearchTreasuresQuery(
   return useQuery({
     queryKey: ['search-treasures', userId, searchText],
     queryFn: () => searchTreasures(userId, searchText),
-    enabled: !!userId && !!searchText,
+    enabled: !!userId && !!searchText, // 🔥 AGREGAR && !!searchText
+  });
+}
+
+// 🔥 NUEVO HOOK - Para obtener todos los treasures
+export function useAllTreasuresQuery(
+  userId: string
+): UseQueryResult<Awaited<ReturnType<typeof getAllTreasures>>> {
+  return useQuery({
+    queryKey: ['treasures', 'all', userId],
+    queryFn: () => getAllTreasures(userId),
+    enabled: !!userId,
   });
 }

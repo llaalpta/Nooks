@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { CreateTagForm } from './CreateTagForm';
+import { CreateTagForm } from '../tags/CreateTagForm';
 
 export default function CreateTagModal() {
   const theme = useAppTheme();

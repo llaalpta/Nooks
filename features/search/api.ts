@@ -1,3 +1,7 @@
+// ========================================
+// 1. API DE BÚSQUEDA CORREGIDA (search/api.ts)
+// ========================================
+
 import { supabase } from '../../utils/supabase';
 
 import type { Database } from '../../types/supabase';
@@ -83,9 +87,25 @@ export const searchItems = async ({
     if (error) throw new Error(error.message || 'Error al buscar Nooks');
     nooks = data || [];
   }
-  // Treasures
+  // Treasures - CORREGIDO PARA INCLUIR TAGS
   if (type === 'treasure' || type === 'all') {
-    let query = supabase.from('treasures').select('*, treasure_tags(tag_id)').eq('user_id', userId);
+    let query = supabase
+      .from('treasures')
+      .select(
+        `
+        *,
+        treasure_tags (
+          tag_id,
+          tags:tag_id (
+            id,
+            name,
+            color,
+            user_id
+          )
+        )
+      `
+      )
+      .eq('user_id', userId);
     if (searchText) {
       query = query.or(`name.ilike.%${searchText}%,description.ilike.%${searchText}%`);
     }
@@ -96,7 +116,12 @@ export const searchItems = async ({
     }
     const { data, error } = await query;
     if (error) throw new Error(error.message || 'Error al buscar Treasures');
-    treasures = data || [];
+
+    // Transformar la estructura para incluir tags en el formato esperado
+    treasures = (data || []).map((treasure) => ({
+      ...treasure,
+      tags: (treasure.treasure_tags || []).map((tt: any) => tt.tags).filter(Boolean),
+    }));
   }
   return { realms, nooks, treasures };
 };
@@ -123,12 +148,65 @@ export const searchNooks = async (userId: string, searchText: string) => {
   return data;
 };
 
+// 🔥 FUNCIÓN CORREGIDA
 export const searchTreasures = async (userId: string, searchText: string) => {
+  let query = supabase
+    .from('treasures')
+    .select(
+      `
+      *,
+      treasure_tags (
+        tag_id,
+        tags:tag_id (
+          id,
+          name,
+          color,
+          user_id
+        )
+      )
+    `
+    )
+    .eq('user_id', userId);
+
+  if (searchText && searchText.trim() !== '') {
+    query = query.ilike('name', `%${searchText}%`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message || 'Error al buscar Treasures');
+
+  // Transformar la estructura para incluir tags en el formato esperado
+  return (data || []).map((treasure) => ({
+    ...treasure,
+    tags: (treasure.treasure_tags || []).map((tt: any) => tt.tags).filter(Boolean),
+  }));
+};
+
+// 🔥 NUEVA FUNCIÓN - getAllTreasures para obtener todos los treasures del usuario
+export const getAllTreasures = async (userId: string) => {
   const { data, error } = await supabase
     .from('treasures')
-    .select('*')
-    .eq('user_id', userId)
-    .ilike('name', `%${searchText}%`);
-  if (error) throw new Error(error.message || 'Error al buscar Treasures');
-  return data;
+    .select(
+      `
+      *,
+      treasure_tags (
+        tag_id,
+        tags:tag_id (
+          id,
+          name,
+          color,
+          user_id
+        )
+      )
+    `
+    )
+    .eq('user_id', userId);
+
+  if (error) throw new Error(error.message || 'Error al obtener todos los treasures');
+
+  // Transformar la estructura para incluir tags en el formato esperado
+  return (data || []).map((treasure) => ({
+    ...treasure,
+    tags: (treasure.treasure_tags || []).map((tt: any) => tt.tags).filter(Boolean),
+  }));
 };

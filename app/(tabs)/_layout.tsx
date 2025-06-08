@@ -55,11 +55,30 @@ export default function TabsLayout() {
             }}
           />
           <Tabs.Screen
+            name="treasures"
+            options={{
+              title: 'Treasures',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="diamond-outline" size={size} color={color} />
+              ),
+            }}
+          />
+
+          <Tabs.Screen
             name="map"
             options={{
               title: 'Mapa',
               tabBarIcon: ({ color, size }) => (
                 <Ionicons name="map-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="tags"
+            options={{
+              title: 'Tags',
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="pricetags-outline" size={size} color={color} />
               ),
             }}
           />

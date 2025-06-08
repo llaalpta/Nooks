@@ -203,9 +203,15 @@ export function TreasureCard({ treasure }: TreasureCardProps) {
 
           {/* TAGS AL FONDO - SOLO 2 LÍNEAS */}
           {Array.isArray(treasure.tags) && treasure.tags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {tagLines.map((lineData, lineIndex) => renderTagLine(lineIndex, lineData))}
-            </View>
+            <>
+              <Text
+                style={{ marginTop: theme.spacing.s, color: theme.colors.primary }}
+                variant="titleSmall"
+              ></Text>
+              <View style={styles.tagsContainer}>
+                {tagLines.map((lineData, lineIndex) => renderTagLine(lineIndex, lineData))}
+              </View>
+            </>
           )}
         </View>
       </View>
