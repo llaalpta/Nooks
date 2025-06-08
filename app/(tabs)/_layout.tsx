@@ -48,7 +48,7 @@ export default function TabsLayout() {
           <Tabs.Screen
             name="realms"
             options={{
-              title: 'Reinos',
+              title: 'Realms',
               tabBarIcon: ({ color, size }) => (
                 <Ionicons name="list-outline" size={size} color={color} />
               ),

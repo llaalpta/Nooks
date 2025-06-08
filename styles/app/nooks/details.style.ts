@@ -43,6 +43,7 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     },
     headerTitle: {
       fontSize: 28,
+      lineHeight: 36, // Añadir esta línea
       fontWeight: 'bold',
       color: theme.colors.onSurface,
       marginBottom: theme.spacing.s,
@@ -51,12 +52,10 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       fontSize: 16,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 24,
-      marginBottom: theme.spacing.m,
     },
     location: {
       fontSize: 14,
       color: theme.colors.onSurfaceVariant,
-      marginBottom: theme.spacing.m,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -79,6 +78,23 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       paddingVertical: theme.spacing.s,
       borderRadius: theme.borderRadius.s,
       gap: 6,
+    },
+    tagsContainer: {
+      marginTop: theme.spacing.m,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: theme.spacing.s,
+    },
+    tag: {
+      backgroundColor: theme.colors.primaryContainer,
+      paddingHorizontal: theme.spacing.m,
+      paddingVertical: theme.spacing.s,
+      borderRadius: theme.borderRadius.m,
+    },
+    tagText: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: theme.colors.onPrimaryContainer,
     },
     addButtonText: {
       fontSize: 14,

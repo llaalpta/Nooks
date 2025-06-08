@@ -38,7 +38,7 @@ export const createStyles = (theme: AppTheme) =>
       borderBottomLeftRadius: theme.borderRadius.m,
     },
     cardContent: {
-      flex: 1,
+      flex: 1, // AÑADIDO: para que ocupe el espacio disponible
       paddingVertical: theme.spacing.s,
       paddingHorizontal: theme.spacing.s,
       justifyContent: 'flex-start',
@@ -73,15 +73,15 @@ export const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
       lineHeight: 20,
       color: theme.colors.onSurfaceVariant, // Diferente color para el contador
+      letterSpacing: -0.2,
       flexShrink: 0, // No se reduce nunca
-      marginLeft: 2, // Pequeño espacio entre título y contador
+      marginLeft: 4, // Pequeño espacio entre título y contador
     },
 
     description: {
       fontSize: 14,
       lineHeight: 20,
       color: theme.colors.onSurfaceVariant,
-      marginBottom: theme.spacing.s,
       fontWeight: '400',
     },
     locationInfo: {
@@ -95,6 +95,7 @@ export const createStyles = (theme: AppTheme) =>
     tagsContainer: {
       flexDirection: 'column',
       gap: 2,
+      // Sin marginBottom para que quede pegado al fondo
     },
     tagLine: {
       flexDirection: 'row',
@@ -129,20 +130,6 @@ export const createStyles = (theme: AppTheme) =>
       transform: [{ scale: 0.98 }],
       opacity: 0.9,
     },
-    locationIndicator: {
-      alignItems: 'center',
-      position: 'absolute',
-      backgroundColor: theme.colors.surface + '80',
-      borderRadius: theme.borderRadius.s,
-      bottom: theme.spacing.xs,
-      left: theme.spacing.xs,
-      padding: 1,
-    },
-    statusText: {
-      fontSize: 10,
-      fontWeight: '600',
-      color: theme.colors.onPrimaryContainer,
-    },
     statusIndicator: {
       position: 'absolute',
       backgroundColor: theme.colors.surface + '80',
@@ -150,6 +137,20 @@ export const createStyles = (theme: AppTheme) =>
       top: theme.spacing.xs,
       right: theme.spacing.s,
       padding: 2,
+    },
+    locationIndicator: {
+      alignItems: 'center',
+      position: 'absolute',
+      backgroundColor: theme.colors.surface + '80',
+      borderRadius: theme.borderRadius.s,
+      bottom: theme.spacing.xs,
+      left: theme.spacing.ml,
+      padding: 1,
+    },
+    statusText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: theme.colors.onPrimaryContainer,
     },
     imageOverlay: {
       position: 'absolute',

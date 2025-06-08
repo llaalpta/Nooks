@@ -42,14 +42,14 @@ export const CustomHeader = () => {
         return 'moon';
       case 'system':
       default:
-        return 'phone-portrait';
+        return 'contrast-outline';
     }
   };
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
         {/* Botón de volver */}
-        <TouchableOpacity onPress={toggleTheme}>
+        <TouchableOpacity style={styles.themeToggleButton} onPress={toggleTheme}>
           <Ionicons name={getThemeIcon()} size={24} color={theme.colors.primary} />
         </TouchableOpacity>
 

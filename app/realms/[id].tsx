@@ -1,7 +1,9 @@
+// Aquí está el archivo completo con la función NookCardWithImage corregida:
+
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, FlatList, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
@@ -12,7 +14,8 @@ import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { useNooksQuery } from '@/features/nooks/hooks';
+import { NookCard } from '@/features/nooks/components/NookCard';
+import { useNooksQuery, useNookPrimaryImageUrl } from '@/features/nooks/hooks';
 import { hasNooks } from '@/features/realms/api';
 import {
   useRealmQuery,
@@ -20,10 +23,7 @@ import {
   useDeleteRealmMutation,
 } from '@/features/realms/hooks';
 import { createStyles } from '@/styles/app/realms/details.style';
-
-import type { Tables } from '@/types/supabase';
-
-type Nook = Tables<'locations'>;
+import { formatArea } from '@/utils/realmUtils';
 
 interface Tag {
   id: string;
@@ -81,7 +81,7 @@ export default function RealmDetailScreen() {
         setSnackbar({
           visible: true,
           message:
-            'Este reino contiene nooks. Elimina los nooks primero antes de eliminar el reino.',
+            'Este realm contiene nooks. Elimina los nooks primero antes de eliminar el realm.',
           type: 'error',
         });
         setShowDeleteDialog(false);
@@ -92,7 +92,7 @@ export default function RealmDetailScreen() {
       await deleteMutation.mutateAsync(realmId);
       setSnackbar({
         visible: true,
-        message: 'Reino eliminado con éxito',
+        message: 'Realm eliminado con éxito',
         type: 'success',
       });
       setShowDeleteDialog(false);
@@ -101,7 +101,7 @@ export default function RealmDetailScreen() {
     } catch (error: any) {
       setSnackbar({
         visible: true,
-        message: error?.message || 'No se pudo eliminar el reino',
+        message: error?.message || 'No se pudo eliminar el realm',
         type: 'error',
       });
       setShowDeleteDialog(false);
@@ -124,20 +124,36 @@ export default function RealmDetailScreen() {
     });
   };
 
-  const handleNookPress = (nookId: string) => {
-    router.push(`/nooks/${nookId}`);
-  };
+  // FUNCIÓN CORREGIDA - Componente que inyecta la imagen principal del nook usando el hook
+  function NookCardWithImage({ nook }: { nook: any }) {
+    const { data: imageUrl } = useNookPrimaryImageUrl(nook.id);
 
-  const renderNookItem = ({ item }: { item: Nook }) => (
-    <TouchableOpacity
-      style={styles.nookCard}
-      onPress={() => handleNookPress(item.id)}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.nookTitle}>{item.name}</Text>
-      {item.description && <Text style={styles.nookDescription}>{item.description}</Text>}
-    </TouchableOpacity>
-  );
+    // Filtrar y validar tags antes de pasarlas al componente
+    const validTags = (nook.tags || [])
+      .filter((tag: any) => tag && tag.name && typeof tag.name === 'string')
+      .map((tag: any) => ({
+        id: tag.id || `tag-${Math.random()}`,
+        name: tag.name,
+        color: tag.color ?? undefined,
+      }));
+
+    return (
+      <NookCard
+        nook={{
+          ...nook,
+          name: nook.name || 'Sin nombre', // Validar nombre también
+          description:
+            nook.description && typeof nook.description === 'string' ? nook.description : null,
+          imageUrl,
+          tags: validTags,
+          treasuresCount: typeof nook.treasuresCount === 'number' ? nook.treasuresCount : undefined,
+        }}
+      />
+    );
+  }
+
+  // Usar el nuevo componente en el renderItem
+  const renderNookItem = ({ item }: { item: any }) => <NookCardWithImage nook={item} />;
 
   // Componente Header para FlatList
   const renderHeader = () => {
@@ -145,9 +161,6 @@ export default function RealmDetailScreen() {
 
     return (
       <>
-        {/* Espaciador para el header fijo */}
-        <View style={styles.headerSpacer} />
-
         {/* Imagen principal */}
         <View style={styles.imageContainer}>
           {imageUrl ? (
@@ -165,38 +178,74 @@ export default function RealmDetailScreen() {
         {/* Contenido principal */}
         <View style={styles.contentContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>{realm.name}</Text>
+            <Text style={styles.headerTitle}>{realm.name || 'Sin nombre'}</Text>
+            {realm.description &&
+              typeof realm.description === 'string' &&
+              realm.description.trim() && (
+                <Text style={styles.description}>{realm.description}</Text>
+              )}
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
+            >
+              <Image
+                source={require('@/assets/images/realm-marker.png')}
+                style={{
+                  width: 32,
+                  height: 32,
+                }}
+                resizeMode="contain"
+              />
+              {realm.latitude && realm.longitude && (
+                <Text style={styles.location}>
+                  {realm.latitude.toFixed(6)}, {realm.longitude.toFixed(6)}
+                  {realm.radius ? ` ◯ ${formatArea(realm.radius)}` : ''}
+                </Text>
+              )}
+            </View>
 
-            {realm.description && <Text style={styles.description}>{realm.description}</Text>}
-
-            {realm.latitude && realm.longitude && (
-              <Text style={styles.location}>
-                📍 {realm.latitude.toFixed(5)}, {realm.longitude.toFixed(5)}
-                {realm.radius && ` • Radio: ${realm.radius.toFixed(0)}m`}
-              </Text>
-            )}
-
-            {/* Tags */}
             {Array.isArray((realm as any).tags) && (realm as any).tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {(realm as any).tags.map((tag: Tag) => (
-                  <View
-                    key={tag.id}
-                    style={[styles.tag, tag.color ? { backgroundColor: tag.color } : null]}
-                  >
-                    <Text style={[styles.tagText, tag.color ? { color: '#FFFFFF' } : null]}>
-                      {tag.name}
-                    </Text>
-                  </View>
-                ))}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: theme.spacing.s,
+                  marginTop: theme.spacing.m,
+                }}
+              >
+                {(realm as any).tags.map((tag: Tag) => {
+                  // Validar que el tag tenga nombre válido
+                  if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+
+                  return (
+                    <View
+                      key={tag.id || `tag-${Math.random()}`}
+                      style={{
+                        backgroundColor: tag.color || theme.colors.primaryContainer,
+                        paddingHorizontal: theme.spacing.m,
+                        paddingVertical: theme.spacing.s,
+                        borderRadius: theme.borderRadius.m,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '500',
+                          color: theme.colors.onSurface,
+                        }}
+                      >
+                        {tag.name}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             )}
           </View>
 
-          {/* Sección de nooks */}
+          {/* Sección de nooks con validación */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              Nooks {nooks.length !== undefined && `(${nooks.length})`}
+              Nooks{nooks && nooks.length !== undefined ? ` (${nooks.length})` : ''}
             </Text>
             <Button mode="contained" onPress={handleCreateNook}>
               Crear Nook
@@ -210,7 +259,7 @@ export default function RealmDetailScreen() {
   // Componente Empty para cuando no hay nooks
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>No hay nooks en este reino. ¡Crea el primero!</Text>
+      <Text style={styles.emptyText}>No hay nooks en este realm. ¡Crea el primero!</Text>
     </View>
   );
 
@@ -228,7 +277,7 @@ export default function RealmDetailScreen() {
           optionsMenuItems={[]}
         />
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No se pudo cargar el reino</Text>
+          <Text style={styles.emptyText}>No se pudo cargar el realm</Text>
           <Button mode="contained" onPress={() => router.push('/(tabs)/realms')}>
             Volver a Realms
           </Button>
@@ -250,13 +299,13 @@ export default function RealmDetailScreen() {
               ? [
                   {
                     icon: 'pencil-outline',
-                    label: 'Editar reino',
+                    label: 'Editar realm',
                     onPress: handleEditRealm,
                     color: theme.colors.primary,
                   },
                   {
                     icon: 'trash-outline',
-                    label: 'Eliminar reino',
+                    label: 'Eliminar realm',
                     onPress: handleDeleteRealm,
                     color: theme.colors.error,
                   },
@@ -265,7 +314,7 @@ export default function RealmDetailScreen() {
           }
         />
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No se pudieron cargar los nooks de este reino.</Text>
+          <Text style={styles.emptyText}>No se pudieron cargar los nooks de este realm.</Text>
           <Button mode="contained" onPress={() => router.replace(`/realms/${realmId}`)}>
             Reintentar
           </Button>
@@ -278,8 +327,8 @@ export default function RealmDetailScreen() {
     <>
       <Dialog
         visible={showDeleteDialog}
-        title="Eliminar reino"
-        description="¿Estás seguro de que quieres eliminar este reino? Esta acción no se puede deshacer."
+        title="Eliminar realm"
+        description="¿Estás seguro de que quieres eliminar este realm? Esta acción no se puede deshacer."
         confirmLabel="Eliminar"
         cancelLabel="Cancelar"
         onConfirm={handleConfirmDeleteRealm}
@@ -300,13 +349,13 @@ export default function RealmDetailScreen() {
               ? [
                   {
                     icon: 'pencil-outline',
-                    label: 'Editar reino',
+                    label: 'Editar realm',
                     onPress: handleEditRealm,
                     color: theme.colors.primary,
                   },
                   {
                     icon: 'trash-outline',
-                    label: 'Eliminar reino',
+                    label: 'Eliminar realm',
                     onPress: handleDeleteRealm,
                     color: theme.colors.error,
                   },
@@ -322,7 +371,17 @@ export default function RealmDetailScreen() {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmptyComponent}
-          contentContainerStyle={nooks.length === 0 ? { flexGrow: 1 } : undefined}
+          contentContainerStyle={
+            nooks.length === 0
+              ? { flexGrow: 1 }
+              : {
+                  marginHorizontal: 8,
+                  paddingTop: 10,
+                  gap: 10,
+                  paddingBottom: 85,
+                  minHeight: '100%',
+                }
+          }
           showsVerticalScrollIndicator={false}
           bounces={true}
           ListFooterComponent={<View style={styles.listFooter} />}

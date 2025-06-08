@@ -20,10 +20,17 @@ export const getNookPrimaryImageUrl = async (nookId: string): Promise<string | n
 export const getNooks = async (realmId: string) => {
   const { data, error } = await supabase
     .from('locations')
-    .select('*')
+    .select(
+      '*, location_tags ( tag_id, tags:tag_id (id, name, color) ), treasures:treasures(count)'
+    )
     .eq('parent_location_id', realmId);
   if (error) throw new Error(error.message || 'Error al obtener los Nooks');
-  return data;
+  // Mapea los tags y el count de treasures para cada nook
+  return (data || []).map((nook) => ({
+    ...nook,
+    tags: (nook.location_tags || []).map((lt: any) => lt.tags),
+    treasuresCount: nook.treasures?.[0]?.count ?? 0,
+  }));
 };
 
 export const getNookById = async (id: string) => {
@@ -52,4 +59,32 @@ export const updateNook = async (id: string, data: TablesUpdate<'locations'>) =>
 export const deleteNook = async (id: string) => {
   const { error } = await supabase.from('locations').delete().eq('id', id);
   if (error) throw new Error(error.message || 'Error al eliminar el Nook');
+};
+
+export const getNookWithTags = async (id: string) => {
+  const { data, error } = await supabase
+    .from('locations')
+    .select(
+      `
+      *,
+      location_tags (
+        tag_id,
+        tags:tag_id (
+          id,
+          name,
+          color
+        )
+      )
+    `
+    )
+    .eq('id', id)
+    .single();
+
+  if (error) throw new Error(error.message || 'Error al obtener el Nook con etiquetas');
+
+  // Mapear tags igual que en getNooks
+  return {
+    ...data,
+    tags: (data.location_tags || []).map((lt: any) => lt.tags),
+  };
 };

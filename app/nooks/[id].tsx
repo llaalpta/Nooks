@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router, Href } from 'expo-router';
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, FlatList, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
@@ -16,8 +16,15 @@ import {
   useDeleteNookMutation,
   useNookPrimaryImageUrl,
 } from '@/features/nooks/hooks';
-import { useTreasuresQuery } from '@/features/treasures/hooks';
+import { TreasureCard } from '@/features/treasures/components/TreasureCard';
+import { useTreasurePrimaryImageUrl, useTreasuresQuery } from '@/features/treasures/hooks';
 import { createStyles } from '@/styles/app/nooks/details.style';
+
+interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
 
 export default function NookDetailScreen() {
   const theme = useAppTheme();
@@ -104,20 +111,37 @@ export default function NookDetailScreen() {
     });
   };
 
-  const handleTreasurePress = (treasureId: string) => {
-    router.push(`/treasures/${treasureId}`);
-  };
+  // Componente que inyecta la imagen principal del treasure
+  function TreasureCardWithImage({ treasure }: { treasure: any }) {
+    const { data: imageUrl } = useTreasurePrimaryImageUrl(treasure.id);
 
-  const renderTreasureItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.treasureCard}
-      onPress={() => handleTreasurePress(item.id)}
-      activeOpacity={0.8}
-    >
-      <Text style={styles.treasureTitle}>{item.name}</Text>
-      {item.description && <Text style={styles.treasureDescription}>{item.description}</Text>}
-    </TouchableOpacity>
-  );
+    // Filtrar y validar tags antes de pasarlas al componente
+    const validTags = (treasure.tags || [])
+      .filter((tag: any) => tag && tag.name && typeof tag.name === 'string')
+      .map((tag: any) => ({
+        id: tag.id || `tag-${Math.random()}`,
+        name: tag.name,
+        color: tag.color ?? undefined,
+      }));
+
+    return (
+      <TreasureCard
+        treasure={{
+          ...treasure,
+          name: treasure.name || 'Sin nombre',
+          description:
+            treasure.description && typeof treasure.description === 'string'
+              ? treasure.description
+              : null,
+          imageUrl,
+          tags: validTags,
+        }}
+      />
+    );
+  }
+
+  // Render item actualizado con TreasureCard
+  const renderTreasureItem = ({ item }: { item: any }) => <TreasureCardWithImage treasure={item} />;
 
   // Componente Header para FlatList
   const renderHeader = () => {
@@ -125,10 +149,6 @@ export default function NookDetailScreen() {
 
     return (
       <>
-        {/* Espaciador para el header fijo */}
-        <View style={styles.headerSpacer} />
-
-        {/* Imagen principal */}
         <View style={styles.imageContainer}>
           {primaryImageUrl ? (
             <Image source={{ uri: primaryImageUrl }} style={styles.image} resizeMode="cover" />
@@ -145,21 +165,74 @@ export default function NookDetailScreen() {
         {/* Contenido principal */}
         <View style={styles.contentContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>{nook.name}</Text>
+            <Text style={styles.headerTitle}>{nook.name || 'Sin nombre'}</Text>
 
-            {nook.description && <Text style={styles.description}>{nook.description}</Text>}
+            {nook.description &&
+              typeof nook.description === 'string' &&
+              nook.description.trim() && <Text style={styles.description}>{nook.description}</Text>}
 
-            {nook.latitude && nook.longitude && (
-              <Text style={styles.location}>
-                📍 {nook.latitude.toFixed(5)}, {nook.longitude.toFixed(5)}
-              </Text>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
+            >
+              <Image
+                source={require('@/assets/images/realm-marker.png')}
+                style={{
+                  width: 32,
+                  height: 32,
+                }}
+                resizeMode="contain"
+              />
+              {nook.latitude && nook.longitude && (
+                <Text style={styles.location}>
+                  {nook.latitude.toFixed(6)}, {nook.longitude.toFixed(6)}
+                </Text>
+              )}
+            </View>
+
+            {/* Tags con validación COMPLETA - usando estilos inline ya que eliminaste los del archivo */}
+            {Array.isArray((nook as any).tags) && (nook as any).tags.length > 0 && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: theme.spacing.s,
+                  marginTop: theme.spacing.m,
+                }}
+              >
+                {(nook as any).tags.map((tag: Tag) => {
+                  // Validar que el tag tenga nombre válido
+                  if (!tag || !tag.name || typeof tag.name !== 'string') return null;
+
+                  return (
+                    <View
+                      key={tag.id || `tag-${Math.random()}`}
+                      style={{
+                        backgroundColor: tag.color || theme.colors.primaryContainer,
+                        paddingHorizontal: theme.spacing.m,
+                        paddingVertical: theme.spacing.s,
+                        borderRadius: theme.borderRadius.m,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '500',
+                          color: theme.colors.onSurface,
+                        }}
+                      >
+                        {tag.name}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
             )}
           </View>
 
-          {/* Sección de treasures */}
+          {/* Sección de treasures con validación */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              Treasures {treasures.length !== undefined && `(${treasures.length})`}
+              Treasures{treasures && treasures.length !== undefined ? ` (${treasures.length})` : ''}
             </Text>
             <Button mode="contained" onPress={handleCreateTreasure}>
               Crear Treasure
@@ -277,14 +350,24 @@ export default function NookDetailScreen() {
           }
         />
 
-        {/* Lista con contenido */}
+        {/* Lista con contenido usando el mismo estilo que RealmsScreen */}
         <FlatList
           data={treasures}
           renderItem={renderTreasureItem}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmptyComponent}
-          contentContainerStyle={treasures.length === 0 ? { flexGrow: 1 } : undefined}
+          contentContainerStyle={
+            treasures.length === 0
+              ? { flexGrow: 1 }
+              : {
+                  marginHorizontal: 8,
+                  paddingTop: 10,
+                  gap: 10,
+                  paddingBottom: 85,
+                  minHeight: '100%',
+                }
+          }
           showsVerticalScrollIndicator={false}
           bounces={true}
           ListFooterComponent={<View style={styles.listFooter} />}

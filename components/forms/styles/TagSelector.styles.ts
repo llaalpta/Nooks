@@ -29,8 +29,6 @@ export const createStyles = (theme: AppTheme) =>
     searchContainer: {
       flexDirection: 'row',
       gap: 4,
-      marginBottom: theme.spacing.xs,
-      marginTop: 0,
     },
     createButton: {
       flex: 0.25,
@@ -40,13 +38,6 @@ export const createStyles = (theme: AppTheme) =>
       alignSelf: 'stretch',
       justifyContent: 'center',
       paddingVertical: 0,
-    },
-    textInput: {
-      flex: 1,
-      padding: theme.spacing.sm,
-      fontSize: 16,
-      color: theme.colors.onSurface,
-      height: 40,
     },
     tagsContainer: {
       flexDirection: 'row',
@@ -74,6 +65,7 @@ export const createStyles = (theme: AppTheme) =>
       marginLeft: 4,
     },
     suggestionContainer: {
+      marginTop: theme.spacing.s,
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.outline,
@@ -82,7 +74,7 @@ export const createStyles = (theme: AppTheme) =>
       marginBottom: theme.spacing.s,
     },
     suggestionItem: {
-      paddingVertical: theme.spacing.sm,
+      paddingVertical: theme.spacing.s,
       paddingHorizontal: theme.spacing.m,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,
@@ -102,7 +94,7 @@ export const createStyles = (theme: AppTheme) =>
       fontSize: 16,
     },
     noSuggestions: {
-      padding: theme.spacing.m,
+      padding: theme.spacing.s,
       color: theme.colors.onSurfaceVariant,
       fontStyle: 'italic',
       textAlign: 'center',
@@ -111,5 +103,53 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.l, // Más padding horizontal
+      paddingVertical: theme.spacing.m,
+    },
+
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: '100%',
+    },
+
+    modalContent: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.spacing.m,
+      width: '100%',
+      maxWidth: 400,
+      maxHeight: '85%', // Más alto (era 80%)
+      overflow: 'hidden',
+      ...theme.elevation.level3,
+    },
+
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.l, // Más padding horizontal
+      paddingVertical: theme.spacing.m,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outlineVariant,
+    },
+
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+      flex: 1,
+    },
+
+    modalCloseButton: {
+      padding: theme.spacing.xs,
+      borderRadius: theme.spacing.xs,
     },
   });

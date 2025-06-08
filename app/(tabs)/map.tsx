@@ -287,7 +287,7 @@ export default function MapScreen() {
           showsUserLocation={hasPermission}
           showsMyLocationButton={false}
           onPress={handleMapPress}
-          customMapStyle={theme.dark ? darkMapStyle : undefined}
+          customMapStyle={theme.dark ? darkMapStyle : []}
         >
           {/* Círculo para mostrar el radio del realm seleccionado */}
           {selectedRealm && selectedRealm.radius && (

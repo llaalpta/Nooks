@@ -38,3 +38,28 @@ export const deleteTreasure = async (id: string) => {
   const { error } = await supabase.from('treasures').delete().eq('id', id);
   if (error) throw new Error(error.message || 'Error al eliminar el Treasure');
 };
+
+export const getTreasurePrimaryImageUrl = async (treasureId: string): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('media')
+      .select('storage_path')
+      .eq('entity_type', 'treasure')
+      .eq('entity_id', treasureId)
+      .order('is_primary', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    // Obtener la URL pública (como en tu formulario)
+    const { data: urlData } = supabase.storage.from('media').getPublicUrl(data.storage_path);
+
+    return urlData?.publicUrl || null;
+  } catch (error) {
+    console.warn('Error al obtener imagen del treasure:', error);
+    return null;
+  }
+};

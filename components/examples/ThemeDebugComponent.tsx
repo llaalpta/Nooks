@@ -10,7 +10,7 @@ const ThemeDebugComponent = () => {
   const isDarkMode = theme.dark;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+    <View style={[styles.container, { backgroundColor: 'theme.colors.red' }]}>
       <Text style={[styles.title, { color: theme.colors.onSurface }]}>🎨 Debug del Tema</Text>
 
       <View style={styles.infoCard}>

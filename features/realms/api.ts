@@ -6,14 +6,15 @@ import type { TablesInsert, TablesUpdate } from '../../types/supabase';
 export const getRealms = async (userId: string) => {
   const { data, error } = await supabase
     .from('locations')
-    .select(`*, location_tags ( tag_id, tags:tag_id (id, name, color) )`)
+    .select(`*, location_tags ( tag_id, tags:tag_id (id, name, color) ), nooks:locations(count)`)
     .eq('user_id', userId)
     .is('parent_location_id', null);
   if (error) throw new Error(error.message || 'Error al obtener los Realms');
-  // Mapea los tags para cada realm
+  // Mapea los tags y el count de nooks para cada realm
   return (data || []).map((realm) => ({
     ...realm,
     tags: (realm.location_tags || []).map((lt: any) => lt.tags),
+    nooksCount: realm.nooks?.[0]?.count ?? 0,
   }));
 };
 
@@ -42,8 +43,14 @@ export const getRealmWithTags = async (id: string) => {
     )
     .eq('id', id)
     .single();
+
   if (error) throw new Error(error.message || 'Error al obtener el Realm con etiquetas');
-  return data;
+
+  // Mapear tags igual que en getRealms
+  return {
+    ...data,
+    tags: (data.location_tags || []).map((lt: any) => lt.tags),
+  };
 };
 
 export const createRealm = async (data: TablesInsert<'locations'>) => {

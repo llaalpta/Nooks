@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -290,7 +291,7 @@ export default function RealmForm() {
 
   return (
     <FormProvider {...methods}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header unificado */}
         <CustomFormHeader
           title={isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}
@@ -411,7 +412,7 @@ export default function RealmForm() {
           message={snackbar.message}
           type={snackbar.type}
         />
-      </View>
+      </SafeAreaView>
     </FormProvider>
   );
 }

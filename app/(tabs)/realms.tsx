@@ -20,12 +20,18 @@ type RealmWithTags = Tables<'locations'> & { tags: Tag[] };
 
 function RealmCardWithImage({ realm }: { realm: RealmWithTags }) {
   const { data: imageUrl } = useRealmPrimaryImageUrl(realm.id);
+
+  // 🔥 Validación adicional antes de renderizar
+  if (!realm || !realm.id) {
+    return null;
+  }
+
   return (
     <RealmCard
       realm={{
         ...realm,
         imageUrl,
-        tags: realm.tags,
+        tags: Array.isArray(realm.tags) ? realm.tags : [], // 🔥 Garantizar que tags es un array
       }}
     />
   );
@@ -38,7 +44,17 @@ export default function RealmsScreen() {
 
   const { data: realmsFromApi = [], isLoading, isError, refetch } = useRealmsQuery(user?.id || '');
 
-  const realms: RealmWithTags[] = realmsFromApi as RealmWithTags[];
+  // 🔥 Filtrar realms válidos y añadir validaciones
+  const realms: RealmWithTags[] = (realmsFromApi as RealmWithTags[]).filter((realm) => {
+    // Validar que el realm tenga los campos mínimos necesarios
+    return (
+      realm &&
+      realm.id &&
+      typeof realm.id === 'string' &&
+      realm.name !== null &&
+      realm.name !== undefined
+    );
+  });
 
   const handleCreateRealm = () => {
     router.push({ pathname: '/realms/realm-form', params: { from: 'list' } });
@@ -48,7 +64,14 @@ export default function RealmsScreen() {
     refetch();
   };
 
-  const renderItem = ({ item }: { item: RealmWithTags }) => <RealmCardWithImage realm={item} />;
+  const renderItem = ({ item }: { item: RealmWithTags }) => {
+    // 🔥 Validación adicional en el render
+    if (!item || !item.id) {
+      return null;
+    }
+
+    return <RealmCardWithImage realm={item} />;
+  };
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -58,7 +81,7 @@ export default function RealmsScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <EmptyState
-          message="Ocurrió un error al cargar los reinos."
+          message="Ocurrió un error al cargar los realms."
           actionLabel="Reintentar"
           onAction={handleRetry}
         />
@@ -69,28 +92,33 @@ export default function RealmsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mis Reinos</Text>
-        <Text style={styles.headerSubtitle}>Lugares donde guardas tus tesoros</Text>
+        <Text style={styles.headerTitle}>Mis Realms</Text>
+        <Text style={styles.headerSubtitle}>Reinos donde guardas tus tesoros</Text>
       </View>
 
       {realms.length > 0 ? (
         <FlatList
           data={realms}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item?.id || Math.random().toString()} // 🔥 Fallback para keyExtractor
           contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 32,
-            minHeight: '100%', // fuerza scroll aunque haya pocos elementos
+            marginHorizontal: 8,
+            paddingTop: 10,
+            gap: 10,
+            paddingBottom: 85,
+            minHeight: '100%',
           }}
           showsVerticalScrollIndicator={true}
           keyboardShouldPersistTaps="handled"
+          // 🔥 Propiedades adicionales para manejar errores
+          removeClippedSubviews={false}
+          initialNumToRender={10}
         />
       ) : (
         <View style={styles.emptyContainer}>
           <EmptyState
-            message="No tienes reinos todavía"
-            actionLabel="Crear nuevo reino"
+            message="No tienes realms todavía"
+            actionLabel="Crear nuevo realm"
             onAction={handleCreateRealm}
           />
         </View>

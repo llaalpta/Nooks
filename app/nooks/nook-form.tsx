@@ -31,13 +31,14 @@ import {
   useLocationTagsQuery,
 } from '@/features/tags/hooks';
 import { useInvalidateTagsOnFocus } from '@/hooks/useInvalidateTagsOnFocus';
+import { useIsOnline } from '@/hooks/useIsOnline';
 import { createNookFormStyles } from '@/styles/app/modals/form.style';
 
 import type { Tables } from '@/types/supabase';
 
 type Realm = Tables<'locations'>;
 
-// Componente de sección visual reutilizable (igual que en realm-form)
+// Componente de sección unificado (igual que en realm-form)
 const FormSection = ({
   children,
   title,
@@ -52,19 +53,23 @@ const FormSection = ({
   styles: any;
 }) => {
   const theme = useAppTheme();
+
   return (
     <View style={styles.formSection}>
+      {/* Header de la sección (icono al final) */}
       <View style={styles.sectionHeader}>
-        {icon && (
-          <View style={styles.sectionIconContainer}>
-            <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
-          </View>
-        )}
         <View style={styles.sectionTextContainer}>
           <Text style={styles.sectionTitle}>{title}</Text>
           {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
         </View>
+        {icon && (
+          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.m }]}>
+            <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
+          </View>
+        )}
       </View>
+
+      {/* Contenido */}
       <View style={styles.sectionContent}>{children}</View>
     </View>
   );
@@ -85,7 +90,6 @@ interface NookFormValues {
   tags: any[];
 }
 
-// 'onSubmit' no se usa, así que lo quitamos para evitar warning de compilación
 export default function NookFormScreen({ initialValues, mode: modeProp }: NookFormProps) {
   // Leer params de la ruta
   const params = useLocalSearchParams<{ id?: string; realmId?: string; from?: string }>();
@@ -101,6 +105,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   const createTagMutation = useCreateTagMutation();
   const { data: tags = [] } = useTagsQuery(user?.id || '');
   useInvalidateTagsOnFocus(user?.id || '');
+  const isOnline = useIsOnline();
 
   // Cargar datos del nook si es edición
   const { data: nook, isLoading: isLoadingNook } = useNookQuery(nookId || '');
@@ -117,8 +122,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   });
 
   // Formulario controlado
-
-  // Prefill para edición
   const methods = useForm<NookFormValues>({
     defaultValues: {
       name: nook?.name || initialValues?.name || '',
@@ -128,13 +131,14 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
         longitude: nook?.longitude ?? initialValues?.location?.longitude ?? 0,
       },
       realm_id: nook?.parent_location_id || initialValues?.realm_id || '',
-      image: initialValues?.image || '', // Se actualizará abajo si es edición
+      image: initialValues?.image || '',
       tags: nookTags || initialValues?.tags || [],
     },
     mode: 'onChange',
   });
   const { handleSubmit, setValue, watch, reset } = methods;
-  const watched = watch();
+  const watchedValues = watch();
+
   // Ref para el ScrollView principal
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -164,9 +168,8 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   }, [mode, nook, nookTags, isLoadingNookTags, reset, primaryImageUrl]);
 
   // Forzar la precarga de tags en edición cuando nookTags cambian
-  React.useEffect(() => {
+  useEffect(() => {
     if (mode === 'edit' && !isLoadingNookTags && nookTags) {
-      // console.log('[NookForm] setValue tags:', nookTags);
       setValue('tags', nookTags);
     }
   }, [mode, isLoadingNookTags, nookTags, setValue]);
@@ -201,81 +204,108 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   const removeTagFromLocationMutation = useRemoveTagFromLocationMutation();
 
   const handleSave = async (data: NookFormValues) => {
-    if (!selectedRealm || !data.location.latitude || !data.location.longitude || !data.name) {
-      setSnackbar({
-        visible: true,
-        message: 'Asegúrate de seleccionar un realm, ubicación y nombre.',
-        type: 'error',
-      });
-      return;
-    }
-
-    if (!user) {
-      setSnackbar({
-        visible: true,
-        message: 'Debes iniciar sesión para guardar el nook.',
-        type: 'error',
-      });
-      return;
-    }
-
     try {
+      if (!isOnline) {
+        setSnackbar({
+          visible: true,
+          message: 'No tienes conexión a internet. Por favor, conéctate e intenta nuevamente.',
+          type: 'error',
+        });
+        return;
+      }
+
+      if (!user) {
+        setSnackbar({
+          visible: true,
+          message: 'Usuario no autenticado',
+          type: 'error',
+        });
+        return;
+      }
+
+      if (!selectedRealm || !data.location.latitude || !data.location.longitude) {
+        setSnackbar({
+          visible: true,
+          message: 'Por favor, selecciona un realm y una ubicación en el mapa antes de continuar.',
+          type: 'error',
+        });
+        return;
+      }
+
       let nookResult;
-      if (mode === 'edit' && nookId) {
-        // Actualizar nook
-        nookResult = await updateNookMutation.mutateAsync({
-          id: nookId,
-          data: {
+      try {
+        if (mode === 'edit' && nookId) {
+          // Actualizar nook
+          nookResult = await updateNookMutation.mutateAsync({
+            id: nookId,
+            data: {
+              name: data.name,
+              description: data.description,
+              latitude: data.location.latitude,
+              longitude: data.location.longitude,
+              parent_location_id: selectedRealm.id,
+              updated_at: new Date().toISOString(),
+            },
+          });
+        } else {
+          // Crear nook
+          nookResult = await createNookMutation.mutateAsync({
             name: data.name,
             description: data.description,
             latitude: data.location.latitude,
             longitude: data.location.longitude,
             parent_location_id: selectedRealm.id,
-          },
-        });
-      } else {
-        // Crear nook
-        nookResult = await createNookMutation.mutateAsync({
-          name: data.name,
-          description: data.description,
-          latitude: data.location.latitude,
-          longitude: data.location.longitude,
-          parent_location_id: selectedRealm.id,
-          user_id: user.id,
-        });
-      }
+            user_id: user.id,
+          });
+        }
 
-      // Sincronizar tags
-      const selectedTags = data.tags || [];
-      let currentTags: any[] = [];
-      if (mode === 'edit' && nookTags) {
-        currentTags = nookTags;
-      }
-      // Calcular tags a añadir y eliminar
-      const tagsToAdd = selectedTags.filter(
-        (tag: any) => !currentTags.some((t: any) => t.id === tag.id)
-      );
-      const tagsToRemove = currentTags.filter(
-        (tag: any) => !selectedTags.some((t: any) => t.id === tag.id)
-      );
-      // Añadir nuevos tags
-      for (const tag of tagsToAdd) {
-        await addTagToLocationMutation.mutateAsync({
-          location_id: nookResult.id,
-          tag_id: tag.id,
+        // Sincronizar tags
+        if (nookResult && Array.isArray(data.tags)) {
+          const selectedTags = data.tags || [];
+          let currentTags: any[] = [];
+          if (mode === 'edit' && nookTags) {
+            currentTags = nookTags;
+          }
+          // Calcular tags a añadir y eliminar
+          const tagsToAdd = selectedTags.filter(
+            (tag: any) => !currentTags.some((t: any) => t.id === tag.id)
+          );
+          const tagsToRemove = currentTags.filter(
+            (tag: any) => !selectedTags.some((t: any) => t.id === tag.id)
+          );
+          // Añadir nuevos tags
+          for (const tag of tagsToAdd) {
+            await addTagToLocationMutation.mutateAsync({
+              location_id: nookResult.id,
+              tag_id: tag.id,
+            });
+          }
+          // Eliminar tags desasociados
+          for (const tag of tagsToRemove) {
+            await removeTagFromLocationMutation.mutateAsync({
+              location_id: nookResult.id,
+              tag_id: tag.id,
+            });
+          }
+        }
+
+        setSnackbar({
+          visible: true,
+          message: mode === 'edit' ? 'Nook actualizado con éxito' : 'Nook creado con éxito',
+          type: 'success',
         });
-      }
-      // Eliminar tags desasociados
-      for (const tag of tagsToRemove) {
-        await removeTagFromLocationMutation.mutateAsync({
-          location_id: nookResult.id,
-          tag_id: tag.id,
+      } catch (nookError: any) {
+        setSnackbar({
+          visible: true,
+          message:
+            nookError?.message || `Error al ${mode === 'edit' ? 'actualizar' : 'crear'} el nook`,
+          type: 'error',
         });
+        return;
       }
 
       // Subir imagen si existe
-      let imageSuccess = false;
-      if (data.image) {
+      if (data.image && nookResult && data.image !== primaryImageUrl) {
         try {
           await uploadMediaMutation.mutateAsync({
             userId: user.id,
@@ -284,40 +314,38 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
             localUri: data.image,
             isPrimary: true,
           });
-          imageSuccess = true;
-        } catch {
           setSnackbar({
             visible: true,
-            message: `${mode === 'edit' ? 'Nook actualizado' : 'Nook creado'}, pero la imagen no se pudo subir`,
-            type: 'warning',
+            message:
+              mode === 'edit'
+                ? 'Nook e imagen actualizados con éxito'
+                : 'Nook e imagen creados con éxito',
+            type: 'success',
+          });
+        } catch (uploadError: any) {
+          setSnackbar({
+            visible: true,
+            message:
+              uploadError?.message ||
+              (mode === 'edit'
+                ? 'Nook actualizado, pero falló la subida de la imagen'
+                : 'Nook creado, pero falló la subida de la imagen'),
+            type: 'error',
           });
         }
       }
 
-      // Mensaje de éxito principal
-      setSnackbar({
-        visible: true,
-        message:
-          mode === 'edit'
-            ? imageSuccess
-              ? 'Nook e imagen actualizados con éxito'
-              : 'Nook actualizado con éxito'
-            : imageSuccess
-              ? 'Nook e imagen creados con éxito'
-              : 'Nook creado con éxito',
-        type: 'success',
-      });
       setTimeout(() => {
         if (mode === 'edit') {
           router.replace(`/nooks/${nookResult.id}`);
         } else {
           router.replace(`/realms/${selectedRealm.id}`);
         }
-      }, 1800);
+      }, 2000);
     } catch (error: any) {
       setSnackbar({
         visible: true,
-        message: error?.message || `No se pudo ${mode === 'edit' ? 'actualizar' : 'crear'} el nook`,
+        message: `Error inesperado: ${error.message}`,
         type: 'error',
       });
     }
@@ -339,23 +367,30 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
     }
   };
 
+  const handleChangeRealm = () => {
+    setSelectedRealm(null);
+    reset();
+  };
+
   if (mode === 'edit' && isLoadingNook) {
     return null;
   }
 
+  const loading =
+    createNookMutation.isPending || updateNookMutation.isPending || uploadMediaMutation.isPending;
+
   return (
     <FormProvider {...methods}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header unificado */}
         <CustomFormHeader
           title={mode === 'edit' ? 'Editar Nook' : 'Crear Nook'}
           onBack={handleBackNavigation}
         />
 
-        {/* Ref para scroll automático al enfocar el input de búsqueda de etiquetas */}
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={styles.formContainer}
+          contentContainerStyle={[styles.formContainer, { paddingBottom: 120 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -380,7 +415,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
             </FormSection>
           ) : (
             <>
-              {/* Sección: Ubicación del Nook */}
+              {/* Sección 1: Ubicación del Nook */}
               <FormSection
                 title="Ubicación del Nook"
                 subtitle={mode === 'edit' ? '' : 'Selecciona la ubicación en el mapa'}
@@ -426,14 +461,10 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                 />
               </FormSection>
 
-              {/* Sección: Información básica */}
+              {/* Sección 2: Información básica */}
               <FormSection
                 title="Información Básica"
-                subtitle={
-                  mode === 'edit'
-                    ? 'Modifica el nombre y descripción de tu nook'
-                    : 'Ponle un nombre y una descripción a tu nook'
-                }
+                subtitle="Dale un nombre único y una descripción atractiva a tu nook"
                 icon="create-outline"
                 styles={styles}
               >
@@ -442,7 +473,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                     name="name"
                     label="Nombre del Nook"
                     placeholder="Ej: Mi rincón secreto"
-                    editable={mode !== 'edit'}
                   />
                 </View>
                 <View style={styles.inputSpacingLast}>
@@ -452,22 +482,21 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                     placeholder="Describe qué hace especial este nook..."
                     multiline
                     numberOfLines={3}
-                    editable={mode !== 'edit'}
                   />
                 </View>
               </FormSection>
 
-              {/* Sección: Imagen representativa */}
+              {/* Sección 3: Imagen representativa */}
               <FormSection
                 title="Imagen Representativa"
-                subtitle="Una imagen ayuda a identificar tu nook"
+                subtitle="Una buena imagen que te ayuda a identificar tu nook"
                 icon="image-outline"
                 styles={styles}
               >
-                <ControlledImagePicker name="image" />
+                <ControlledImagePicker name="image" aspectRatio={16 / 9} />
               </FormSection>
 
-              {/* Sección: Etiquetas */}
+              {/* Sección 4: Etiquetas */}
               <FormSection
                 title="Etiquetas"
                 subtitle="Ayuda a otros a encontrar tu nook con etiquetas descriptivas"
@@ -479,65 +508,75 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                     <Text>Cargando etiquetas...</Text>
                   </View>
                 ) : (
-                  <>
-                    {/* Ref y función para scroll automático al enfocar el input de búsqueda */}
-                    <TagSelector
-                      name="tags"
-                      label="Etiquetas"
-                      options={tags}
-                      loading={createTagMutation.isPending}
-                      disabled={isLoadingNookTags && mode === 'edit'}
-                      onSearchFocus={() => {
-                        scrollViewRef.current?.scrollTo({ y: 3000, animated: true });
-                      }}
-                    />
-                  </>
+                  <TagSelector
+                    name="tags"
+                    options={tags}
+                    loading={createTagMutation.isPending}
+                    disabled={isLoadingNookTags && mode === 'edit'}
+                    onSearchFocus={() => {
+                      scrollViewRef.current?.scrollTo({ y: 3000, animated: true });
+                    }}
+                  />
                 )}
               </FormSection>
-
-              {/* Botones de acción */}
-              <View style={styles.actionContainer}>
-                <Button
-                  mode="contained"
-                  onPress={handleSubmit(handleSave)}
-                  disabled={
-                    (mode === 'edit'
-                      ? updateNookMutation.isPending
-                      : createNookMutation.isPending) ||
-                    !watched.name?.trim() ||
-                    !watched.location?.latitude ||
-                    !watched.location?.longitude
-                  }
-                  loading={
-                    mode === 'edit' ? updateNookMutation.isPending : createNookMutation.isPending
-                  }
-                  style={styles.primaryButton}
-                >
-                  {mode === 'edit'
-                    ? updateNookMutation.isPending
-                      ? 'Actualizando...'
-                      : 'Actualizar Nook'
-                    : createNookMutation.isPending
-                      ? 'Creando...'
-                      : 'Crear Nook'}
-                </Button>
-
-                {mode === 'create' && !realmId && (
-                  <Button
-                    onPress={() => {
-                      setSelectedRealm(null);
-                      reset();
-                    }}
-                    mode="outlined"
-                    style={styles.secondaryButton}
-                  >
-                    Cambiar Realm
-                  </Button>
-                )}
-              </View>
             </>
           )}
         </ScrollView>
+
+        {/* Botones de acción flotantes */}
+        <View style={styles.floatingActionContainer} pointerEvents="box-none">
+          <View style={styles.floatingActionInner}>
+            {!isOnline && (
+              <View style={styles.connectionWarning}>
+                <Ionicons name="wifi-outline" size={20} color={theme.colors.onErrorContainer} />
+                <Text style={styles.connectionWarningText}>Sin conexión a internet</Text>
+              </View>
+            )}
+            <Button
+              mode="contained"
+              onPress={handleSubmit(handleSave)}
+              loading={loading}
+              disabled={
+                loading ||
+                !isOnline ||
+                !watchedValues.name?.trim() ||
+                !watchedValues.location?.latitude ||
+                !watchedValues.location?.longitude ||
+                !selectedRealm
+              }
+              style={styles.primaryButton}
+            >
+              {loading
+                ? mode === 'edit'
+                  ? 'Actualizando...'
+                  : 'Creando...'
+                : mode === 'edit'
+                  ? 'Actualizar Nook'
+                  : 'Crear Nook'}
+            </Button>
+            {/* Botón para cambiar realm solo en modo creación */}
+            {mode === 'create' && !realmId && selectedRealm && (
+              <Button
+                mode="outlined"
+                onPress={handleChangeRealm}
+                disabled={loading}
+                style={styles.secondaryButton}
+              >
+                Cambiar Realm
+              </Button>
+            )}
+            {/* Botón cancelar */}
+            <Button
+              mode="outlined"
+              onPress={handleBackNavigation}
+              disabled={loading}
+              style={styles.secondaryButton}
+            >
+              Cancelar
+            </Button>
+          </View>
+        </View>
+
         <FeedbackSnackbar
           visible={snackbar.visible}
           onDismiss={() => setSnackbar({ ...snackbar, visible: false })}

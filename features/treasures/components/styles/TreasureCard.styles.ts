@@ -44,37 +44,16 @@ export const createStyles = (theme: AppTheme) =>
       justifyContent: 'flex-start',
     },
 
-    // TÍTULO ORIGINAL (mantener para otros usos)
+    // TÍTULO SIN CONTADOR
+    titleContainer: {
+      marginBottom: theme.spacing.xs,
+    },
     title: {
       fontSize: 16,
       fontWeight: '600',
       lineHeight: 20,
       color: theme.colors.onSurface,
-      marginBottom: theme.spacing.xs,
       letterSpacing: -0.2,
-    },
-
-    // NUEVOS ESTILOS PARA TÍTULO CON CONTADOR
-    titleWithCounterContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: theme.spacing.xs,
-    },
-    titleMain: {
-      fontSize: 16,
-      fontWeight: '600',
-      lineHeight: 20,
-      color: theme.colors.onSurface,
-      letterSpacing: -0.2,
-      flex: 1, // Toma el espacio disponible
-    },
-    titleCounter: {
-      fontSize: 12,
-      fontWeight: '600',
-      lineHeight: 20,
-      color: theme.colors.onSurfaceVariant, // Diferente color para el contador
-      flexShrink: 0, // No se reduce nunca
-      marginLeft: 2, // Pequeño espacio entre título y contador
     },
 
     description: {
@@ -84,7 +63,7 @@ export const createStyles = (theme: AppTheme) =>
       marginBottom: theme.spacing.s,
       fontWeight: '400',
     },
-    locationInfo: {
+    dateInfo: {
       paddingHorizontal: theme.spacing.s,
       fontSize: 11,
       lineHeight: 16,
@@ -129,20 +108,6 @@ export const createStyles = (theme: AppTheme) =>
       transform: [{ scale: 0.98 }],
       opacity: 0.9,
     },
-    locationIndicator: {
-      alignItems: 'center',
-      position: 'absolute',
-      backgroundColor: theme.colors.surface + '80',
-      borderRadius: theme.borderRadius.s,
-      bottom: theme.spacing.xs,
-      left: theme.spacing.xs,
-      padding: 1,
-    },
-    statusText: {
-      fontSize: 10,
-      fontWeight: '600',
-      color: theme.colors.onPrimaryContainer,
-    },
     statusIndicator: {
       position: 'absolute',
       backgroundColor: theme.colors.surface + '80',
@@ -150,6 +115,15 @@ export const createStyles = (theme: AppTheme) =>
       top: theme.spacing.xs,
       right: theme.spacing.s,
       padding: 2,
+    },
+    dateIndicator: {
+      alignItems: 'center',
+      position: 'absolute',
+      backgroundColor: theme.colors.surface + '80',
+      borderRadius: theme.borderRadius.s,
+      bottom: theme.spacing.xs,
+      left: theme.spacing.xs,
+      padding: 1,
     },
     imageOverlay: {
       position: 'absolute',

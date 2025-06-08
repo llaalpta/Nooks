@@ -45,6 +45,7 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     },
     headerTitle: {
       fontSize: 28,
+      lineHeight: 36, // Añadir esta línea
       fontWeight: 'bold',
       color: theme.colors.onSurface,
       marginBottom: theme.spacing.s,
@@ -53,14 +54,14 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       fontSize: 16,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 24,
-      marginBottom: theme.spacing.m,
     },
     location: {
+      marginLeft: theme.spacing.s,
       fontSize: 14,
       color: theme.colors.onSurfaceVariant,
-      marginBottom: theme.spacing.m,
     },
     tagsContainer: {
+      marginTop: theme.spacing.m,
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: theme.spacing.s,

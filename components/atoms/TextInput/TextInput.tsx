@@ -16,6 +16,7 @@ export interface TextInputProps extends RNTextInputProps {
   helperText?: string;
   left?: ReactNode;
   right?: ReactNode;
+  rightElement?: ReactNode; // 🔥 Nueva prop
   disabled?: boolean;
 }
 
@@ -25,6 +26,7 @@ export function TextInput({
   helperText,
   left,
   right,
+  rightElement, // 🔥 Nueva prop
   style,
   disabled,
   multiline,
@@ -34,6 +36,9 @@ export function TextInput({
   const theme = useAppTheme();
   const styles = createStyles(theme);
   const [focused, setFocused] = useState(false);
+
+  // 🔥 Determinar qué elemento usar a la derecha (prioridad: rightElement > right)
+  const rightContent = rightElement || right;
 
   return (
     <View style={styles.container}>
@@ -69,7 +74,8 @@ export function TextInput({
           {...props}
         />
 
-        {right && <View style={styles.rightIcon}>{right}</View>}
+        {/* 🔥 Usa rightContent en lugar de right directamente */}
+        {rightContent && <View style={styles.rightIcon}>{rightContent}</View>}
       </View>
 
       {error ? (

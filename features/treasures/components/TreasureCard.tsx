@@ -5,39 +5,32 @@ import { View, TouchableOpacity, Image } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { formatArea } from '@/utils/realmUtils';
 
-import { createStyles } from './styles/RealmCard.styles';
+import { createStyles } from './styles/TreasureCard.styles';
 
 import type { Tables } from '@/types/supabase';
 
-// Definición de Tag según la tabla tags
 type Tag = Tables<'tags'>;
 
-export interface RealmCardProps {
-  realm: Tables<'locations'> & { imageUrl?: string | null; tags: Tag[]; nooksCount?: number };
+export interface TreasureCardProps {
+  treasure: Tables<'treasures'> & { imageUrl?: string | null; tags: Tag[] };
 }
 
-export function RealmCard({ realm }: RealmCardProps) {
+export function TreasureCard({ treasure }: TreasureCardProps) {
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // 🔥 Validación temprana - igual que NookCard
-  if (!realm || !realm.id) {
-    return null;
-  }
-
   const handlePress = () => {
-    router.push(`/realms/${realm.id}`);
+    router.push(`/treasures/${treasure.id}`);
   };
 
-  // Configuración para el cálculo de espacio
-  const CHARS_PER_LINE = 25; // Aproximación de caracteres que caben por línea
-  const COUNTER_CHARS = 4; // Espacio reservado para "+N" (ej: "+10")
+  // Configuración para el cálculo de espacio (mismo que RealmCard/NookCard)
+  const CHARS_PER_LINE = 25;
+  const COUNTER_CHARS = 4;
 
-  // Función para calcular distribución de tags en 2 líneas
+  // Distribución de tags en 2 líneas
   const calculateTagDistribution = () => {
-    if (!Array.isArray(realm.tags) || realm.tags.length === 0) return [];
+    if (!Array.isArray(treasure.tags) || treasure.tags.length === 0) return [];
 
     const lines: { tagIndices: number[]; shouldTruncateLast: boolean }[] = [
       { tagIndices: [], shouldTruncateLast: false },
@@ -47,43 +40,39 @@ export function RealmCard({ realm }: RealmCardProps) {
     let currentLine = 0;
     let currentLineChars = 0;
 
-    for (let i = 0; i < realm.tags.length && currentLine < 2; i++) {
-      const tag = realm.tags[i];
-      // 🔥 VALIDACIÓN: Asegurar que el tag tiene nombre
+    for (let i = 0; i < treasure.tags.length && currentLine < 2; i++) {
+      const tag = treasure.tags[i];
+      // VALIDACIÓN: Asegurar que el tag tiene nombre
       if (!tag || !tag.name || typeof tag.name !== 'string') continue;
 
       const tagLength = tag.name.length;
-      const spaceNeeded = tagLength + (lines[currentLine].tagIndices.length > 0 ? 2 : 0); // +2 para espaciado entre tags
+      const spaceNeeded = tagLength + (lines[currentLine].tagIndices.length > 0 ? 2 : 0);
 
-      // En la segunda línea, verificar si hay más tags después de este
       const isLastLine = currentLine === 1;
-      const hasRemainingTags = i < realm.tags.length - 1;
+      const hasRemainingTags = i < treasure.tags.length - 1;
       const counterSpace = isLastLine && hasRemainingTags ? COUNTER_CHARS + 2 : 0;
 
-      // Verificar si el tag cabe en la línea actual
       if (currentLineChars + spaceNeeded + counterSpace <= CHARS_PER_LINE) {
         lines[currentLine].tagIndices.push(i);
         currentLineChars += spaceNeeded;
       } else if (isLastLine && hasRemainingTags) {
-        // Si estamos en la última línea y hay más tags, verificar si podemos truncar
-        const minSpaceForTag = 8; // Mínimo espacio para mostrar algo del tag
-        const availableSpace = CHARS_PER_LINE - currentLineChars - counterSpace - 2; // -2 para espaciado
+        const minSpaceForTag = 8;
+        const availableSpace = CHARS_PER_LINE - currentLineChars - counterSpace - 2;
 
         if (availableSpace >= minSpaceForTag) {
           lines[currentLine].tagIndices.push(i);
           lines[currentLine].shouldTruncateLast = true;
-          break; // No agregar más tags
+          break;
         } else {
-          break; // No hay espacio suficiente
+          break;
         }
       } else {
-        // Pasar a la siguiente línea
         currentLine++;
         if (currentLine < 2) {
           lines[currentLine].tagIndices.push(i);
           currentLineChars = tagLength;
         } else {
-          break; // No caben más líneas
+          break;
         }
       }
     }
@@ -91,7 +80,6 @@ export function RealmCard({ realm }: RealmCardProps) {
     return lines;
   };
 
-  // Renderizar una línea específica de tags
   const renderTagLine = (
     lineIndex: number,
     lineData: { tagIndices: number[]; shouldTruncateLast: boolean }
@@ -101,14 +89,14 @@ export function RealmCard({ realm }: RealmCardProps) {
     const { tagIndices, shouldTruncateLast } = lineData;
     const isLastLine = lineIndex === 1;
     const totalTagsShown = tagIndices[tagIndices.length - 1] + 1;
-    const remainingTags = realm.tags.length - totalTagsShown;
+    const remainingTags = treasure.tags.length - totalTagsShown;
     const shouldShowCounter = isLastLine && remainingTags > 0;
 
     return (
       <View style={styles.tagLine} key={`line-${lineIndex}`}>
         {tagIndices.map((tagIndex, idx) => {
-          const tag = realm.tags[tagIndex];
-          // 🔥 VALIDACIÓN: Verificar que el tag existe y tiene nombre
+          const tag = treasure.tags[tagIndex];
+          // VALIDACIÓN: Verificar que el tag existe y tiene nombre
           if (!tag || !tag.name || typeof tag.name !== 'string') return null;
 
           const isLastTagInLine = idx === tagIndices.length - 1;
@@ -116,10 +104,9 @@ export function RealmCard({ realm }: RealmCardProps) {
 
           return (
             <View
-              key={tag.id || `tag-${tagIndex}`} // 🔥 Fallback para key
+              key={tag.id || `tag-${tagIndex}`}
               style={[
                 styles.tag,
-                // Solo usar tagEllipsized si realmente necesitamos truncar
                 shouldTruncateThis ? styles.tagEllipsized : null,
                 tag.color ? { backgroundColor: tag.color } : null,
               ]}
@@ -157,20 +144,19 @@ export function RealmCard({ realm }: RealmCardProps) {
       <View style={styles.cardHorizontalContainer}>
         {/* Imagen a la izquierda */}
         <View style={styles.imageContainer}>
-          {realm.imageUrl ? (
+          {treasure.imageUrl ? (
             <Image
-              source={{ uri: realm.imageUrl }}
+              source={{ uri: treasure.imageUrl }}
               style={styles.horizontalImage}
               resizeMode="cover"
             />
           ) : (
             <View style={styles.horizontalPlaceholder}>
-              <Ionicons name="image-outline" size={32} color={theme.colors.onSurfaceVariant} />
+              <Ionicons name="diamond-outline" size={32} color={theme.colors.onSurfaceVariant} />
             </View>
           )}
-
-          {/* Indicador de estado público/privado */}
-          {realm.is_public !== null && (
+          {/* Indicador de estado público/privado
+          {treasure.is_public !== null && (
             <View style={styles.statusIndicator}>
               <View
                 style={{
@@ -178,32 +164,20 @@ export function RealmCard({ realm }: RealmCardProps) {
                   alignItems: 'center',
                 }}
               >
-                <Image
-                  source={require('@/assets/images/realm-marker.png')}
-                  style={{
-                    width: 32,
-                    height: 32,
-                  }}
-                  resizeMode="contain"
+                <Ionicons
+                  name={treasure.is_public ? 'eye-outline' : 'eye-off-outline'}
+                  size={16}
+                  color={theme.colors.onSurface}
                 />
               </View>
             </View>
-          )}
-
-          {/* Información de ubicación y radio */}
-          {realm.latitude && realm.longitude && (
-            <View style={styles.locationIndicator}>
-              <Text style={styles.locationInfo} numberOfLines={1} ellipsizeMode="tail">
-                {/* 🔥 Validación de tipos numéricos */}
-                {typeof realm.latitude === 'number' ? realm.latitude.toFixed(6) : '0.000000'},{' '}
-                {typeof realm.longitude === 'number' ? realm.longitude.toFixed(6) : '0.000000'}
+          )} */}
+          {/* Información de fecha de almacenamiento */}
+          {treasure.stored_at && (
+            <View style={styles.dateIndicator}>
+              <Text style={styles.dateInfo} numberOfLines={1} ellipsizeMode="tail">
+                {new Date(treasure.stored_at).toLocaleDateString()}
               </Text>
-              {/* 🔥 Validación de radius */}
-              {realm.radius && typeof realm.radius === 'number' && (
-                <Text style={styles.locationInfo} numberOfLines={1} ellipsizeMode="tail">
-                  ◯ {formatArea(realm.radius)}
-                </Text>
-              )}
             </View>
           )}
         </View>
@@ -212,31 +186,23 @@ export function RealmCard({ realm }: RealmCardProps) {
         <View style={styles.cardContent}>
           {/* CONTENIDO SUPERIOR: Título y descripción */}
           <View style={{ flex: 1 }}>
-            {/* TÍTULO CON CONTADOR */}
-            <View style={styles.titleWithCounterContainer}>
-              <Text style={styles.titleMain} numberOfLines={1} ellipsizeMode="tail">
-                {/* 🔥 Fallback para nombre - igual que NookCard */}
-                {realm.name || 'Sin nombre'}
+            {/* TÍTULO SIN CONTADOR (los treasures no tienen contadores) */}
+            <View style={styles.titleContainer}>
+              <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+                {treasure.name || 'Sin nombre'}
               </Text>
-              {/* 🔥 Validación del contador de nooks */}
-              {typeof realm.nooksCount === 'number' && realm.nooksCount > 0 && (
-                <Text style={styles.titleCounter}>
-                  ({realm.nooksCount} {realm.nooksCount === 1 ? 'nook' : 'nooks'})
-                </Text>
-              )}
             </View>
 
-            {/* DESCRIPCIÓN - NUEVA LÍNEA */}
-            {/* 🔥 Misma validación que NookCard */}
-            {realm.description && String(realm.description).trim() && (
+            {/* DESCRIPCIÓN */}
+            {treasure.description && String(treasure.description).trim() && (
               <Text style={styles.description} numberOfLines={1} ellipsizeMode="tail">
-                {String(realm.description)}
+                {String(treasure.description)}
               </Text>
             )}
           </View>
 
           {/* TAGS AL FONDO - SOLO 2 LÍNEAS */}
-          {Array.isArray(realm.tags) && realm.tags.length > 0 && (
+          {Array.isArray(treasure.tags) && treasure.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {tagLines.map((lineData, lineIndex) => renderTagLine(lineIndex, lineData))}
             </View>

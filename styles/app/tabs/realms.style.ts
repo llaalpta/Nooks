@@ -12,6 +12,10 @@ export const createStyles = (theme: AppTheme) =>
       paddingHorizontal: theme.spacing.m,
       paddingVertical: theme.spacing.m,
       backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.primaryContainer,
+      ...theme.elevation.level1,
+      borderStyle: 'solid',
     },
     headerTitle: {
       fontSize: 24,

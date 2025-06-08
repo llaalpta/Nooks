@@ -6,6 +6,7 @@ import {
   createTreasure,
   updateTreasure,
   deleteTreasure,
+  getTreasurePrimaryImageUrl,
 } from './api';
 
 import type { Database } from '../../types/supabase';
@@ -57,5 +58,15 @@ export function useDeleteTreasureMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['treasures'] });
     },
+  });
+}
+
+export function useTreasurePrimaryImageUrl(treasureId: string) {
+  return useQuery({
+    queryKey: ['treasure-primary-image', treasureId],
+    queryFn: () => getTreasurePrimaryImageUrl(treasureId),
+    enabled: !!treasureId,
+    staleTime: 1000 * 60 * 15, // 15 minutos (URLs públicas son más estables)
+    gcTime: 1000 * 60 * 30, // 30 minutos en cache
   });
 }

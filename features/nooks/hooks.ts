@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   getNooks,
-  getNookById,
   createNook,
   updateNook,
   deleteNook,
   getNookPrimaryImageUrl,
+  getNookWithTags,
 } from './api';
 
 import type { Database } from '../../types/supabase';
@@ -35,7 +35,7 @@ export function useNooksQuery(realmId: string) {
 export function useNookQuery(id: string) {
   return useQuery({
     queryKey: ['nook', id],
-    queryFn: () => getNookById(id),
+    queryFn: () => getNookWithTags(id), // ← CAMBIAR de getNookById a getNookWithTags
     enabled: !!id,
   });
 }

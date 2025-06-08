@@ -11,7 +11,7 @@ export const createStyles = (theme: AppTheme) =>
       textAlign: 'center',
     },
     container: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.primaryContainer,
       ...theme.elevation.level1,
     },
     content: {
@@ -40,5 +40,10 @@ export const createStyles = (theme: AppTheme) =>
       padding: theme.spacing.xs,
       borderRadius: theme.borderRadius.s,
       marginLeft: theme.spacing.s,
+    },
+    themeToggleButton: {
+      padding: theme.spacing.xs,
+      borderRadius: theme.borderRadius.s,
+      marginRight: theme.spacing.s,
     },
   });

@@ -5,12 +5,7 @@ import { AppTheme } from '@/types';
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 1000,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.primaryContainer,
       ...theme.elevation.level1,
     },
     content: {

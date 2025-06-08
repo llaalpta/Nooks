@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack
 
 import {
   getRealms,
-  getRealmById,
   createRealm,
   updateRealm,
   deleteRealm,
@@ -10,6 +9,7 @@ import {
   hasTreasures,
   getNearbyRealms,
   getRealmPrimaryImageUrl,
+  getRealmWithTags,
 } from './api';
 
 import type { Database } from '../../types/supabase';
@@ -30,7 +30,7 @@ export function useRealmsQuery(userId: string) {
 export function useRealmQuery(id: string) {
   return useQuery({
     queryKey: ['realm', id],
-    queryFn: () => getRealmById(id),
+    queryFn: () => getRealmWithTags(id),
     enabled: !!id,
   });
 }

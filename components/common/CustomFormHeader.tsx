@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
-import { createStyles } from './styles/CustomHeader.style';
+import { createStyles } from './styles/DetailsScreenHeader.styles';
 
 interface CustomFormHeaderProps {
   title: string;
@@ -40,8 +40,8 @@ export const CustomFormHeader: React.FC<CustomFormHeaderProps> = ({ title, backT
         >
           <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
         </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={[styles.headerTitle, { textAlign: 'center' }]} numberOfLines={1}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
         </View>

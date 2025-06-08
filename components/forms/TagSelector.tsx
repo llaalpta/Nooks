@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import React, { useState, useMemo } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import {
@@ -7,13 +6,16 @@ import {
   StyleProp,
   ViewStyle,
   TouchableOpacity,
-  TextInput as RNTextInput,
   ScrollView,
+  Modal,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 
-import { Button } from '@/components/atoms/Button';
+import { CreateTagForm } from '@/app/tags/CreateTagForm';
 import { Spinner } from '@/components/atoms/Spinner';
 import { Text } from '@/components/atoms/Text';
+import { TextInput } from '@/components/atoms/TextInput';
 import { useAppTheme } from '@/contexts/ThemeContext';
 
 import { createStyles } from './styles/TagSelector.styles';
@@ -29,6 +31,7 @@ interface TagSelectorProps<T extends object> {
   style?: StyleProp<ViewStyle>;
   onSearchFocus?: () => void;
 }
+
 export const TagSelector = <T extends object>({
   name,
   label,
@@ -40,7 +43,8 @@ export const TagSelector = <T extends object>({
 }: TagSelectorProps<T>) => {
   const { control } = useFormContext<T>();
   const [searchInput, setSearchInput] = useState('');
-  const router = useRouter();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
@@ -49,8 +53,9 @@ export const TagSelector = <T extends object>({
     return str
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ''); // quita acentos      .replace(/\s+/g, ''); // quita espacios
+      .replace(/[\u0300-\u036f]/g, ''); // quita acentos
   }
+
   const filteredOptions = useMemo(
     () => options.filter((tag) => normalize(tag.name).includes(normalize(searchInput))),
     [searchInput, options]
@@ -62,7 +67,15 @@ export const TagSelector = <T extends object>({
         control={control}
         name={name}
         render={({ field: { value = [], onChange }, fieldState: { error } }) => {
-          // handleCreateTagWithCallback eliminado: ya no se usa, la creación es en página aparte
+          const handleTagCreated = (newTag: Tag) => {
+            // Agregar el nuevo tag a la selección actual
+            onChange([...value, newTag]);
+            setShowCreateModal(false);
+          };
+
+          const handleCloseModal = () => {
+            setShowCreateModal(false);
+          };
 
           return (
             <View style={[styles.container, style]}>
@@ -89,37 +102,50 @@ export const TagSelector = <T extends object>({
 
               {/* Contenedor de búsqueda y creación */}
               <View
-                style={[
-                  styles.searchContainer,
-                  { flexDirection: 'row', alignItems: 'center', gap: 8 },
-                ]}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: theme.spacing.s,
+                  height: 48,
+                }}
               >
-                <View
-                  style={[
-                    styles.inputContainer,
-                    { flex: 1 },
-                    error && { borderColor: theme.colors.error },
-                  ]}
-                >
-                  <RNTextInput
-                    value={searchInput}
+                <View style={{ flex: 1, height: '100%' }}>
+                  <TextInput
+                    style={{ height: '100%' }}
                     onChangeText={setSearchInput}
                     placeholder="Buscar etiquetas..."
-                    editable={!disabled}
-                    style={styles.textInput}
+                    disabled={disabled}
                     onFocus={onSearchFocus}
+                    rightElement={loading ? <Spinner size="small" /> : undefined}
                   />
-                  {loading && <Spinner size="small" style={{ marginRight: 8 }} />}
                 </View>
-                <Button
-                  mode="outlined"
-                  onPress={() => router.push('/tags/create')}
-                  disabled={disabled}
-                  style={[styles.createButton, { flex: 0.25, minWidth: 80, maxWidth: 120 }]}
-                  icon={<Ionicons name="add" size={18} color={theme.colors.primary} />}
+
+                <TouchableOpacity
+                  style={{
+                    height: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.primary,
+                    paddingHorizontal: theme.spacing.m,
+                    borderRadius: theme.spacing.s,
+                    ...theme.elevation.level1,
+                  }}
+                  onPress={() => setShowCreateModal(true)}
                 >
-                  Crear
-                </Button>
+                  <Ionicons name="add" size={16} color={theme.colors.onPrimary} />
+                  <Text
+                    style={{
+                      color: theme.colors.onPrimary,
+                      fontSize: 12,
+                      fontWeight: '600',
+                      marginLeft: 4,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Crear
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               {/* Lista de sugerencias */}
@@ -160,7 +186,41 @@ export const TagSelector = <T extends object>({
 
               {error && <Text style={styles.errorText}>{error?.message}</Text>}
 
-              {/* Modal para crear nueva etiqueta eliminado: ahora es una página independiente */}
+              {/* Modal para crear nueva etiqueta usando el componente existente */}
+              <Modal
+                visible={showCreateModal}
+                animationType="slide"
+                transparent
+                onRequestClose={handleCloseModal}
+              >
+                <View style={styles.modalOverlay}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalContainer}
+                  >
+                    <View style={styles.modalContent}>
+                      {/* Header del modal */}
+                      <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Crear Nueva Etiqueta</Text>
+                        <TouchableOpacity
+                          onPress={handleCloseModal}
+                          style={styles.modalCloseButton}
+                        >
+                          <Ionicons name="close" size={24} color={theme.colors.onSurface} />
+                        </TouchableOpacity>
+                      </View>
+
+                      {/* Usar el componente reutilizable */}
+                      <CreateTagForm
+                        onSuccess={handleTagCreated}
+                        onCancel={handleCloseModal}
+                        showTitle={false} // Ya tenemos título en el header
+                        autoFocus={true}
+                      />
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+              </Modal>
             </View>
           );
         }}
