@@ -74,8 +74,10 @@ export const BasicMapPickerInput = <T extends object>({
   const theme = useAppTheme();
   const styles = createBasicMapPickerStyles(theme);
 
-  // Usar hooks unificados
-  const { handleMapReady: originalHandleMapReady, getMarkerProps } = useMapMarkers();
+  // Usar hooks unificados: para Nook, usar el marcador pequeño de Nook
+  const { handleMapReady: originalHandleMapReady, getMarkerProps } = useMapMarkers({
+    imagePath: '@/assets/images/nook-marker-small.png',
+  });
 
   const [snackbar, setSnackbar] = useState({
     visible: false,

@@ -45,10 +45,11 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
   // Obtener props del marcador (imagen o color)
   const getMarkerProps = () => {
     if (isMapReady && customMarkerImage) {
+      // Ajusta el tamaño aquí según el marcador:
+      // Realm: 32x46, Nook: 32x46 (ajusta si tu PNG es diferente)
       return {
         image: customMarkerImage,
-        // Especificar tamaño para evitar marcadores enormes en producción
-        style: { width: 32, height: 32 },
+        style: { width: 32, height: 46 },
       };
     }
     return { pinColor: fallbackColor };
