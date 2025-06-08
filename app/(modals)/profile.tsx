@@ -13,14 +13,13 @@ export default function ProfileScreen() {
   if (!session) {
     return null;
   }
-
   return (
     <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: theme.colors.background,
       }}
-      edges={['top', 'left', 'right', 'bottom']}
+      edges={['bottom']}
     >
       <CustomHeader />
       <Account session={session} />

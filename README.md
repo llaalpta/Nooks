@@ -88,10 +88,4 @@ Este proyecto se encuentra en desarrollo activo como parte de un proyecto final 
 
 Este proyecto es actualmente un trabajo académico individual, pero las sugerencias son bienvenidas a través de issues.
 
-## 📄 Licencia
-
-[MIT License](LICENSE)
-
----
-
 Desarrollado por Lázaro Piñero Sánchez © 2025

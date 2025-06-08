@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -81,6 +81,7 @@ export default function RealmForm() {
   const isEditing = !!realmId;
   const theme = useAppTheme();
   const styles = createRealmFormStyles(theme);
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.id || '';
   const isOnline = useIsOnline();
@@ -99,6 +100,7 @@ export default function RealmForm() {
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
+  const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
   // Obtener tags asociados al realm en edición
   const { data: realmTags = [], isLoading: isLoadingRealmTags } = useLocationTagsQuery(realmId);
@@ -197,6 +199,8 @@ export default function RealmForm() {
       }
 
       let newRealm;
+      let imageChanged = false;
+      let imageUploadSuccess = false;
       try {
         if (isEditing) {
           newRealm = await updateRealmMutation.mutateAsync({
@@ -227,58 +231,62 @@ export default function RealmForm() {
           await setTagsForRealm(newRealm.id, data.tags, isEditing);
         }
 
+        // Subir imagen si existe y es diferente
+        if (data.image && newRealm && data.image !== existingImageUrl) {
+          imageChanged = true;
+          try {
+            await uploadMediaMutation.mutateAsync({
+              userId,
+              entityType: 'location',
+              entityId: newRealm.id,
+              localUri: data.image,
+              isPrimary: true,
+            });
+            imageUploadSuccess = true;
+          } catch (uploadError: any) {
+            setSnackbar({
+              visible: true,
+              message:
+                uploadError?.message ||
+                (isEditing
+                  ? 'Realm actualizado, pero falló la subida de la imagen'
+                  : 'Realm creado, pero falló la subida de la imagen'),
+              type: 'error',
+            });
+            setPendingNavigation(null);
+            return;
+          }
+        }
+
+        // Mensaje según si hubo cambio de imagen
+        let message = '';
+        if (imageChanged && imageUploadSuccess) {
+          message = isEditing ? 'Realm e imagen actualizados' : 'Realm e imagen creados';
+        } else {
+          message = isEditing ? 'Realm actualizado' : 'Realm creado';
+        }
         setSnackbar({
           visible: true,
-          message: isEditing ? 'Realm actualizado con éxito' : 'Realm creado con éxito',
+          message,
           type: 'success',
         });
+        setPendingNavigation(() => handleGoBackOrReplace);
       } catch (realmError: any) {
         setSnackbar({
           visible: true,
           message: realmError?.message || `Error al ${isEditing ? 'actualizar' : 'crear'} el realm`,
           type: 'error',
         });
+        setPendingNavigation(null);
         return;
       }
-
-      if (data.image && newRealm && data.image !== existingImageUrl) {
-        try {
-          await uploadMediaMutation.mutateAsync({
-            userId,
-            entityType: 'location',
-            entityId: newRealm.id,
-            localUri: data.image,
-            isPrimary: true,
-          });
-          setSnackbar({
-            visible: true,
-            message: isEditing
-              ? 'Realm e imagen actualizados con éxito'
-              : 'Realm e imagen creados con éxito',
-            type: 'success',
-          });
-        } catch (uploadError: any) {
-          setSnackbar({
-            visible: true,
-            message:
-              uploadError?.message ||
-              (isEditing
-                ? 'Realm actualizado, pero falló la subida de la imagen'
-                : 'Realm creado, pero falló la subida de la imagen'),
-            type: 'error',
-          });
-        }
-      }
-
-      setTimeout(() => {
-        handleGoBackOrReplace();
-      }, 2000);
     } catch (error: any) {
       setSnackbar({
         visible: true,
         message: `Error inesperado: ${error.message}`,
         type: 'error',
       });
+      setPendingNavigation(null);
     }
   };
 
@@ -288,10 +296,9 @@ export default function RealmForm() {
 
   const loading =
     createRealmMutation.isPending || updateRealmMutation.isPending || uploadMediaMutation.isPending;
-
   return (
     <FormProvider {...methods}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         {/* Header unificado */}
         <CustomFormHeader
           title={isEditing ? 'Editar Realm' : 'Crear Nuevo Realm'}
@@ -327,7 +334,6 @@ export default function RealmForm() {
               />
             </View>
           </FormSection>
-
           {/* Sección 2: Ubicación y Área */}
           <FormSection
             title="Ubicación y Área"
@@ -337,7 +343,6 @@ export default function RealmForm() {
           >
             <CircleMapPickerInput name="location" label="Selecciona ubicación y ajusta el radio" />
           </FormSection>
-
           {/* Sección 3: Imagen Representativa */}
           <FormSection
             title="Imagen Representativa"
@@ -348,7 +353,6 @@ export default function RealmForm() {
             {/* Usamos aspectRatio 120/140 para que la previsualización sea igual que en la card */}
             <ControlledImagePicker name="image" aspectRatio={16 / 9} />
           </FormSection>
-
           {/* Sección 4: Etiquetas */}
           <FormSection
             title="Etiquetas"
@@ -367,12 +371,17 @@ export default function RealmForm() {
               </>
             )}
           </FormSection>
-
           {/* El bloque de botones ahora es flotante y fijo abajo */}
         </ScrollView>
 
         {/* Botones de acción flotantes */}
-        <View style={styles.floatingActionContainer} pointerEvents="box-none">
+        <View
+          style={[
+            styles.floatingActionContainer,
+            { paddingBottom: Math.max(insets.bottom, theme.spacing.s) },
+          ]}
+          pointerEvents="box-none"
+        >
           <View style={styles.floatingActionInner}>
             {!isOnline && (
               <View style={styles.connectionWarning}>
@@ -408,7 +417,13 @@ export default function RealmForm() {
 
         <FeedbackSnackbar
           visible={snackbar.visible}
-          onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+          onDismiss={() => {
+            setSnackbar({ ...snackbar, visible: false });
+            if (pendingNavigation) {
+              pendingNavigation();
+              setPendingNavigation(null);
+            }
+          }}
           message={snackbar.message}
           type={snackbar.type}
         />

@@ -38,6 +38,9 @@ export default function Account({ session }: { session: Session }) {
   const { setValue, handleSubmit } = methods;
   const email = session?.user?.email || '';
 
+  // Estado local para manejar la imagen seleccionada antes de subirla
+  const [pendingAvatarUri, setPendingAvatarUri] = useState<string | null>(null);
+
   const [snackbar, setSnackbar] = useState({
     visible: false,
     message: '',
@@ -51,23 +54,32 @@ export default function Account({ session }: { session: Session }) {
     }
   }, [data, setValue]);
 
-  async function handleAvatarChange(localUri: string) {
-    try {
-      const publicUrl = await uploadAvatarMutation.mutateAsync({ userId, localUri });
-      setValue('avatar_url', publicUrl);
-      setSnackbar({ visible: true, message: 'Avatar actualizado', type: 'success' });
-    } catch (error: any) {
-      setSnackbar({
-        visible: true,
-        message: error.message || 'Error al subir la imagen de avatar',
-        type: 'error',
-      });
-    }
+  // Solo actualiza el estado local, no sube la imagen inmediatamente
+  function handleAvatarChange(localUri: string) {
+    setPendingAvatarUri(localUri);
+    // Temporalmente actualizar la vista previa
+    setValue('avatar_url', localUri);
   }
 
   async function onSubmit(form: ProfileForm) {
     try {
-      await updateProfileMutation.mutateAsync({ userId, updates: form });
+      let finalAvatarUrl = form.avatar_url;
+
+      // Si hay una imagen pendiente, subirla primero
+      if (pendingAvatarUri) {
+        finalAvatarUrl = await uploadAvatarMutation.mutateAsync({
+          userId,
+          localUri: pendingAvatarUri,
+        });
+        setPendingAvatarUri(null); // Limpiar el estado pendiente
+      }
+
+      // Actualizar el perfil con la URL final del avatar
+      await updateProfileMutation.mutateAsync({
+        userId,
+        updates: { ...form, avatar_url: finalAvatarUrl },
+      });
+
       setSnackbar({ visible: true, message: 'Perfil actualizado', type: 'success' });
     } catch (error: any) {
       setSnackbar({
@@ -106,9 +118,9 @@ export default function Account({ session }: { session: Session }) {
             avatarMode
             avatarSize={220}
           />
-          {uploadAvatarMutation.isPending && (
+          {(uploadAvatarMutation.isPending || pendingAvatarUri) && (
             <Text variant="bodySmall" style={styles.uploadingText}>
-              Subiendo avatar...
+              {pendingAvatarUri ? 'Imagen seleccionada (presiona Guardar)' : 'Subiendo avatar...'}
             </Text>
           )}
           <Text variant="titleMedium" style={{ marginTop: theme.spacing.s, fontWeight: '700' }}>

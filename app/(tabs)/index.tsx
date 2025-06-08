@@ -35,7 +35,7 @@ const features: FeatureCardProps[] = [
     icon: '🏠',
     color: '#6366f1',
     route: '/(tabs)/realms',
-    imagePath: require('@/assets/images/realm-marker.png'),
+    imagePath: require('@/assets/images/realm-marker-small.png'),
   },
   {
     id: 'nooks',
@@ -348,7 +348,10 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      edges={['left', 'right']}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
@@ -418,7 +421,7 @@ export default function HomeScreen() {
             }}
           >
             <Image
-              source={require('@/assets/images/realm-marker.png')}
+              source={require('@/assets/images/realm-marker-small.png')}
               style={{ width: 36, height: 36, marginBottom: 2 }}
               resizeMode="contain"
             />

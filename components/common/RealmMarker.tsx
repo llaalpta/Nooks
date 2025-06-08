@@ -7,7 +7,7 @@ interface RealmMarkerProps {
   size?: number;
 }
 
-const RealmMarker: React.FC<RealmMarkerProps> = memo(({ size = 60 }) => {
+const RealmMarker: React.FC<RealmMarkerProps> = memo(({ size = 32 }) => {
   return (
     <View
       style={{

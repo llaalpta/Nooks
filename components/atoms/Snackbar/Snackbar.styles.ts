@@ -6,7 +6,7 @@ export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       backgroundColor: theme.colors.primary,
-      marginBottom: theme.spacing.m,
+      marginTop: theme.spacing.l,
       borderRadius: theme.borderRadius.s,
       padding: theme.spacing.m,
       flexDirection: 'row',
@@ -16,7 +16,7 @@ export const createStyles = (theme: AppTheme) =>
       width: '90%',
       alignSelf: 'center',
       position: 'absolute',
-      bottom: 0,
+      top: 0,
       elevation: 6,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 3 },

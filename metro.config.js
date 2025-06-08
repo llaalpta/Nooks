@@ -14,6 +14,11 @@ config.transformer.hermes = {
   enabled: true,
 };
 
+// Configuración de polyfills
+config.resolver.alias = {
+  crypto: 'react-native-get-random-values',
+};
+
 // Solo bloqueamos react-native-maps en plataforma web
 if (process.env.EXPO_PUBLIC_PLATFORM === 'web') {
   config.resolver.blockList = [/.*react-native-maps.*/];

@@ -3,7 +3,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -102,6 +102,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   const { data: realms } = useRealmsQuery(user?.id || '');
   const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
   const styles = createNookFormStyles(theme);
+  const insets = useSafeAreaInsets();
   const createTagMutation = useCreateTagMutation();
   const { data: tags = [] } = useTagsQuery(user?.id || '');
   useInvalidateTagsOnFocus(user?.id || '');
@@ -114,12 +115,14 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   // Precargar imagen principal en modo edición
   const { data: primaryImageUrl } = useNookPrimaryImageUrl(nookId || '');
 
-  // Estado para Snackbar
+  // Estado para Snackbar y navegación pendiente
   const [snackbar, setSnackbar] = useState({
     visible: false,
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
+  // Para saber si hay navegación pendiente tras feedback
+  const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
   // Formulario controlado
   const methods = useForm<NookFormValues>({
@@ -232,7 +235,9 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
         return;
       }
 
-      let nookResult;
+      let nookResult: any;
+      let imageChanged = false;
+      let imageUploadSuccess = false;
       try {
         if (mode === 'edit' && nookId) {
           // Actualizar nook
@@ -289,10 +294,53 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           }
         }
 
+        // Subir imagen si existe y es diferente
+        if (data.image && nookResult && data.image !== primaryImageUrl) {
+          imageChanged = true;
+          try {
+            await uploadMediaMutation.mutateAsync({
+              userId: user.id,
+              entityType: 'location',
+              entityId: nookResult.id,
+              localUri: data.image,
+              isPrimary: true,
+            });
+            imageUploadSuccess = true;
+          } catch (uploadError: any) {
+            setSnackbar({
+              visible: true,
+              message:
+                uploadError?.message ||
+                (mode === 'edit'
+                  ? 'Nook actualizado, pero falló la subida de la imagen'
+                  : 'Nook creado, pero falló la subida de la imagen'),
+              type: 'error',
+            });
+            // No navegues si la imagen falla
+            setPendingNavigation(null);
+            return;
+          }
+        }
+
+        // Mensaje según si hubo cambio de imagen
+        let message = '';
+        if (imageChanged && imageUploadSuccess) {
+          message = mode === 'edit' ? 'Nook e imagen actualizados' : 'Nook e imagen creados';
+        } else {
+          message = mode === 'edit' ? 'Nook actualizado' : 'Nook creado';
+        }
         setSnackbar({
           visible: true,
-          message: mode === 'edit' ? 'Nook actualizado con éxito' : 'Nook creado con éxito',
+          message,
           type: 'success',
+        });
+        // Guardar navegación pendiente
+        setPendingNavigation(() => {
+          if (mode === 'edit') {
+            return () => router.replace(`/nooks/${nookResult.id}`);
+          } else {
+            return () => router.replace(`/realms/${selectedRealm.id}`);
+          }
         });
       } catch (nookError: any) {
         setSnackbar({
@@ -301,53 +349,16 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
             nookError?.message || `Error al ${mode === 'edit' ? 'actualizar' : 'crear'} el nook`,
           type: 'error',
         });
+        setPendingNavigation(null);
         return;
       }
-
-      // Subir imagen si existe
-      if (data.image && nookResult && data.image !== primaryImageUrl) {
-        try {
-          await uploadMediaMutation.mutateAsync({
-            userId: user.id,
-            entityType: 'location',
-            entityId: nookResult.id,
-            localUri: data.image,
-            isPrimary: true,
-          });
-          setSnackbar({
-            visible: true,
-            message:
-              mode === 'edit'
-                ? 'Nook e imagen actualizados con éxito'
-                : 'Nook e imagen creados con éxito',
-            type: 'success',
-          });
-        } catch (uploadError: any) {
-          setSnackbar({
-            visible: true,
-            message:
-              uploadError?.message ||
-              (mode === 'edit'
-                ? 'Nook actualizado, pero falló la subida de la imagen'
-                : 'Nook creado, pero falló la subida de la imagen'),
-            type: 'error',
-          });
-        }
-      }
-
-      setTimeout(() => {
-        if (mode === 'edit') {
-          router.replace(`/nooks/${nookResult.id}`);
-        } else {
-          router.replace(`/realms/${selectedRealm.id}`);
-        }
-      }, 2000);
     } catch (error: any) {
       setSnackbar({
         visible: true,
         message: `Error inesperado: ${error.message}`,
         type: 'error',
       });
+      setPendingNavigation(null);
     }
   };
 
@@ -378,10 +389,9 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
   const loading =
     createNookMutation.isPending || updateNookMutation.isPending || uploadMediaMutation.isPending;
-
   return (
     <FormProvider {...methods}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         {/* Header unificado */}
         <CustomFormHeader
           title={mode === 'edit' ? 'Editar Nook' : 'Crear Nook'}
@@ -524,7 +534,13 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
         </ScrollView>
 
         {/* Botones de acción flotantes */}
-        <View style={styles.floatingActionContainer} pointerEvents="box-none">
+        <View
+          style={[
+            styles.floatingActionContainer,
+            { paddingBottom: Math.max(insets.bottom, theme.spacing.s) },
+          ]}
+          pointerEvents="box-none"
+        >
           <View style={styles.floatingActionInner}>
             {!isOnline && (
               <View style={styles.connectionWarning}>
@@ -579,7 +595,13 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
         <FeedbackSnackbar
           visible={snackbar.visible}
-          onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+          onDismiss={() => {
+            setSnackbar({ ...snackbar, visible: false });
+            if (pendingNavigation) {
+              pendingNavigation();
+              setPendingNavigation(null);
+            }
+          }}
           message={snackbar.message}
           type={snackbar.type}
         />

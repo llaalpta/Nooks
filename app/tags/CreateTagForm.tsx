@@ -155,3 +155,8 @@ export function CreateTagForm({
     </ScrollView>
   );
 }
+
+// Export default requerido para rutas de Expo Router
+export default function CreateTagFormScreen() {
+  return <CreateTagForm showTitle={true} autoFocus={true} />;
+}

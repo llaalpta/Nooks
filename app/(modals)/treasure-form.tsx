@@ -3,7 +3,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -85,12 +85,14 @@ export default function TreasureFormScreen() {
   const userId = user?.id || '';
   const styles = createRealmFormStyles(theme);
   const isOnline = useIsOnline();
+  const insets = useSafeAreaInsets();
 
   const [snackbar, setSnackbar] = useState({
     visible: false,
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
+  const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
   // Cargar datos iniciales si es edición
   const { data: treasure, isLoading: isLoadingTreasure } = useTreasureQuery(treasureId || '');
@@ -204,7 +206,9 @@ export default function TreasureFormScreen() {
         return;
       }
 
-      let treasureResult;
+      let treasureResult: any;
+      let imageChanged = false;
+      let imageUploadSuccess = false;
       try {
         if (mode === 'edit' && treasureId) {
           // Actualizar treasure
@@ -256,10 +260,52 @@ export default function TreasureFormScreen() {
           }
         }
 
+        // Subir imagen si existe y es diferente
+        if (data.image && treasureResult && data.image !== existingImageUrl) {
+          imageChanged = true;
+          try {
+            await uploadMediaMutation.mutateAsync({
+              userId: user.id,
+              entityType: 'treasure',
+              entityId: treasureResult.id,
+              localUri: data.image,
+              isPrimary: true,
+            });
+            imageUploadSuccess = true;
+          } catch (uploadError: any) {
+            setSnackbar({
+              visible: true,
+              message:
+                uploadError?.message ||
+                (mode === 'edit'
+                  ? 'Treasure actualizado, pero falló la subida de la imagen'
+                  : 'Treasure creado, pero falló la subida de la imagen'),
+              type: 'error',
+            });
+            setPendingNavigation(null);
+            return;
+          }
+        }
+
+        // Mensaje según si hubo cambio de imagen
+        let message = '';
+        if (imageChanged && imageUploadSuccess) {
+          message =
+            mode === 'edit' ? 'Treasure e imagen actualizados' : 'Treasure e imagen creados';
+        } else {
+          message = mode === 'edit' ? 'Treasure actualizado' : 'Treasure creado';
+        }
         setSnackbar({
           visible: true,
-          message: mode === 'edit' ? 'Treasure actualizado con éxito' : 'Treasure creado con éxito',
+          message,
           type: 'success',
+        });
+        setPendingNavigation(() => {
+          if (mode === 'edit') {
+            return () => router.replace(`/treasures/${treasureResult.id}`);
+          } else {
+            return () => router.replace(`/nooks/${nookId}`);
+          }
         });
       } catch (treasureError: any) {
         setSnackbar({
@@ -269,53 +315,16 @@ export default function TreasureFormScreen() {
             `Error al ${mode === 'edit' ? 'actualizar' : 'crear'} el treasure`,
           type: 'error',
         });
+        setPendingNavigation(null);
         return;
       }
-
-      // Subir imagen si existe y es diferente a la actual
-      if (data.image && treasureResult && data.image !== existingImageUrl) {
-        try {
-          await uploadMediaMutation.mutateAsync({
-            userId: user.id,
-            entityType: 'treasure',
-            entityId: treasureResult.id,
-            localUri: data.image,
-            isPrimary: true,
-          });
-          setSnackbar({
-            visible: true,
-            message:
-              mode === 'edit'
-                ? 'Treasure e imagen actualizados con éxito'
-                : 'Treasure e imagen creados con éxito',
-            type: 'success',
-          });
-        } catch (uploadError: any) {
-          setSnackbar({
-            visible: true,
-            message:
-              uploadError?.message ||
-              (mode === 'edit'
-                ? 'Treasure actualizado, pero falló la subida de la imagen'
-                : 'Treasure creado, pero falló la subida de la imagen'),
-            type: 'error',
-          });
-        }
-      }
-
-      setTimeout(() => {
-        if (mode === 'edit') {
-          router.replace(`/treasures/${treasureResult.id}`);
-        } else {
-          router.replace(`/nooks/${nookId}`);
-        }
-      }, 2000);
     } catch (error: any) {
       setSnackbar({
         visible: true,
         message: `Error inesperado: ${error.message}`,
         type: 'error',
       });
+      setPendingNavigation(null);
     }
   };
 
@@ -337,10 +346,9 @@ export default function TreasureFormScreen() {
     createTreasureMutation.isPending ||
     updateTreasureMutation.isPending ||
     uploadMediaMutation.isPending;
-
   return (
     <FormProvider {...methods}>
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         {/* Header unificado */}
         <CustomFormHeader
           title={mode === 'edit' ? 'Editar Treasure' : 'Crear Treasure'}
@@ -410,7 +418,13 @@ export default function TreasureFormScreen() {
         </ScrollView>
 
         {/* Botones de acción flotantes */}
-        <View style={styles.floatingActionContainer} pointerEvents="box-none">
+        <View
+          style={[
+            styles.floatingActionContainer,
+            { paddingBottom: Math.max(insets.bottom, theme.spacing.s) },
+          ]}
+          pointerEvents="box-none"
+        >
           <View style={styles.floatingActionInner}>
             {!isOnline && (
               <View style={styles.connectionWarning}>
@@ -446,7 +460,13 @@ export default function TreasureFormScreen() {
 
         <FeedbackSnackbar
           visible={snackbar.visible}
-          onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+          onDismiss={() => {
+            setSnackbar({ ...snackbar, visible: false });
+            if (pendingNavigation) {
+              pendingNavigation();
+              setPendingNavigation(null);
+            }
+          }}
           message={snackbar.message}
           type={snackbar.type}
         />

@@ -49,7 +49,7 @@ export default function TabsLayout() {
               title: 'Realms',
               tabBarIcon: ({ size }) => (
                 <Image
-                  source={require('@/assets/images/realm-marker.png')}
+                  source={require('@/assets/images/realm-marker-small.png')}
                   style={{
                     width: size,
                     height: size,

@@ -175,7 +175,7 @@ export default function NookDetailScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
             >
               <Image
-                source={require('@/assets/images/realm-marker.png')}
+                source={require('@/assets/images/realm-marker-small.png')}
                 style={{
                   width: 32,
                   height: 32,

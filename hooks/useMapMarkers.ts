@@ -1,6 +1,3 @@
-// hooks/useMapMarkers.ts
-// Hook unificado para manejo de marcadores con carga diferida de imágenes
-
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 
@@ -17,7 +14,7 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
   const theme = useAppTheme();
 
   const {
-    imagePath = '@/assets/images/realm-marker.png',
+    imagePath = '@/assets/images/realm-marker-small.png',
     fallbackColor = theme.colors.primary || '#6366f1',
   } = config;
 
@@ -28,7 +25,7 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
         try {
           // Nota: En un proyecto real, necesitarías un sistema más dinámico para cargar imágenes
           // Por ahora, asumimos que la imagen está en la ruta estándar
-          const markerImage = require('@/assets/images/realm-marker.png');
+          const markerImage = require('@/assets/images/realm-marker-small.png');
           setCustomMarkerImage(markerImage);
         } catch (error) {
           console.warn('No se pudo cargar la imagen personalizada del marcador:', error);
@@ -48,7 +45,11 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
   // Obtener props del marcador (imagen o color)
   const getMarkerProps = () => {
     if (isMapReady && customMarkerImage) {
-      return { image: customMarkerImage };
+      return {
+        image: customMarkerImage,
+        // Especificar tamaño para evitar marcadores enormes en producción
+        style: { width: 32, height: 32 },
+      };
     }
     return { pinColor: fallbackColor };
   };

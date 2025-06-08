@@ -115,7 +115,7 @@ export default function RealmsScreen() {
 
   if (isError) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
         <EmptyState
           message="Ocurrió un error al cargar los realms."
           actionLabel="Reintentar"
@@ -128,7 +128,7 @@ export default function RealmsScreen() {
   const hasActiveSearch = searchText.trim() || tagSearchText.trim();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       {/* Header con título */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mis Realms</Text>

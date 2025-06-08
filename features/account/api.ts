@@ -1,4 +1,7 @@
-import * as uuid from 'uuid';
+// Asegurar que crypto polyfill esté disponible antes de usar UUID
+import 'react-native-get-random-values';
+// Importación optimizada de UUID para evitar problemas con crypto polyfill
+import { v4 as uuidv4 } from 'uuid';
 
 import { compressAndResizeImage, uploadImageToStorage } from '@/utils/imageUtils';
 import { supabase } from '@/utils/supabase';
@@ -27,8 +30,8 @@ export const updateProfile = async (
 
 export const uploadAvatar = async (userId: string, localUri: string) => {
   const manipulated = await compressAndResizeImage(localUri);
-  const storagePath = `${userId}/${uuid.v4()}.jpg`;
-  const publicUrl = await uploadImageToStorage(manipulated.uri, storagePath, 'avatars');
+  const storagePath = `avatars/${userId}/${uuidv4()}.jpg`;
+  const publicUrl = await uploadImageToStorage(manipulated.uri, storagePath, 'media');
   if (!publicUrl) throw new Error('Error al subir la imagen de avatar');
   return publicUrl;
 };

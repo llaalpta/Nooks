@@ -262,7 +262,7 @@ export default function MapScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error al cargar los realms</Text>
           <Button mode="outlined" onPress={() => requestLocationPermission()}>
@@ -276,7 +276,7 @@ export default function MapScreen() {
   const validRealms = realms?.filter((realm) => realm.latitude && realm.longitude) || [];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <View style={styles.mapContainer}>
         <MapView
           ref={mapRef}

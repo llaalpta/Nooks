@@ -36,37 +36,21 @@ export const ControlledImagePicker = <T extends object>({
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
   const styles = createStyles(theme);
-
-  // Lógica para abrir galería o cámara
+  // Lógica para abrir galería o cámara - OPTIMIZADA para máxima calidad
   const pickImageFromLibrary = async (onChange: (uri: string) => void) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'images',
-        allowsEditing: false, // No crop, subida directa
-        quality: 0.8,
+        allowsEditing: true,
+        aspect: avatarMode ? [1, 1] : [aspectRatio, 1],
+        quality: 1.0, // ✅ Máxima calidad según documentación Expo
       });
+
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
-        let imageUri = result.assets[0].uri;
-        try {
-          const manipulatedImage = await ImageManipulator.manipulateAsync(
-            imageUri,
-            [
-              {
-                resize: {
-                  width: 400,
-                  height: Math.round(400 / aspectRatio),
-                },
-              },
-            ],
-            {
-              compress: 0.8,
-              format: ImageManipulator.SaveFormat.JPEG,
-            }
-          );
-          imageUri = manipulatedImage.uri;
-        } catch (manipError) {
-          console.warn('Error optimizando imagen, usando original:', manipError);
-        }
+        const imageUri = result.assets[0].uri;
+
+        // ✅ USAR IMAGEN ORIGINAL SIN MANIPULACIÓN para máxima calidad de preview
+        // La optimización se hará solo al momento de subir a Supabase
         onChange(imageUri);
         if (onImageChange) onImageChange(imageUri);
       }
@@ -79,32 +63,41 @@ export const ControlledImagePicker = <T extends object>({
     try {
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: 'images',
-        allowsEditing: false, // No crop, subida directa
-        quality: 0.8,
+        allowsEditing: true,
+        aspect: avatarMode ? [1, 1] : [aspectRatio, 1],
+        quality: 1.0, // ✅ Máxima calidad para mejor preview
       });
+
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
-        let imageUri = result.assets[0].uri;
+        const imageUri = result.assets[0].uri;
+
+        // ✅ Para fotos de cámara, hacer una optimización mínima solo para reducir tamaño de archivo
+        // pero manteniendo alta calidad visual
         try {
+          const targetWidth = avatarMode ? 800 : 1000;
+          const targetHeight = avatarMode ? 800 : Math.round(targetWidth / aspectRatio);
+
           const manipulatedImage = await ImageManipulator.manipulateAsync(
             imageUri,
             [
               {
                 resize: {
-                  width: 400,
-                  height: Math.round(400 / aspectRatio),
+                  width: targetWidth,
+                  height: targetHeight,
                 },
               },
             ],
             {
-              compress: 0.8,
+              compress: 0.9, // Alta calidad pero algo de compresión para archivos de cámara
               format: ImageManipulator.SaveFormat.JPEG,
             }
           );
-          imageUri = manipulatedImage.uri;
+          onChange(manipulatedImage.uri);
         } catch (manipError) {
           console.warn('Error optimizando imagen, usando original:', manipError);
+          onChange(imageUri);
         }
-        onChange(imageUri);
+
         if (onImageChange) onImageChange(imageUri);
       }
     } catch (error) {
@@ -167,7 +160,15 @@ export const ControlledImagePicker = <T extends object>({
                           overflow: 'hidden',
                         },
                       ]
-                    : [styles.placeholderContainer, { aspectRatio, width: '100%' }]
+                    : [
+                        styles.placeholderContainer,
+                        { aspectRatio, width: '100%', overflow: 'hidden' },
+                        value && {
+                          borderWidth: 3,
+                          borderStyle: 'solid',
+                          borderColor: theme.colors.primary,
+                        },
+                      ]
                 }
                 onPress={() => handleImagePickerPress(onChange, value)}
                 disabled={disabled}
@@ -176,7 +177,11 @@ export const ControlledImagePicker = <T extends object>({
                 {value ? (
                   <Image
                     source={{ uri: value }}
-                    style={{ width: '100%', height: '100%' }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      ...(avatarMode ? { borderRadius: avatarSize / 2 } : { borderRadius: 0 }),
+                    }}
                     resizeMode="cover"
                   />
                 ) : (

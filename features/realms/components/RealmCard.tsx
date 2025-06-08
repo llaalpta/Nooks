@@ -179,7 +179,7 @@ export function RealmCard({ realm }: RealmCardProps) {
                 }}
               >
                 <Image
-                  source={require('@/assets/images/realm-marker.png')}
+                  source={require('@/assets/images/realm-marker-small.png')}
                   style={{
                     width: 32,
                     height: 32,
@@ -195,7 +195,7 @@ export function RealmCard({ realm }: RealmCardProps) {
             <View style={styles.locationIndicator}>
               <Text style={styles.locationInfo} numberOfLines={1} ellipsizeMode="tail">
                 {/* 🔥 Validación de tipos numéricos */}
-                {typeof realm.latitude === 'number' ? realm.latitude.toFixed(6) : '0.000000'},{' '}
+                {typeof realm.latitude === 'number' ? realm.latitude.toFixed(6) : '0.000000'},
                 {typeof realm.longitude === 'number' ? realm.longitude.toFixed(6) : '0.000000'}
               </Text>
               {/* 🔥 Validación de radius */}
