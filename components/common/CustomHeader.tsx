@@ -4,7 +4,9 @@ import React from 'react';
 import { View, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme, useThemeMode } from '@/contexts/ThemeContext';
+import { useProfileQuery } from '@/features/account/hooks';
 
 import { createStyles } from './styles/CustomHeader.style';
 
@@ -13,6 +15,9 @@ export const CustomHeader = () => {
   const { themeMode, setThemeMode } = useThemeMode();
   const insets = useSafeAreaInsets();
   const styles = createStyles(theme);
+  const { user } = useAuth();
+  const userId = user?.id;
+  const { data: profile } = useProfileQuery(userId || '');
 
   const getLogoSource = () => {
     return theme.dark
@@ -45,6 +50,7 @@ export const CustomHeader = () => {
         return 'contrast-outline';
     }
   };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
@@ -60,7 +66,21 @@ export const CustomHeader = () => {
         {/* Botones de la derecha */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
-            <Ionicons name="person-circle" size={32} color={theme.colors.primary} />
+            {profile?.avatar_url ? (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  borderWidth: 2,
+                  borderColor: theme.colors.primary,
+                }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Ionicons name="person-circle" size={32} color={theme.colors.primary} />
+            )}
           </TouchableOpacity>
         </View>
       </View>

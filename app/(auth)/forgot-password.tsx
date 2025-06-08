@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { z } from 'zod';
 
 import { Button } from '@/components/atoms/Button';
@@ -30,11 +30,16 @@ export default function ForgotPasswordScreen() {
     message: '',
     type: 'success',
   });
-
   const mutation = useResetPasswordMutation();
   const router = useRouter();
   const theme = useAppTheme();
   const styles = createStyles(theme);
+
+  const getLogoSource = () => {
+    return theme.dark
+      ? require('@/assets/images/nooks_dark.png')
+      : require('@/assets/images/nooks.png');
+  };
 
   const onSubmit = async (data: ForgotPasswordForm) => {
     try {
@@ -52,41 +57,50 @@ export default function ForgotPasswordScreen() {
       });
     }
   };
-
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Recuperar contraseña
-        </Text>
+        {/* Logo y mensaje de bienvenida */}
+        <View style={styles.welcomeSection}>
+          <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
+          <Text variant="headlineMedium" style={styles.welcomeTitle}>
+            Recuperar acceso a
+          </Text>
+          <Text variant="headlineLarge" style={styles.brandTitle}>
+            Nooks
+          </Text>
+        </View>
 
-        <ControlledTextInput
-          name="email"
-          label="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        {/* Formulario */}
+        <View style={styles.formSection}>
+          <ControlledTextInput
+            name="email"
+            label="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
 
-        <Button
-          mode="contained"
-          onPress={handleSubmit(onSubmit)}
-          loading={mutation.isPending}
-          style={styles.button}
-        >
-          Enviar email de recuperación
-        </Button>
+          <Button
+            mode="contained"
+            onPress={handleSubmit(onSubmit)}
+            loading={mutation.isPending}
+            style={styles.button}
+          >
+            Enviar email de recuperación
+          </Button>
 
-        <Button mode="text" onPress={() => router.push('/login')} style={styles.textButton}>
-          Volver a iniciar sesión
-        </Button>
-
-        <FeedbackSnackbar
-          visible={snackbar.visible}
-          onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
-          message={snackbar.message}
-          type={snackbar.type}
-        />
+          <Button mode="text" onPress={() => router.push('/login')} style={styles.textButton}>
+            Volver a iniciar sesión
+          </Button>
+        </View>
       </View>
+
+      <FeedbackSnackbar
+        visible={snackbar.visible}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+        message={snackbar.message}
+        type={snackbar.type}
+      />
     </FormProvider>
   );
 }

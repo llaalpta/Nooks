@@ -1,7 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CustomHeader } from '@/components/common/CustomHeader';
@@ -31,26 +30,32 @@ export default function TabsLayout() {
             name="index"
             options={{
               title: 'Inicio',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="home-outline" size={size} color={color} />
+              tabBarIcon: ({ size }) => (
+                <Image
+                  source={require('@/assets/images/home.png')}
+                  style={{
+                    width: size,
+                    height: size,
+                  }}
+                  resizeMode="contain"
+                />
               ),
             }}
           />
-          <Tabs.Screen
-            name="search"
-            options={{
-              title: 'Buscar',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="search-outline" size={size} color={color} />
-              ),
-            }}
-          />
+
           <Tabs.Screen
             name="realms"
             options={{
               title: 'Realms',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="list-outline" size={size} color={color} />
+              tabBarIcon: ({ size }) => (
+                <Image
+                  source={require('@/assets/images/realm-marker.png')}
+                  style={{
+                    width: size,
+                    height: size,
+                  }}
+                  resizeMode="contain"
+                />
               ),
             }}
           />
@@ -58,18 +63,31 @@ export default function TabsLayout() {
             name="treasures"
             options={{
               title: 'Treasures',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="diamond-outline" size={size} color={color} />
+              tabBarIcon: ({ size }) => (
+                <Image
+                  source={require('@/assets/images/treasure.png')}
+                  style={{
+                    width: size,
+                    height: size,
+                  }}
+                  resizeMode="contain"
+                />
               ),
             }}
           />
-
           <Tabs.Screen
             name="map"
             options={{
               title: 'Mapa',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="map-outline" size={size} color={color} />
+              tabBarIcon: ({ size }) => (
+                <Image
+                  source={require('@/assets/images/map.png')}
+                  style={{
+                    width: size,
+                    height: size,
+                  }}
+                  resizeMode="contain"
+                />
               ),
             }}
           />
@@ -77,8 +95,15 @@ export default function TabsLayout() {
             name="tags"
             options={{
               title: 'Tags',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="pricetags-outline" size={size} color={color} />
+              tabBarIcon: ({ size }) => (
+                <Image
+                  source={require('@/assets/images/tags.png')}
+                  style={{
+                    width: size,
+                    height: size,
+                  }}
+                  resizeMode="contain"
+                />
               ),
             }}
           />

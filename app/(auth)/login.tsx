@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { z } from 'zod';
 
 import { Button } from '@/components/atoms/Button';
@@ -31,11 +31,16 @@ export default function LoginScreen() {
     message: '',
     type: 'success',
   });
-
   const router = useRouter();
   const mutation = useSignInMutation();
   const theme = useAppTheme();
   const styles = createStyles(theme);
+
+  const getLogoSource = () => {
+    return theme.dark
+      ? require('@/assets/images/nooks_dark.png')
+      : require('@/assets/images/nooks.png');
+  };
 
   const onSubmit = async (data: LoginForm) => {
     try {
@@ -50,48 +55,57 @@ export default function LoginScreen() {
       });
     }
   };
-
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Iniciar sesión
-        </Text>
+        {/* Logo y mensaje de bienvenida */}
+        <View style={styles.welcomeSection}>
+          <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
+          <Text variant="headlineMedium" style={styles.welcomeTitle}>
+            ¡Bienvenido de nuevo a
+          </Text>
+          <Text variant="headlineLarge" style={styles.brandTitle}>
+            Nooks!
+          </Text>
+        </View>
 
-        <ControlledTextInput
-          name="email"
-          label="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        {/* Formulario */}
+        <View style={styles.formSection}>
+          <ControlledTextInput
+            name="email"
+            label="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
 
-        <ControlledTextInput
-          name="password"
-          label="Contraseña"
-          secureTextEntry
-          autoCapitalize="none"
-        />
+          <ControlledTextInput
+            name="password"
+            label="Contraseña"
+            secureTextEntry
+            autoCapitalize="none"
+          />
 
-        <Button
-          mode="contained"
-          onPress={handleSubmit(onSubmit)}
-          loading={mutation.isPending}
-          style={styles.button}
-        >
-          Entrar
-        </Button>
+          <Button
+            mode="contained"
+            onPress={handleSubmit(onSubmit)}
+            loading={mutation.isPending}
+            style={styles.button}
+          >
+            Entrar
+          </Button>
 
-        <Button mode="text" onPress={() => router.push('/register')} style={styles.textButton}>
-          ¿No tienes cuenta? Regístrate
-        </Button>
+          <Button mode="text" onPress={() => router.push('/register')} style={styles.textButton}>
+            ¿No tienes cuenta? Regístrate
+          </Button>
 
-        <Button
-          mode="text"
-          onPress={() => router.push('/forgot-password')}
-          style={styles.textButton}
-        >
-          ¿Olvidaste tu contraseña?
-        </Button>
+          <Button
+            mode="text"
+            onPress={() => router.push('/forgot-password')}
+            style={styles.textButton}
+          >
+            ¿Olvidaste tu contraseña?
+          </Button>
+        </View>
       </View>
       <FeedbackSnackbar
         visible={snackbar.visible}

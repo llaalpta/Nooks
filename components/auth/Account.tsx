@@ -36,6 +36,7 @@ export default function Account({ session }: { session: Session }) {
     defaultValues: { username: '', avatar_url: '' },
   });
   const { setValue, handleSubmit } = methods;
+  const email = session?.user?.email || '';
 
   const [snackbar, setSnackbar] = useState({
     visible: false,
@@ -96,23 +97,34 @@ export default function Account({ session }: { session: Session }) {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        <View style={styles.section}>
-          <ControlledTextInput name="username" label="Username" />
-        </View>
-
-        <View style={styles.section}>
+        {/* Avatar y datos principales */}
+        <View style={[styles.section, { alignItems: 'center', marginBottom: theme.spacing.l }]}>
           <ControlledImagePicker
             name="avatar_url"
-            label="Avatar"
             onImageChange={handleAvatarChange}
+            style={{ marginBottom: theme.spacing.s }}
+            avatarMode
+            avatarSize={220}
           />
           {uploadAvatarMutation.isPending && (
             <Text variant="bodySmall" style={styles.uploadingText}>
               Subiendo avatar...
             </Text>
           )}
+          <Text variant="titleMedium" style={{ marginTop: theme.spacing.s, fontWeight: '700' }}>
+            {methods.getValues('username') || 'Sin nombre'}
+          </Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+            {email}
+          </Text>
         </View>
 
+        {/* Editar nombre de usuario */}
+        <View style={styles.section}>
+          <ControlledTextInput name="username" label="Nombre de usuario" />
+        </View>
+
+        {/* Botón guardar */}
         <View style={styles.section}>
           <Button
             mode="contained"
@@ -124,6 +136,7 @@ export default function Account({ session }: { session: Session }) {
           </Button>
         </View>
 
+        {/* Botón cerrar sesión */}
         <View>
           <Button mode="outlined" onPress={handleSignOut} loading={signOutMutation.isPending}>
             Cerrar sesión

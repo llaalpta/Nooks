@@ -19,6 +19,8 @@ interface ControlledImagePickerProps<T extends object> {
   style?: StyleProp<ViewStyle>;
   onImageChange?: (localUri: string) => void;
   aspectRatio?: number; // Añadido para flexibilidad
+  avatarMode?: boolean; // Si es true, muestra el avatar redondo
+  avatarSize?: number; // Nuevo: tamaño del avatar en px (solo avatarMode)
 }
 
 export const ControlledImagePicker = <T extends object>({
@@ -27,7 +29,9 @@ export const ControlledImagePicker = <T extends object>({
   disabled,
   style,
   onImageChange,
-  aspectRatio = 16 / 9, // Por defecto 16:9
+  aspectRatio = 16 / 9,
+  avatarMode = false,
+  avatarSize = 120,
 }: ControlledImagePickerProps<T>) => {
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
@@ -110,19 +114,27 @@ export const ControlledImagePicker = <T extends object>({
 
   // ActionSheet cross-platform
   const { showActionSheetWithOptions } = useActionSheet();
-  const handleImagePickerPress = (onChange: (uri: string) => void) => {
-    const options = ['Cancelar', 'Tomar foto', 'Elegir de galería'];
+  const handleImagePickerPress = (onChange: (uri: string) => void, currentValue?: string) => {
+    // Si hay imagen, añadir opción de eliminar
+    const options = currentValue
+      ? ['Cancelar', 'Tomar foto', 'Elegir de galería', 'Eliminar foto']
+      : ['Cancelar', 'Tomar foto', 'Elegir de galería'];
     const cancelButtonIndex = 0;
+    const deleteButtonIndex = currentValue ? 3 : -1;
     showActionSheetWithOptions(
       {
         options,
         cancelButtonIndex,
+        destructiveButtonIndex: deleteButtonIndex !== -1 ? deleteButtonIndex : undefined,
       },
       (buttonIndex: number | undefined) => {
         if (buttonIndex === 1) {
           takePhoto(onChange);
         } else if (buttonIndex === 2) {
           pickImageFromLibrary(onChange);
+        } else if (currentValue && buttonIndex === 3) {
+          onChange('');
+          if (onImageChange) onImageChange('');
         }
       }
     );
@@ -137,52 +149,73 @@ export const ControlledImagePicker = <T extends object>({
           {label && <Text style={styles.label}>{label}</Text>}
 
           <View style={[styles.imageContainer, { width: '100%' }]}>
-            {value ? (
-              // Imagen seleccionada
-              <View style={[styles.imagePreview, { width: '100%' }]}>
-                <Image
-                  source={{ uri: value }}
-                  style={[styles.image, { aspectRatio, width: '100%' }]}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.imageOverlay}
-                  onPress={() => handleImagePickerPress(onChange)}
-                  disabled={disabled}
-                >
-                  <Ionicons name="pencil" size={16} color={theme.colors.onSurface} />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              // Placeholder cuando no hay imagen
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
               <TouchableOpacity
-                style={[styles.placeholderContainer, { aspectRatio, width: '100%' }]}
-                onPress={() => handleImagePickerPress(onChange)}
+                style={
+                  avatarMode
+                    ? [
+                        {
+                          width: avatarSize,
+                          height: avatarSize,
+                          borderRadius: avatarSize / 2,
+                          borderWidth: 4,
+                          borderColor: theme.colors.primary,
+                          backgroundColor: theme.colors.surfaceVariant,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginBottom: 0,
+                          overflow: 'hidden',
+                        },
+                      ]
+                    : [styles.placeholderContainer, { aspectRatio, width: '100%' }]
+                }
+                onPress={() => handleImagePickerPress(onChange, value)}
                 disabled={disabled}
+                activeOpacity={0.8}
               >
-                <View style={styles.placeholderContent}>
-                  <Ionicons
-                    name="image-outline"
-                    size={32}
-                    color={theme.colors.onSurfaceVariant}
-                    style={styles.placeholderIcon}
+                {value ? (
+                  <Image
+                    source={{ uri: value }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
                   />
-                  <Text style={styles.placeholderText}>Toca para seleccionar imagen</Text>
-                  <Text
-                    style={[
-                      styles.placeholderText,
-                      {
-                        fontSize: 12,
-                        opacity: 0.7,
-                        marginBottom: 0,
-                      },
-                    ]}
+                ) : (
+                  <View
+                    style={
+                      avatarMode
+                        ? { alignItems: 'center', justifyContent: 'center', flex: 1 }
+                        : styles.placeholderContent
+                    }
                   >
-                    Formato: {aspectRatio.toFixed(1)}:1
-                  </Text>
-                </View>
+                    <Ionicons
+                      name={avatarMode ? 'person-circle' : 'image-outline'}
+                      size={avatarMode ? 64 : 32}
+                      color={theme.colors.onSurfaceVariant}
+                      style={avatarMode ? undefined : styles.placeholderIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.placeholderText,
+                        avatarMode ? { fontSize: 14, marginTop: 4 } : {},
+                      ]}
+                    >
+                      {avatarMode ? 'Selecciona tu avatar' : 'Toca para seleccionar imagen'}
+                    </Text>
+                    {!avatarMode && (
+                      <Text
+                        style={[
+                          styles.placeholderText,
+                          { fontSize: 12, opacity: 0.7, marginBottom: 0 },
+                        ]}
+                      >
+                        Formato: {aspectRatio.toFixed(1)}:1
+                      </Text>
+                    )}
+                  </View>
+                )}
               </TouchableOpacity>
-            )}
+              {/* Botón eliminar foto externo eliminado. Solo opción en menú contextual. */}
+            </View>
           </View>
 
           {error && <Text style={styles.errorText}>{error?.message}</Text>}

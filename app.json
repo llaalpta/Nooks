@@ -52,12 +52,11 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/nooks.png",
-          "imageWidth": 280,
+          "image": "./assets/images/logo.png",
           "resizeMode": "contain",
           "backgroundColor": "#F8F9FF",
           "dark": {
-            "image": "./assets/images/nooks_dark.png",
+            "image": "./assets/images/logo-dark.png",
             "backgroundColor": "#1a1b23"
           }
         }
@@ -68,6 +67,7 @@
     },
     "extra": {
       "router": {},
+      "author": "Lázaro Piñero Sánchez",
       "eas": {
         "projectId": "ac3e83f3-9888-473f-80b5-018fa8fb8630"
       }

@@ -1,3 +1,16 @@
+# Build y artefactos temporales
+android/app/build/
+android/build/
+.expo/web/cache/
+.expo/web/cache/production/
+.expo/web/cache/production/images/
+dist/
+web-build/
+build/
+tmp/
+temp/
+.cache/
+*.log
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
@@ -29,8 +42,18 @@ yarn-error.*
 .DS_Store
 *.pem
 
+
 # local env files
-.env*.local
+.env*
+# Android
+android/app/google-services.json
+# Configuración sensible
+.vscode/mcp.json
+
+# Claves y tokens
+*.secret
+*.token
+*.bak
 
 # typescript
 *.tsbuildinfo

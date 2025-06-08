@@ -33,12 +33,21 @@ Esta estructura jerárquica, combinada con geolocalización, imágenes y etiquet
 ## 🚀 Instalación y uso
 
 ```bash
+
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/nooks.git
-cd nooks
+git clone https://github.com/llaalpta/Nooks.git
+cd Nooks
 
 # Instalar dependencias
 npm install
+
+# Inicializar la base de datos en Supabase
+## 1. Crea un nuevo proyecto en [Supabase](https://app.supabase.com/)
+## 2. Sube el script de base de datos:
+
+En el panel de Supabase, ve a la sección **SQL Editor** y ejecuta el contenido de `database.sql` que encontrarás en la raíz del proyecto. Esto creará todas las tablas, relaciones, índices y políticas necesarias.
+
+> **Nota:** Si quieres personalizar las políticas de seguridad (RLS), revisa el script y adáptalo a tus necesidades.
 
 # Iniciar el servidor de desarrollo
 expo start
@@ -53,9 +62,15 @@ EXPO_PUBLIC_SUPABASE_URL=tu-url-de-supabase
 EXPO_PUBLIC_SUPABASE_ANON_KEY=tu-clave-anon-de-supabase
 ```
 
-## 📱 Capturas de pantalla
+## 📲 Build de prueba para Android
 
-[Próximamente]
+Puedes instalar la app en tu dispositivo Android usando el siguiente enlace o escaneando el código QR:
+
+- [Descargar APK de Nooks (Expo Build)](https://expo.dev/accounts/llaalpta/projects/Nooks/builds/3fdb8a6f-316d-4df4-bc6e-b720bef80217)
+
+![1749415780259](image/README/1749415780259.png)
+
+---
 
 ## 🔄 Estado del proyecto
 
@@ -79,4 +94,4 @@ Este proyecto es actualmente un trabajo académico individual, pero las sugerenc
 
 ---
 
-Desarrollado por [Tu Nombre] © 2025
+Desarrollado por Lázaro Piñero Sánchez © 2025

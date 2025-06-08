@@ -105,7 +105,6 @@ const defaultThemeSettings: Omit<AppTheme, 'colors' | 'palettes' | 'materialSche
 };
 
 // Exportar paletas completas del Material Theme Builder
-export const palettes = materialTheme.palettes;
 
 // Tema claro
 export const lightTheme: AppTheme = {
@@ -115,7 +114,7 @@ export const lightTheme: AppTheme = {
     ...(materialTheme.schemes.light as Partial<AppColors>),
     ...customColors,
   } as AppColors,
-  palettes: materialTheme.palettes,
+  // palettes: materialTheme.palettes, // Eliminado: no existe en materialTheme
   materialSchemes: {
     light: {
       ...(materialTheme.schemes.light as Partial<AppColors>),
@@ -136,7 +135,7 @@ export const darkTheme: AppTheme = {
     ...(materialTheme.schemes.dark as Partial<AppColors>),
     ...customColors,
   } as AppColors,
-  palettes: materialTheme.palettes,
+  // palettes: materialTheme.palettes, // Eliminado: no existe en materialTheme
   materialSchemes: {
     light: {
       ...(materialTheme.schemes.light as Partial<AppColors>),
@@ -157,7 +156,7 @@ export const getThemeByScheme = (colorScheme: string | null | undefined): AppThe
 export default {
   light: lightTheme,
   dark: darkTheme,
-  palettes: materialTheme.palettes,
+  // palettes: materialTheme.palettes, // Eliminado: no existe en materialTheme
   // Aquí solo exportamos light y dark según lo definido en la interfaz
   materialSchemes: {
     light: {
