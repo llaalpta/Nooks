@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Image } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
 import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
@@ -68,8 +69,8 @@ export const BasicMapPickerInput = <T extends object>({
   const theme = useAppTheme();
   const styles = createBasicMapPickerStyles(theme);
 
-  const { handleMapReady: originalHandleMapReady, getMarkerProps } = useMapMarkers({
-    imagePath: '@/assets/images/nook-big.png', // Updated to nook-big.png
+  const { handleMapReady: originalHandleMapReady, getMarkerImageSource } = useMapMarkers({
+    imagePath: '@/assets/images/nook-final.png',
   });
 
   const [snackbar, setSnackbar] = useState({
@@ -252,8 +253,12 @@ export const BasicMapPickerInput = <T extends object>({
                         latitude: fieldLocation.latitude,
                         longitude: fieldLocation.longitude,
                       }}
-                      {...getMarkerProps()}
-                    />
+                    >
+                      <Image
+                        source={getMarkerImageSource()}
+                        style={{ width: 40, height: 55, resizeMode: 'contain' }}
+                      />
+                    </Marker>
                   ) : null,
                 ].filter(Boolean)}
               </MapView>

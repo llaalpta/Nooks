@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
@@ -50,7 +51,9 @@ export default function MapScreen() {
 
   const pendingRegionRef = useRef<Region | null>(null);
 
-  const { handleMapReady, getMarkerProps } = useMapMarkers();
+  const { handleMapReady, getMarkerImageSource } = useMapMarkers({
+    imagePath: '@/assets/images/realm-final.png',
+  });
 
   const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } =
     useLocationService({
@@ -305,8 +308,12 @@ export default function MapScreen() {
                 longitude: realm.longitude!,
               }}
               onPress={() => handleRealmPress(realm)}
-              {...getMarkerProps()}
-            />
+            >
+              <Image
+                source={getMarkerImageSource()}
+                style={{ width: 40, height: 55, resizeMode: 'contain' }}
+              />
+            </Marker>
           ))}
         </MapView>
 
