@@ -3,7 +3,7 @@ import Slider from '@react-native-community/slider';
 import React, { useState } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Image } from 'react-native';
+// import { Image } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
 import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
@@ -15,7 +15,7 @@ import {
 } from '@/components/common/PlatformMap';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useLocationService } from '@/hooks/useLocationService';
-import { useMapMarkers } from '@/hooks/useMapMarkers';
+// import { useMapMarkers } from '@/hooks/useMapMarkers';
 import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import { createStyles } from './styles/MapPickerInput.styles';
@@ -56,9 +56,7 @@ export const CircleMapPickerInput = <T extends object>({
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  const { handleMapReady, getMarkerImageSource } = useMapMarkers({
-    imagePath: '@/assets/images/realm-final.png',
-  });
+  const handleMapReady = () => {};
 
   const [snackbar, setSnackbar] = useState({
     visible: false,
@@ -140,12 +138,8 @@ export const CircleMapPickerInput = <T extends object>({
                         latitude: circleLocation.latitude,
                         longitude: circleLocation.longitude,
                       }}
-                    >
-                      <Image
-                        source={getMarkerImageSource()}
-                        style={{ width: 40, height: 55, resizeMode: 'contain' }}
-                      />
-                    </Marker>
+                      image={require('../../assets/images/realm-final.png')}
+                    />
 
                     <Circle
                       center={{

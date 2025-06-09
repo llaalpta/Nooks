@@ -14,7 +14,7 @@ import {
 } from '@/components/common/PlatformMap';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useLocationService } from '@/hooks/useLocationService';
-import { useMapMarkers } from '@/hooks/useMapMarkers';
+// import { useMapMarkers } from '@/hooks/useMapMarkers';
 import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import { createBasicMapPickerStyles } from './styles/BasicMapPickerInput.styles';
@@ -68,10 +68,6 @@ export const BasicMapPickerInput = <T extends object>({
   const mapRef = useRef<any>(null);
   const theme = useAppTheme();
   const styles = createBasicMapPickerStyles(theme);
-
-  const { handleMapReady: originalHandleMapReady, getMarkerImageSource } = useMapMarkers({
-    imagePath: '@/assets/images/nook-final.png',
-  });
 
   const [snackbar, setSnackbar] = useState({
     visible: false,
@@ -167,10 +163,7 @@ export const BasicMapPickerInput = <T extends object>({
       mapRef.current.animateToRegion(realmRegion, 800);
       hasAutoCentered.current = true;
     }
-    if (typeof originalHandleMapReady === 'function') {
-      originalHandleMapReady();
-    }
-  }, [realmCenter, realmRadius, originalHandleMapReady]);
+  }, [realmCenter, realmRadius]);
   return (
     <Controller
       control={control}
@@ -255,7 +248,7 @@ export const BasicMapPickerInput = <T extends object>({
                       }}
                     >
                       <Image
-                        source={getMarkerImageSource()}
+                        source={require('../../assets/images/nook-final.png')}
                         style={{ width: 40, height: 55, resizeMode: 'contain' }}
                       />
                     </Marker>
