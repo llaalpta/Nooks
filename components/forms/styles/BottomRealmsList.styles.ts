@@ -26,7 +26,6 @@ export const createStyles = (theme: AppTheme) =>
       ...theme.elevation.level3,
     },
     draggableHeader: {
-      // Solo el header es arrastrable
       backgroundColor: theme.colors.surface,
       borderTopLeftRadius: theme.borderRadius.l,
       borderTopRightRadius: theme.borderRadius.l,
@@ -60,15 +59,12 @@ export const createStyles = (theme: AppTheme) =>
     },
     listContainer: {
       flex: 1,
-      // Asegura que la lista ocupe todo el espacio restante
     },
     listContent: {
       paddingBottom: theme.spacing.l,
-      // FORZAR scroll: hace que el contentSize sea siempre mayor que la altura del container
-      minHeight: '120%', // El contenido será 20% más alto que el container
+      minHeight: '120%',
     },
     forcedScrollSpace: {
-      // Espacio adicional al final para garantizar scroll
       height: 100,
       backgroundColor: 'transparent',
     },

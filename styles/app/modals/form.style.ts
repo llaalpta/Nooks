@@ -1,15 +1,9 @@
-// === BOTONES FLOTANTES ===
-
-// styles/app/shared/form.style.ts
-// Estilos compartidos y unificados para realm-form y nook-form
-
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';
 
 export const createUnifiedFormStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    // === CONTENEDORES PRINCIPALES ===
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
@@ -19,7 +13,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       paddingBottom: theme.spacing.xl,
     },
 
-    // === HEADER UNIFICADO ===
     header: {
       paddingHorizontal: theme.spacing.m,
       paddingVertical: theme.spacing.m,
@@ -41,7 +34,7 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       right: 0,
       bottom: 0,
       backgroundColor: theme.colors.background,
-      paddingBottom: theme.spacing.s, // Espacio para SafeArea
+      paddingBottom: theme.spacing.s,
       paddingTop: theme.spacing.s,
       paddingHorizontal: theme.spacing.m,
       shadowColor: theme.colors.shadow,
@@ -56,9 +49,8 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       gap: theme.spacing.m,
     },
 
-    // === SECCIONES DEL FORMULARIO ===
     formSection: {
-      marginBottom: theme.spacing.m, // Menos separación entre secciones
+      marginBottom: theme.spacing.m,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -89,11 +81,8 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
       lineHeight: 20,
     },
-    sectionContent: {
-      // Sin padding adicional - controlado por cada input
-    },
+    sectionContent: {},
 
-    // === INPUTS Y CONTROLES ===
     inputSpacing: {
       marginBottom: theme.spacing.m,
     },
@@ -114,7 +103,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       marginTop: theme.spacing.xs,
     },
 
-    // === BOTONES DE ACCIÓN ===
     actionContainer: {
       marginTop: theme.spacing.xl,
       marginBottom: theme.spacing.l,
@@ -130,7 +118,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       borderColor: theme.colors.outline,
     },
 
-    // === ESTADOS ESPECIALES ===
     connectionWarning: {
       backgroundColor: theme.colors.errorContainer,
       padding: theme.spacing.m,
@@ -148,7 +135,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       opacity: 0.7,
     },
 
-    // === INFORMACIÓN Y COORDENADAS ===
     coordsContainer: {
       backgroundColor: theme.colors.surfaceVariant,
       padding: theme.spacing.s,
@@ -162,7 +148,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       lineHeight: 16,
     },
 
-    // === BOTONES ESPECÍFICOS (para nook-form) ===
     realmButton: {
       marginVertical: theme.spacing.s,
       borderRadius: theme.spacing.s,
@@ -171,7 +156,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       marginTop: theme.spacing.m,
     },
 
-    // === CONTENEDORES FLEXIBLES ===
     buttonsContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -182,7 +166,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       flex: 1,
     },
 
-    // === ESTADOS DE DISABLED ===
     disabledContainer: {
       opacity: 0.6,
     },
@@ -190,7 +173,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
     },
 
-    // === ESPACIADO ESPECÍFICO ===
     marginBottomNone: {
       marginBottom: 0,
     },
@@ -207,7 +189,6 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       marginBottom: theme.spacing.xl,
     },
 
-    // === PADDING ESPECÍFICO ===
     paddingNone: {
       padding: 0,
     },
@@ -222,13 +203,10 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
     },
   });
 
-// Función helper para crear estilos específicos de cada formulario
 export const createRealmFormStyles = (theme: AppTheme) => ({
   ...createUnifiedFormStyles(theme),
-  // Estilos específicos adicionales para realm-form si los necesitas
 });
 
 export const createNookFormStyles = (theme: AppTheme) => ({
   ...createUnifiedFormStyles(theme),
-  // Estilos específicos adicionales para nook-form si los necesitas
 });

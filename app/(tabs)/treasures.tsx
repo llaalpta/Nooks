@@ -11,24 +11,21 @@ import { EmptyState } from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { useSearchTreasuresQuery, useAllTreasuresQuery } from '@/features/search/hooks'; // 🔥 IMPORT CORREGIDO
+import { useSearchTreasuresQuery, useAllTreasuresQuery } from '@/features/search/hooks'; // CORRECTED IMPORT
 import { TreasureCard } from '@/features/treasures/components/TreasureCard';
 import { useTreasurePrimaryImageUrl } from '@/features/treasures/hooks';
 import { createStyles } from '@/styles/app/tabs/realms.style';
 
 import type { Tables } from '@/types/supabase';
 
-// Tipo para treasures con tags
 type Tag = Tables<'tags'>;
 type TreasureWithTags = Tables<'treasures'> & { tags: Tag[]; imageUrl?: string | null };
 
 function TreasureCardWithImage({ treasure }: { treasure: TreasureWithTags }) {
-  const theme = useAppTheme(); // 🔥 USAR useAppTheme() EN LUGAR DE IMPORT
+  const theme = useAppTheme();
 
-  // Obtener imagen principal
   const { data: imageUrl } = useTreasurePrimaryImageUrl(treasure.id);
 
-  // Validar y mapear tags igual que en NookDetailScreen
   const validTags = (treasure.tags || [])
     .filter((tag: any) => tag && tag.name && typeof tag.name === 'string' && tag.id && tag.user_id)
     .map((tag: any) => ({
@@ -59,34 +56,28 @@ export default function TreasuresScreen() {
   const styles = createStyles(theme);
   const { user } = useAuth();
 
-  // 🔥 Estados para búsqueda - DOS CAMPOS SEPARADOS
   const [searchText, setSearchText] = useState('');
   const [tagSearchText, setTagSearchText] = useState('');
 
-  // 🔥 Queries principales - USAR HOOK CORRECTO
   const {
     data: treasuresFromApi = [],
     isLoading,
     isError,
     refetch,
-  } = useAllTreasuresQuery(user?.id || ''); // 🔥 HOOK CORRECTO
+  } = useAllTreasuresQuery(user?.id || '');
 
-  // 🔥 Query de búsqueda por nombre (solo se ejecuta cuando hay texto)
   const { data: searchResults = [] } = useSearchTreasuresQuery(user?.id || '', searchText.trim());
 
-  // 🔥 Determinar qué datos mostrar - IGUAL QUE REALMS
   const treasuresToShow = useMemo(() => {
     let filteredTreasures: TreasureWithTags[];
 
-    // Si hay búsqueda por nombre, usar resultados de búsqueda
     if (searchText.trim()) {
       filteredTreasures = searchResults as TreasureWithTags[];
     } else {
-      // Si no hay búsqueda por nombre, usar todos los treasures
       filteredTreasures = treasuresFromApi as TreasureWithTags[];
     }
 
-    // 🔥 Filtrar por nombre de etiqueta (búsqueda local)
+    // Filter by tag name (local search) // TODO: this should be a server-side search
     if (tagSearchText.trim()) {
       const normalizedTagSearch = tagSearchText.toLowerCase().trim();
       filteredTreasures = filteredTreasures.filter((treasure) => {
@@ -97,7 +88,6 @@ export default function TreasuresScreen() {
       });
     }
 
-    // Validar treasures
     return filteredTreasures.filter((treasure) => {
       return (
         treasure &&
@@ -147,15 +137,13 @@ export default function TreasuresScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      {/* Header con título */}
+      {/* Header with title */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mis Treasures</Text>
-        <Text style={styles.headerSubtitle}>Todos tus objetos guardados</Text>
+        <Text style={styles.headerTitle}>My Treasures</Text>
+        <Text style={styles.headerSubtitle}>All your saved items</Text>
       </View>
 
-      {/* 🔥 Sección de búsqueda - DOS CAMPOS */}
       <View style={styles.searchContainer}>
-        {/* Campo de búsqueda por nombre */}
         <TextInput
           value={searchText}
           onChangeText={setSearchText}
@@ -172,7 +160,6 @@ export default function TreasuresScreen() {
           }
         />
 
-        {/* Campo de búsqueda por etiquetas */}
         <TextInput
           value={tagSearchText}
           onChangeText={setTagSearchText}
@@ -189,21 +176,18 @@ export default function TreasuresScreen() {
           }
         />
 
-        {/* 🔥 Indicador de resultados */}
         {hasActiveSearch && (
           <View style={styles.resultsIndicator}>
             <Text style={styles.resultsText}>
-              {treasuresToShow.length} treasure{treasuresToShow.length !== 1 ? 's' : ''} encontrado
-              {treasuresToShow.length !== 1 ? 's' : ''}
+              {treasuresToShow.length} treasure{treasuresToShow.length !== 1 ? 's' : ''} found
             </Text>
             <TouchableOpacity onPress={handleClearSearch}>
-              <Text style={styles.clearFiltersText}>Limpiar búsqueda</Text>
+              <Text style={styles.clearFiltersText}>Clear search</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
 
-      {/* Lista de treasures */}
       {treasuresToShow.length > 0 ? (
         <FlatList
           data={treasuresToShow}

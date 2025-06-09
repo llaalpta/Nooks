@@ -52,19 +52,16 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.primary,
       fontWeight: '500',
     },
-    // Contenedor de botón en esquina superior izquierda
     topLeftButton: {
       position: 'absolute',
       top: theme.spacing.m,
       left: theme.spacing.m,
     },
-    // Contenedor de botón en esquina superior derecha
     topRightButton: {
       position: 'absolute',
       top: theme.spacing.m,
       right: theme.spacing.m,
     },
-    // Estilo para los botones del mapa (lista y mi ubicación)
     mapButton: {
       backgroundColor: theme.colors.primary,
       flexDirection: 'row',
@@ -75,7 +72,6 @@ export const createStyles = (theme: AppTheme) =>
       gap: theme.spacing.xs,
       ...theme.elevation.level2,
     },
-    // Estilo para el botón cuando está cargando
     mapButtonLoading: {
       opacity: 0.8,
     },
@@ -83,12 +79,12 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.onPrimary,
       fontSize: 12,
       fontWeight: '500',
-    }, // Contenedor del botón de añadir en esquina inferior derecha
+    },
     bottomRightButton: {
       position: 'absolute',
       bottom: theme.spacing.m,
       right: theme.spacing.m,
-    }, // Contenedor del botón de detalles en esquina inferior izquierda
+    },
     bottomLeftButton: {
       position: 'absolute',
       bottom: theme.spacing.m,
@@ -98,22 +94,20 @@ export const createStyles = (theme: AppTheme) =>
       position: 'absolute',
       top: theme.spacing.m,
       right: theme.spacing.m,
-      gap: theme.spacing.s, // Espacio entre botones
+      gap: theme.spacing.s,
     },
-    // Contenedor de múltiples botones en esquina inferior izquierda
+
     bottomLeftButtons: {
       position: 'absolute',
       bottom: theme.spacing.m,
       left: theme.spacing.m,
       gap: theme.spacing.s,
     },
-    // Estilo para botón de detalles del realm seleccionado
     selectedRealmDetails: {
       position: 'absolute',
-      bottom: theme.spacing.l * 2 + 56 + theme.spacing.s + 40, // Espaciado para no tapar otros botones
+      bottom: theme.spacing.l * 2 + 56 + theme.spacing.s + 40,
       left: theme.spacing.m,
     },
-    // Botón circular de añadir
     addButton: {
       width: 56,
       height: 56,
@@ -123,14 +117,12 @@ export const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       ...theme.elevation.level3,
     },
-    // Mantenemos el fab original por si lo necesitas en otro lugar
     fab: {
       position: 'absolute',
       bottom: theme.spacing.l,
       right: theme.spacing.l,
     },
 
-    // Estilos originales que podrías necesitar (mantener si existen)
     locationButtonContainer: {
       position: 'absolute',
       bottom: theme.spacing.m,

@@ -106,7 +106,6 @@ const HierarchyVisualization = () => {
       </Text>
 
       <View style={{ alignItems: 'center' }}>
-        {/* Realm */}
         <View
           style={{
             backgroundColor: theme.colors.primary,
@@ -127,7 +126,6 @@ const HierarchyVisualization = () => {
           </Text>
         </View>
 
-        {/* Arrow */}
         <Text
           style={{
             fontSize: 20,
@@ -138,7 +136,6 @@ const HierarchyVisualization = () => {
           ↓
         </Text>
 
-        {/* Nooks */}
         <View
           style={{
             flexDirection: 'row',
@@ -184,7 +181,6 @@ const HierarchyVisualization = () => {
           </View>
         </View>
 
-        {/* Arrow */}
         <Text
           style={{
             fontSize: 20,
@@ -195,7 +191,6 @@ const HierarchyVisualization = () => {
           ↓
         </Text>
 
-        {/* Treasures */}
         <View
           style={{
             flexDirection: 'row',
@@ -257,7 +252,6 @@ const FeatureCard = ({
       onPress={onPress}
       activeOpacity={0.8}
     >
-      {/* Usar imagen PNG personalizada */}
       <View style={{ alignItems: 'center', marginBottom: theme.spacing.sm }}>
         <Image
           source={feature.imagePath}
@@ -357,7 +351,6 @@ export default function HomeScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Header */}
         <View
           style={{
             paddingHorizontal: theme.spacing.l,
@@ -371,8 +364,6 @@ export default function HomeScreen() {
               alignItems: 'center',
             }}
           >
-            {/* Logo o icono principal */}
-
             <Text
               style={{
                 fontSize: 28,
@@ -401,7 +392,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Quick Stats */}
         <View
           style={{
             flexDirection: 'row',
@@ -410,7 +400,6 @@ export default function HomeScreen() {
             gap: theme.spacing.sm,
           }}
         >
-          {/* Quick Stats con iconos grandes y colores temáticos */}
           <View
             style={{
               flex: 1,
@@ -507,12 +496,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Hierarchy Visualization */}
         <View style={{ paddingHorizontal: theme.spacing.l }}>
           <HierarchyVisualization />
         </View>
 
-        {/* Features Grid */}
         <View style={{ paddingHorizontal: theme.spacing.l }}>
           <Text
             style={{
@@ -545,7 +532,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* CTA Section */}
         <View
           style={{
             marginHorizontal: theme.spacing.l,

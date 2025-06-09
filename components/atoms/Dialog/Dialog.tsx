@@ -11,7 +11,7 @@ export interface DialogProps {
   visible: boolean;
   title?: string;
   description?: string;
-  subdescription?: string; // Añadido para manejar subdescripciones
+  subdescription?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -25,7 +25,7 @@ export function Dialog({
   visible,
   title,
   description,
-  subdescription, // Añadido para manejar subdescripciones
+  subdescription,
   confirmLabel = 'Aceptar',
   cancelLabel = 'Cancelar',
   onConfirm,

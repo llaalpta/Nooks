@@ -13,40 +13,47 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
   const [customMarkerImage, setCustomMarkerImage] = useState<any>(null);
   const theme = useAppTheme();
 
-  const {
-    imagePath = '@/assets/images/realm-marker-small.png',
-    fallbackColor = theme.colors.primary || '#6366f1',
-  } = config;
+  const { imagePath: configuredPath, fallbackColor = theme.colors.primary || '#6366f1' } = config;
 
-  // Cargar imagen personalizada después de que el mapa esté listo
   useEffect(() => {
     if (isMapReady && Platform.OS !== 'web') {
       const loadCustomMarker = () => {
+        let imageToLoad;
+
+        if (configuredPath && configuredPath.includes('nook')) {
+          imageToLoad = require('@/assets/images/nook-big.png');
+        } else if (configuredPath && configuredPath.includes('realm')) {
+          imageToLoad = require('@/assets/images/realm-big.png');
+        } else {
+          // Default or if path is unrecognized for specific logic, try realm-big first
+          imageToLoad = require('@/assets/images/realm-big.png');
+        }
+
         try {
-          // Nota: En un proyecto real, necesitarías un sistema más dinámico para cargar imágenes
-          // Por ahora, asumimos que la imagen está en la ruta estándar
-          const markerImage = require('@/assets/images/realm-marker-small.png');
-          setCustomMarkerImage(markerImage);
+          setCustomMarkerImage(imageToLoad);
         } catch (error) {
-          console.warn('No se pudo cargar la imagen personalizada del marcador:', error);
-          // Continuar sin imagen personalizada
+          console.warn(
+            `Could not set marker image (configured: ${configuredPath}). Falling back to default (realm-big.png). Error: `,
+            error
+          );
+          try {
+            setCustomMarkerImage(require('@/assets/images/realm-big.png'));
+          } catch (e) {
+            console.warn('Could not load final fallback marker image (realm-big.png):', e);
+          }
         }
       };
 
       loadCustomMarker();
     }
-  }, [isMapReady, imagePath]);
+  }, [isMapReady, configuredPath]);
 
-  // Callback para cuando el mapa está listo
   const handleMapReady = () => {
     setIsMapReady(true);
   };
 
-  // Obtener props del marcador (imagen o color)
   const getMarkerProps = () => {
     if (isMapReady && customMarkerImage) {
-      // Ajusta el tamaño aquí según el marcador:
-      // Realm: 32x46, Nook: 32x46 (ajusta si tu PNG es diferente)
       return {
         image: customMarkerImage,
         style: { width: 32, height: 46 },
@@ -55,7 +62,6 @@ export const useMapMarkers = (config: MarkerImageConfig = {}) => {
     return { pinColor: fallbackColor };
   };
 
-  // Reset del estado (útil para limpiar al desmontar)
   const resetMarkers = () => {
     setIsMapReady(false);
     setCustomMarkerImage(null);

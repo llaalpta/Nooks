@@ -38,7 +38,6 @@ export default function Account({ session }: { session: Session }) {
   const { setValue, handleSubmit } = methods;
   const email = session?.user?.email || '';
 
-  // Estado local para manejar la imagen seleccionada antes de subirla
   const [pendingAvatarUri, setPendingAvatarUri] = useState<string | null>(null);
 
   const [snackbar, setSnackbar] = useState({
@@ -54,10 +53,8 @@ export default function Account({ session }: { session: Session }) {
     }
   }, [data, setValue]);
 
-  // Solo actualiza el estado local, no sube la imagen inmediatamente
   function handleAvatarChange(localUri: string) {
     setPendingAvatarUri(localUri);
-    // Temporalmente actualizar la vista previa
     setValue('avatar_url', localUri);
   }
 
@@ -65,16 +62,14 @@ export default function Account({ session }: { session: Session }) {
     try {
       let finalAvatarUrl = form.avatar_url;
 
-      // Si hay una imagen pendiente, subirla primero
       if (pendingAvatarUri) {
         finalAvatarUrl = await uploadAvatarMutation.mutateAsync({
           userId,
           localUri: pendingAvatarUri,
         });
-        setPendingAvatarUri(null); // Limpiar el estado pendiente
+        setPendingAvatarUri(null);
       }
 
-      // Actualizar el perfil con la URL final del avatar
       await updateProfileMutation.mutateAsync({
         userId,
         updates: { ...form, avatar_url: finalAvatarUrl },
@@ -109,7 +104,6 @@ export default function Account({ session }: { session: Session }) {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        {/* Avatar y datos principales */}
         <View style={[styles.section, { alignItems: 'center', marginBottom: theme.spacing.l }]}>
           <ControlledImagePicker
             name="avatar_url"
@@ -131,12 +125,10 @@ export default function Account({ session }: { session: Session }) {
           </Text>
         </View>
 
-        {/* Editar nombre de usuario */}
         <View style={styles.section}>
           <ControlledTextInput name="username" label="Nombre de usuario" />
         </View>
 
-        {/* Botón guardar */}
         <View style={styles.section}>
           <Button
             mode="contained"
@@ -148,7 +140,6 @@ export default function Account({ session }: { session: Session }) {
           </Button>
         </View>
 
-        {/* Botón cerrar sesión */}
         <View>
           <Button mode="outlined" onPress={handleSignOut} loading={signOutMutation.isPending}>
             Cerrar sesión

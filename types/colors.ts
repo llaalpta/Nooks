@@ -1,6 +1,4 @@
-// Tipos para los colores del tema
 export interface AppColors {
-  // Colores principales de Material Design
   primary: string;
   onPrimary: string;
   primaryContainer: string;
@@ -14,7 +12,6 @@ export interface AppColors {
   tertiaryContainer: string;
   onTertiaryContainer: string;
 
-  // Colores de superficie
   surface: string;
   onSurface: string;
   surfaceVariant: string;
@@ -27,7 +24,6 @@ export interface AppColors {
   surfaceContainerHigh: string;
   surfaceContainerHighest: string;
 
-  // Colores de utilidad
   outline: string;
   outlineVariant: string;
   shadow: string;
@@ -36,17 +32,14 @@ export interface AppColors {
   inverseOnSurface: string;
   inversePrimary: string;
 
-  // Colores de fondo
   background: string;
   onBackground: string;
 
-  // Colores de estado
   error: string;
   onError: string;
   errorContainer: string;
   onErrorContainer: string;
 
-  // Colores personalizados adicionales
   success: string;
   info: string;
   warning: string;

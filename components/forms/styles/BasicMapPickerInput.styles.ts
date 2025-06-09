@@ -1,6 +1,3 @@
-// components/forms/styles/BasicMapPickerInput.styles.ts
-// Estilos unificados para el mapa básico (sin controles de radio)
-
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';
@@ -8,7 +5,7 @@ import { AppTheme } from '@/types';
 export const createBasicMapPickerStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 0, // Manejado por el contenedor padre
+      marginBottom: 0,
     },
     label: {
       marginBottom: theme.spacing?.s || 8,
@@ -17,11 +14,11 @@ export const createBasicMapPickerStyles = (theme: AppTheme) =>
       color: theme.colors?.onSurfaceVariant || '#666',
     },
     mapContainer: {
-      height: 250, // Altura estándar sin controles de radio
+      height: 250,
       borderRadius: theme.spacing?.m || 12,
       overflow: 'hidden',
       marginBottom: theme.spacing?.m || 16,
-      ...(theme.elevation?.level2 || {}), // Fallback para elevation
+      ...(theme.elevation?.level2 || {}),
       borderWidth: 1,
       borderColor: theme.colors?.outline || '#ccc',
       position: 'relative',
@@ -49,8 +46,8 @@ export const createBasicMapPickerStyles = (theme: AppTheme) =>
       paddingHorizontal: theme.spacing?.m || 16,
       paddingVertical: theme.spacing?.s || 8,
       borderRadius: theme.spacing?.s || 8,
-      ...(theme.elevation?.level2 || {}), // Fallback para elevation
-      minWidth: 120, // Ancho mínimo para consistencia
+      ...(theme.elevation?.level2 || {}),
+      minWidth: 120,
     },
     mapButtonLoading: {
       backgroundColor: theme.colors?.primaryContainer || theme.colors?.primary || '#007AFF',

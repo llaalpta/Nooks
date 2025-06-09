@@ -16,7 +16,7 @@ export const createStyles = (theme: AppTheme) =>
       borderRadius: theme.borderRadius.m,
       width: '100%',
       maxWidth: '100%',
-      maxHeight: '95%', // 🔥 Casi toda la pantalla (era 100%)
+      maxHeight: '95%',
       alignSelf: 'stretch',
       marginTop: 0,
     },
@@ -52,8 +52,8 @@ export const createStyles = (theme: AppTheme) =>
     },
     colorGridRow: {
       flexDirection: 'row',
-      alignItems: 'flex-start', // 🔥 Alinear al inicio
-      flexWrap: 'wrap', // 🔥 Permitir wrap
+      alignItems: 'flex-start',
+      flexWrap: 'wrap',
       marginBottom: 0,
     },
     colorOption: {

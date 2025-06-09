@@ -2,7 +2,6 @@ import { AppColors } from './colors';
 import { AppSpacing, AppBorderRadius, AppElevation } from './spacing';
 import { AppFonts } from './typography';
 
-// Tipo para el tema completo
 export interface AppTheme {
   dark: boolean;
   roundness: number;
@@ -20,5 +19,4 @@ export interface AppTheme {
   };
 }
 
-// Tipo para los modos de tema
 export type ThemeMode = 'light' | 'dark' | 'system';

@@ -10,18 +10,18 @@ import { useAppTheme } from '@/contexts/ThemeContext';
 import { useCreateTagMutation } from '@/features/tags/hooks';
 
 const PRESET_COLORS = [
-  '#FF6B6B', // Rojo suave
-  '#4ECDC4', // Verde azulado
-  '#45B7D1', // Azul
-  '#96CEB4', // Verde menta
-  '#FECA57', // Amarillo
-  '#FF9FF3', // Rosa
-  '#54A0FF', // Azul claro
-  '#5F27CD', // Púrpura
-  '#00D2D3', // Cian
-  '#FF9F43', // Naranja
-  '#1DD1A1', // Verde
-  '#C44569', // Rosa oscuro
+  '#FF6B6B',
+  '#4ECDC4',
+  '#45B7D1',
+  '#96CEB4',
+  '#FECA57',
+  '#FF9FF3',
+  '#54A0FF',
+  '#5F27CD',
+  '#00D2D3',
+  '#FF9F43',
+  '#1DD1A1',
+  '#C44569',
 ];
 
 interface CreateTagFormProps {
@@ -59,12 +59,10 @@ export function CreateTagForm({
         user_id: user.id,
       });
 
-      // Llamar callback de éxito si existe
       if (onSuccess) {
         onSuccess(newTag);
       }
 
-      // Limpiar formulario
       setTagName('');
       setSelectedColor(PRESET_COLORS[0]);
       setError(null);
@@ -117,7 +115,6 @@ export function CreateTagForm({
             </View>
           </View>
 
-          {/* Preview del tag */}
           {tagName.trim() && (
             <View style={styles.previewContainer}>
               <Text style={styles.previewLabel}>Vista previa:</Text>
@@ -156,7 +153,6 @@ export function CreateTagForm({
   );
 }
 
-// Export default requerido para rutas de Expo Router
 export default function CreateTagFormScreen() {
   return <CreateTagForm showTitle={true} autoFocus={true} />;
 }

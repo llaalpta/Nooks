@@ -57,7 +57,6 @@ const WebMapPlaceholder: React.FC<WebMapPlaceholderProps> = ({ style, children, 
   );
 };
 
-// Enhanced error fallback component
 const MapErrorComponent: React.FC<{
   error: ErrorBoundaryState;
   onRetry: () => void;
@@ -155,7 +154,7 @@ const GenericMapComponent: React.FC<MapComponentProps> = ({
   onMapReady,
   ...props
 }) => {
-  // Simular que el mapa está listo inmediatamente
+  //  simulate that the map is ready immediately
   React.useEffect(() => {
     if (onMapReady) {
       onMapReady();
@@ -186,7 +185,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const RNMaps = require('react-native-maps');
 
-    // Verificaciones detalladas
     if (!RNMaps) {
       throw new Error('react-native-maps module not found');
     }
@@ -208,7 +206,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
       success: true,
     };
   } catch (error) {
-    // Error detallado para debugging
     console.error('Error loading react-native-maps:', error);
 
     let errorMessage = 'Error desconocido cargando Google Maps';
@@ -227,7 +224,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
       }
     }
 
-    // Notificar error al componente padre
     onError({
       hasError: true,
       errorMessage,
@@ -244,7 +240,6 @@ const getMapComponents = (onError: (error: ErrorBoundaryState) => void) => {
   }
 };
 
-// Hook para manejar el estado de los mapas
 const useMapComponents = () => {
   const [mapState, setMapState] = useState<{
     components: ReturnType<typeof getMapComponents>;
@@ -292,7 +287,6 @@ const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
     // Create internal ref for the actual map component
     const internalMapRef = React.useRef<any>(null);
 
-    // Manejar cuando el mapa real está listo
     const handleMapReady = React.useCallback(() => {
       if (onMapReady) {
         onMapReady();
@@ -340,7 +334,7 @@ const EnhancedMapView = React.forwardRef<MapViewRef, MapComponentProps>(
       );
     }
 
-    // Propagar onMapReady solo a componentes nativos
+    // to propagate onMapReady to the MapView component
     const mapProps =
       components.success && Platform.OS !== 'web'
         ? { ...props, onMapReady: handleMapReady }
@@ -360,7 +354,6 @@ EnhancedMapView.displayName = 'EnhancedMapView';
 export const PlatformMapView = EnhancedMapView;
 
 export const PlatformMarker = (props: MapComponentProps) => {
-  // Eliminar cualquier children para evitar warnings de texto
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { children: _children, ...rest } = props;
   if (Platform.OS === 'web') {
@@ -378,7 +371,6 @@ export const PlatformMarker = (props: MapComponentProps) => {
 };
 
 export const PlatformCircle = (props: MapComponentProps) => {
-  // Eliminar cualquier children para evitar warnings de texto
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { children: _children, ...rest } = props;
   if (Platform.OS === 'web') {
@@ -410,7 +402,6 @@ export const PlatformCallout = (props: MapComponentProps) => {
   }
 };
 
-// Export types
 export interface Region {
   latitude: number;
   longitude: number;
@@ -418,7 +409,6 @@ export interface Region {
   longitudeDelta: number;
 }
 
-// Ref type for MapView with methods
 export interface MapViewRef {
   animateToRegion: (region: Region, duration?: number) => void;
   getCamera: () => Promise<any>;

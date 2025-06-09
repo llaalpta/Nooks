@@ -30,7 +30,6 @@ export function Button({
   labelStyle,
   testID,
 }: ButtonProps) {
-  // Ahora usamos nuestro hook personalizado para obtener el tema completo
   const theme = useAppTheme();
   const styles = createStyles(theme);
 

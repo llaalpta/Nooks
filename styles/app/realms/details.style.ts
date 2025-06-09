@@ -8,11 +8,9 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    // Espaciador para el header fijo
     headerSpacer: {
       height: insets.top + 56 + 8,
     },
-    // Imagen principal
     imageContainer: {
       height: 280,
       position: 'relative',
@@ -30,7 +28,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
-    // Contenido principal con efecto overlay
     contentContainer: {
       backgroundColor: theme.colors.surface,
       borderTopLeftRadius: theme.borderRadius.l,
@@ -45,7 +42,7 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     },
     headerTitle: {
       fontSize: 28,
-      lineHeight: 36, // Añadir esta línea
+      lineHeight: 36,
       fontWeight: 'bold',
       color: theme.colors.onSurface,
       marginBottom: theme.spacing.s,
@@ -104,7 +101,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       fontWeight: '500',
       color: theme.colors.onPrimaryContainer,
     },
-    // Cards de nooks
     nookCard: {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
@@ -126,7 +122,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       color: theme.colors.onSurfaceVariant,
       lineHeight: 20,
     },
-    // Estado vacío
     emptyContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -154,7 +149,7 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      ...theme.elevation.level2, // Elevación para destacar
+      ...theme.elevation.level2,
       borderWidth: 1,
       borderColor: theme.colors.outlineVariant,
     },

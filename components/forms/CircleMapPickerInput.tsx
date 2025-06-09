@@ -1,4 +1,3 @@
-// components/forms/CircleMapPickerInput.tsx
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React, { useState } from 'react';
@@ -40,7 +39,7 @@ export const CircleMapPickerInput = <T extends object>({
   name,
   label,
   initialRegion = {
-    latitude: 40.4168, // Madrid por defecto
+    latitude: 40.4168,
     longitude: -3.7038,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
@@ -56,7 +55,6 @@ export const CircleMapPickerInput = <T extends object>({
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Usar hooks unificados
   const { handleMapReady, getMarkerProps } = useMapMarkers();
 
   const [snackbar, setSnackbar] = useState({
@@ -132,10 +130,8 @@ export const CircleMapPickerInput = <T extends object>({
                 pointerEvents={disabled ? 'none' : 'auto'}
                 customMapStyle={theme.dark ? darkMapStyle : undefined}
               >
-                {/* Contenido del mapa */}
                 {circleLocation?.latitude && circleLocation?.longitude && (
                   <>
-                    {/* Marcador con hooks unificados */}
                     <Marker
                       coordinate={{
                         latitude: circleLocation.latitude,
@@ -144,7 +140,6 @@ export const CircleMapPickerInput = <T extends object>({
                       {...getMarkerProps()}
                     />
 
-                    {/* Círculo para mostrar el radio */}
                     <Circle
                       center={{
                         latitude: circleLocation.latitude,
@@ -158,8 +153,6 @@ export const CircleMapPickerInput = <T extends object>({
                   </>
                 )}
               </MapView>
-
-              {/* Botón de mi ubicación */}
               <View style={styles.topRightButton}>
                 <TouchableOpacity
                   style={[styles.mapButton, isLocating && styles.mapButtonLoading]}
@@ -180,7 +173,6 @@ export const CircleMapPickerInput = <T extends object>({
                 </TouchableOpacity>
               </View>
 
-              {/* Panel de control de radio en la parte inferior del mapa */}
               {circleLocation?.latitude && circleLocation?.longitude && (
                 <View style={styles.radiusControlPanel}>
                   <View style={styles.radiusHeader}>
@@ -216,7 +208,6 @@ export const CircleMapPickerInput = <T extends object>({
               )}
             </View>
 
-            {/* Información de coordenadas */}
             <View style={styles.infoContainer}>
               <Text style={styles.coordsText}>
                 {circleLocation?.latitude && circleLocation?.longitude

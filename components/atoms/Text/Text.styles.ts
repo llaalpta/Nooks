@@ -85,7 +85,6 @@ export const createStyles = (theme: AppTheme): TextStyles => {
       lineHeight: 64,
       fontWeight: '500',
     },
-    // Alineación de texto
     textCenter: {
       textAlign: 'center',
     },
@@ -95,7 +94,6 @@ export const createStyles = (theme: AppTheme): TextStyles => {
     textRight: {
       textAlign: 'right',
     },
-    // Espaciado
     mb1: {
       marginBottom: theme.spacing.xs,
     },

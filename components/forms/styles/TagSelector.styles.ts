@@ -110,7 +110,7 @@ export const createStyles = (theme: AppTheme) =>
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: theme.spacing.l, // Más padding horizontal
+      paddingHorizontal: theme.spacing.l,
       paddingVertical: theme.spacing.m,
     },
 
@@ -126,7 +126,7 @@ export const createStyles = (theme: AppTheme) =>
       borderRadius: theme.spacing.m,
       width: '100%',
       maxWidth: 400,
-      maxHeight: '85%', // Más alto (era 80%)
+      maxHeight: '85%',
       overflow: 'hidden',
       ...theme.elevation.level3,
     },
@@ -135,7 +135,7 @@ export const createStyles = (theme: AppTheme) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: theme.spacing.l, // Más padding horizontal
+      paddingHorizontal: theme.spacing.l,
       paddingVertical: theme.spacing.m,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,

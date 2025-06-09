@@ -1,4 +1,4 @@
-// Polyfills para React Native - DEBE ser la primera importación
+// Polyfills for React Native Web must be imported before any other imports
 import '../shims';
 
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
@@ -14,10 +14,8 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import '../global.css';
 const queryClient = new QueryClient();
 
-// Evita que el splash screen se oculte automáticamente
-SplashScreen.preventAutoHideAsync().catch(() => {
-  /* El splash screen ya podría estar oculto */
-});
+// prevent the splash screen from hiding automatically
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -57,7 +55,6 @@ export default function RootLayout() {
 
   const onLayoutRootView = useCallback(async () => {
     if (appIsReady) {
-      // Oculta el splash screen cuando la app está lista
       await SplashScreen.hideAsync();
     }
   }, [appIsReady]);

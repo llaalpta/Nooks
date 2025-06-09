@@ -22,7 +22,7 @@ export const createStyles = (theme: AppTheme) =>
       borderColor: theme.colors.outline,
     },
     inputContainerMultiline: {
-      alignItems: 'flex-start', // Para campos multilinea, alinear al inicio
+      alignItems: 'flex-start',
     },
     inputContainerFocused: {
       borderColor: theme.colors.primary,
@@ -38,7 +38,7 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurface,
     },
     inputMultiline: {
-      minHeight: 44, // Altura mínima para campos multilinea
+      minHeight: 44,
       textAlignVertical: 'top',
     },
     leftIcon: {

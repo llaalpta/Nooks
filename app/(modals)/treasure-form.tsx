@@ -31,7 +31,6 @@ import { useInvalidateTagsOnFocus } from '@/hooks/useInvalidateTagsOnFocus';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { createRealmFormStyles } from '@/styles/app/modals/form.style';
 
-// Componente de sección unificado (igual que en realm-form y nook-form)
 const FormSection = ({
   children,
   title,
@@ -49,7 +48,6 @@ const FormSection = ({
 
   return (
     <View style={styles.formSection}>
-      {/* Header de la sección (icono al final) */}
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTextContainer}>
           <Text style={styles.sectionTitle}>{title}</Text>
@@ -62,7 +60,6 @@ const FormSection = ({
         )}
       </View>
 
-      {/* Contenido */}
       <View style={styles.sectionContent}>{children}</View>
     </View>
   );
@@ -94,11 +91,10 @@ export default function TreasureFormScreen() {
   });
   const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
-  // Cargar datos iniciales si es edición
+  // load treasure data if editing
   const { data: treasure, isLoading: isLoadingTreasure } = useTreasureQuery(treasureId || '');
   const { data: existingImageUrl } = useTreasurePrimaryImageUrl(treasureId || '');
 
-  // --- TAGS PARA TREASURE ---
   const [treasureTags, setTreasureTags] = useState<any[]>([]);
   const [isLoadingTreasureTags, setIsLoadingTreasureTags] = useState(false);
 
@@ -141,7 +137,7 @@ export default function TreasureFormScreen() {
   const { handleSubmit, watch, reset, setValue } = methods;
   const watchedValues = watch();
 
-  // Si es edición, setear los valores cuando treasure esté disponible y los tags cargados
+  // Set values when editing and treasure/tags are loaded
   useEffect(() => {
     if (mode === 'edit' && treasure && !isLoadingTreasureTags) {
       try {
@@ -161,7 +157,7 @@ export default function TreasureFormScreen() {
     }
   }, [mode, treasure, treasureTags, isLoadingTreasureTags, existingImageUrl, reset]);
 
-  // Forzar la precarga de tags en edición cuando treasureTags cambian
+  // force set tags when treasureTags are loaded in edit mode
   useEffect(() => {
     if (mode === 'edit' && !isLoadingTreasureTags && treasureTags) {
       setValue('tags', treasureTags);
@@ -211,7 +207,6 @@ export default function TreasureFormScreen() {
       let imageUploadSuccess = false;
       try {
         if (mode === 'edit' && treasureId) {
-          // Actualizar treasure
           treasureResult = await updateTreasureMutation.mutateAsync({
             id: treasureId,
             data: {
@@ -221,7 +216,6 @@ export default function TreasureFormScreen() {
             },
           });
         } else {
-          // Crear treasure
           treasureResult = await createTreasureMutation.mutateAsync({
             name: data.name,
             description: data.description,
@@ -230,28 +224,25 @@ export default function TreasureFormScreen() {
           });
         }
 
-        // Sincronizar tags
         if (treasureResult && Array.isArray(data.tags)) {
           const selectedTags = data.tags || [];
           let currentTags: any[] = [];
           if (mode === 'edit' && treasureTags) {
             currentTags = treasureTags;
           }
-          // Calcular tags a añadir y eliminar
+
           const tagsToAdd = selectedTags.filter(
             (tag: any) => !currentTags.some((t: any) => t.id === tag.id)
           );
           const tagsToRemove = currentTags.filter(
             (tag: any) => !selectedTags.some((t: any) => t.id === tag.id)
           );
-          // Añadir nuevos tags
           for (const tag of tagsToAdd) {
             await addTagToTreasureMutation.mutateAsync({
               treasure_id: treasureResult.id,
               tag_id: tag.id,
             });
           }
-          // Eliminar tags desasociados
           for (const tag of tagsToRemove) {
             await removeTagFromTreasureMutation.mutateAsync({
               treasure_id: treasureResult.id,
@@ -260,7 +251,7 @@ export default function TreasureFormScreen() {
           }
         }
 
-        // Subir imagen si existe y es diferente
+        // only upload image if it has changed
         if (data.image && treasureResult && data.image !== existingImageUrl) {
           imageChanged = true;
           try {
@@ -287,7 +278,6 @@ export default function TreasureFormScreen() {
           }
         }
 
-        // Mensaje según si hubo cambio de imagen
         let message = '';
         if (imageChanged && imageUploadSuccess) {
           message =
@@ -349,7 +339,6 @@ export default function TreasureFormScreen() {
   return (
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        {/* Header unificado */}
         <CustomFormHeader
           title={mode === 'edit' ? 'Editar Treasure' : 'Crear Treasure'}
           onBack={handleBackNavigation}
@@ -360,7 +349,6 @@ export default function TreasureFormScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Sección 1: Información Básica */}
           <FormSection
             title="Información Básica"
             subtitle="Dale un nombre único y una descripción detallada a tu treasure"
@@ -385,7 +373,6 @@ export default function TreasureFormScreen() {
             </View>
           </FormSection>
 
-          {/* Sección 2: Imagen Representativa */}
           <FormSection
             title="Imagen Representativa"
             subtitle="Una buena imagen que te ayuda a identificar tu treasure"
@@ -395,7 +382,6 @@ export default function TreasureFormScreen() {
             <ControlledImagePicker name="image" aspectRatio={16 / 9} />
           </FormSection>
 
-          {/* Sección 3: Etiquetas */}
           <FormSection
             title="Etiquetas"
             subtitle="Ayuda a otros a encontrar tu treasure con etiquetas descriptivas"
@@ -417,7 +403,6 @@ export default function TreasureFormScreen() {
           </FormSection>
         </ScrollView>
 
-        {/* Botones de acción flotantes */}
         <View
           style={[
             styles.floatingActionContainer,

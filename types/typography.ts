@@ -1,6 +1,5 @@
 import { TextStyle } from 'react-native';
 
-// Tipo para variantes de texto
 export type TextVariant =
   | 'displayLarge'
   | 'displayMedium'
@@ -18,7 +17,6 @@ export type TextVariant =
   | 'bodyMedium'
   | 'bodySmall';
 
-// Tipos para las fuentes
 export interface AppFonts {
   regular: {
     fontFamily: string;
@@ -38,10 +36,8 @@ export interface AppFonts {
   };
 }
 
-// Tipo para los estilos de texto
 export type TextStylesProps = TextStyle;
 
-// Tipo para el objeto de estilos de texto
 export type TextStyles = {
   [key in TextVariant]: TextStylesProps;
 } & {

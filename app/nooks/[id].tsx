@@ -33,11 +33,8 @@ export default function NookDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const nookId = params.id;
 
-  // Datos del nook
   const { data: nook, isLoading: isLoadingNook, isError: isErrorNook } = useNookQuery(nookId);
-  // Imagen principal del nook (URL pública)
   const { data: primaryImageUrl } = useNookPrimaryImageUrl(nookId);
-  // Treasures del nook
   const {
     data: treasures = [],
     isLoading: isLoadingTreasures,
@@ -54,7 +51,6 @@ export default function NookDetailScreen() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deleteNookMutation = useDeleteNookMutation();
 
-  // Calcular backRoute
   const backRoute = nook?.parent_location_id
     ? `/realms/${nook.parent_location_id}`
     : '/(tabs)/realms';
@@ -74,7 +70,6 @@ export default function NookDetailScreen() {
 
   const handleConfirmDelete = async () => {
     if (!nook) return;
-    // No permitir borrar si hay treasures
     if (treasures && treasures.length > 0) {
       setSnackbar({
         visible: true,
@@ -92,7 +87,6 @@ export default function NookDetailScreen() {
         type: 'success',
       });
       setShowDeleteDialog(false);
-      // Navegar al padre (Realm)
       router.push(backRoute as any);
     } catch (error: any) {
       setSnackbar({
@@ -111,11 +105,10 @@ export default function NookDetailScreen() {
     });
   };
 
-  // Componente que inyecta la imagen principal del treasure
+  // component that wraps TreasureCard to include image loading
   function TreasureCardWithImage({ treasure }: { treasure: any }) {
     const { data: imageUrl } = useTreasurePrimaryImageUrl(treasure.id);
 
-    // Filtrar y validar tags antes de pasarlas al componente
     const validTags = (treasure.tags || [])
       .filter((tag: any) => tag && tag.name && typeof tag.name === 'string')
       .map((tag: any) => ({
@@ -140,7 +133,7 @@ export default function NookDetailScreen() {
     );
   }
 
-  // Componente Header para FlatList
+  // flatlist header
   const renderHeader = () => {
     if (!nook) return null;
 
@@ -189,7 +182,6 @@ export default function NookDetailScreen() {
               )}
             </View>
 
-            {/* Tags con validación COMPLETA - usando estilos inline ya que eliminaste los del archivo */}
             {Array.isArray((nook as any).tags) && (nook as any).tags.length > 0 && (
               <>
                 <Text
@@ -208,7 +200,6 @@ export default function NookDetailScreen() {
                   }}
                 >
                   {(nook as any).tags.map((tag: Tag) => {
-                    // Validar que el tag tenga nombre válido
                     if (!tag || !tag.name || typeof tag.name !== 'string') return null;
 
                     return (
@@ -237,8 +228,6 @@ export default function NookDetailScreen() {
               </>
             )}
           </View>
-
-          {/* Sección de treasures con validación */}
         </View>
         <View style={styles.nooksCard}>
           <View style={styles.nooksTitleContainer}>
@@ -257,14 +246,12 @@ export default function NookDetailScreen() {
     );
   };
 
-  // ✅ ÚNICA DEFINICIÓN - Render item con wrapper para padding
   const renderTreasureItem = ({ item }: { item: any }) => (
     <View style={{ paddingHorizontal: theme.spacing.m }}>
       <TreasureCardWithImage treasure={item} />
     </View>
   );
 
-  // Componente Empty para cuando no hay treasures
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>No hay treasures en este nook. ¡Crea el primero!</Text>
@@ -371,7 +358,6 @@ export default function NookDetailScreen() {
           }
         />
 
-        {/* Lista con contenido usando el mismo estilo que RealmsScreen */}
         <FlatList
           data={treasures}
           renderItem={renderTreasureItem}
@@ -393,7 +379,6 @@ export default function NookDetailScreen() {
           ListFooterComponent={<View style={styles.listFooter} />}
         />
 
-        {/* Snackbar para feedback */}
         <FeedbackSnackbar
           visible={snackbar.visible}
           onDismiss={() => setSnackbar({ ...snackbar, visible: false })}

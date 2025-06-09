@@ -1,4 +1,3 @@
-// components/forms/ControlledImagePicker.tsx - Versión mejorada compatible
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -18,9 +17,9 @@ interface ControlledImagePickerProps<T extends object> {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   onImageChange?: (localUri: string) => void;
-  aspectRatio?: number; // Añadido para flexibilidad
-  avatarMode?: boolean; // Si es true, muestra el avatar redondo
-  avatarSize?: number; // Nuevo: tamaño del avatar en px (solo avatarMode)
+  aspectRatio?: number;
+  avatarMode?: boolean;
+  avatarSize?: number;
 }
 
 export const ControlledImagePicker = <T extends object>({
@@ -36,21 +35,18 @@ export const ControlledImagePicker = <T extends object>({
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
   const styles = createStyles(theme);
-  // Lógica para abrir galería o cámara - OPTIMIZADA para máxima calidad
   const pickImageFromLibrary = async (onChange: (uri: string) => void) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'images',
         allowsEditing: true,
         aspect: avatarMode ? [1, 1] : [aspectRatio, 1],
-        quality: 1.0, // ✅ Máxima calidad según documentación Expo
+        quality: 1.0,
       });
 
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
         const imageUri = result.assets[0].uri;
 
-        // ✅ USAR IMAGEN ORIGINAL SIN MANIPULACIÓN para máxima calidad de preview
-        // La optimización se hará solo al momento de subir a Supabase
         onChange(imageUri);
         if (onImageChange) onImageChange(imageUri);
       }
@@ -65,14 +61,12 @@ export const ControlledImagePicker = <T extends object>({
         mediaTypes: 'images',
         allowsEditing: true,
         aspect: avatarMode ? [1, 1] : [aspectRatio, 1],
-        quality: 1.0, // ✅ Máxima calidad para mejor preview
+        quality: 1.0,
       });
 
       if (!result.canceled && result.assets && result.assets[0]?.uri) {
         const imageUri = result.assets[0].uri;
 
-        // ✅ Para fotos de cámara, hacer una optimización mínima solo para reducir tamaño de archivo
-        // pero manteniendo alta calidad visual
         try {
           const targetWidth = avatarMode ? 800 : 1000;
           const targetHeight = avatarMode ? 800 : Math.round(targetWidth / aspectRatio);
@@ -88,7 +82,7 @@ export const ControlledImagePicker = <T extends object>({
               },
             ],
             {
-              compress: 0.9, // Alta calidad pero algo de compresión para archivos de cámara
+              compress: 0.9,
               format: ImageManipulator.SaveFormat.JPEG,
             }
           );
@@ -108,7 +102,6 @@ export const ControlledImagePicker = <T extends object>({
   // ActionSheet cross-platform
   const { showActionSheetWithOptions } = useActionSheet();
   const handleImagePickerPress = (onChange: (uri: string) => void, currentValue?: string) => {
-    // Si hay imagen, añadir opción de eliminar
     const options = currentValue
       ? ['Cancelar', 'Tomar foto', 'Elegir de galería', 'Eliminar foto']
       : ['Cancelar', 'Tomar foto', 'Elegir de galería'];
@@ -219,7 +212,6 @@ export const ControlledImagePicker = <T extends object>({
                   </View>
                 )}
               </TouchableOpacity>
-              {/* Botón eliminar foto externo eliminado. Solo opción en menú contextual. */}
             </View>
           </View>
 

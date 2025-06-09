@@ -48,12 +48,11 @@ export const TagSelector = <T extends object>({
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Filtra opciones por search input (case-insensitive, ignora tildes y espacios)
   function normalize(str: string) {
     return str
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ''); // quita acentos
+      .replace(/[\u0300-\u036f]/g, '');
   }
 
   const filteredOptions = useMemo(
@@ -68,7 +67,6 @@ export const TagSelector = <T extends object>({
         name={name}
         render={({ field: { value = [], onChange }, fieldState: { error } }) => {
           const handleTagCreated = (newTag: Tag) => {
-            // Agregar el nuevo tag a la selección actual
             onChange([...value, newTag]);
             setShowCreateModal(false);
           };
@@ -81,7 +79,6 @@ export const TagSelector = <T extends object>({
             <View style={[styles.container, style]}>
               {label && <Text style={styles.label}>{label}</Text>}
 
-              {/* Tags seleccionados */}
               {value.length > 0 && (
                 <View style={styles.tagsContainer}>
                   {value.map((tag: Tag) => (
@@ -100,7 +97,6 @@ export const TagSelector = <T extends object>({
                 </View>
               )}
 
-              {/* Contenedor de búsqueda y creación */}
               <View
                 style={{
                   flexDirection: 'row',
@@ -148,7 +144,6 @@ export const TagSelector = <T extends object>({
                 </TouchableOpacity>
               </View>
 
-              {/* Lista de sugerencias */}
               {searchInput.length > 0 && (
                 <View style={styles.suggestionContainer}>
                   <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
@@ -186,7 +181,6 @@ export const TagSelector = <T extends object>({
 
               {error && <Text style={styles.errorText}>{error?.message}</Text>}
 
-              {/* Modal para crear nueva etiqueta usando el componente existente */}
               <Modal
                 visible={showCreateModal}
                 animationType="slide"
@@ -199,7 +193,6 @@ export const TagSelector = <T extends object>({
                     style={styles.modalContainer}
                   >
                     <View style={styles.modalContent}>
-                      {/* Header del modal */}
                       <View style={styles.modalHeader}>
                         <Text style={styles.modalTitle}>Crear Nueva Etiqueta</Text>
                         <TouchableOpacity
@@ -210,11 +203,10 @@ export const TagSelector = <T extends object>({
                         </TouchableOpacity>
                       </View>
 
-                      {/* Usar el componente reutilizable */}
                       <CreateTagForm
                         onSuccess={handleTagCreated}
                         onCancel={handleCloseModal}
-                        showTitle={false} // Ya tenemos título en el header
+                        showTitle={false}
                         autoFocus={true}
                       />
                     </View>

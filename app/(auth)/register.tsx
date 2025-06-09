@@ -56,7 +56,6 @@ export default function RegisterScreen() {
         message: '¡Registro exitoso! Revisa tu email para verificar tu cuenta.',
         type: 'success',
       });
-      // Puedes redirigir si quieres: router.replace('/(tabs)');
     } catch (error: any) {
       setSnackbar({
         visible: true,
@@ -68,7 +67,6 @@ export default function RegisterScreen() {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        {/* Logo y mensaje de bienvenida */}
         <View style={styles.welcomeSection}>
           <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
           <Text variant="headlineMedium" style={styles.welcomeTitle}>
@@ -79,7 +77,6 @@ export default function RegisterScreen() {
           </Text>
         </View>
 
-        {/* Formulario */}
         <View style={styles.formSection}>
           <ControlledTextInput
             name="email"

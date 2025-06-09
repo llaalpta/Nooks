@@ -38,7 +38,6 @@ import type { Tables } from '@/types/supabase';
 
 type Realm = Tables<'locations'>;
 
-// Componente de sección unificado (igual que en realm-form)
 const FormSection = ({
   children,
   title,
@@ -56,7 +55,6 @@ const FormSection = ({
 
   return (
     <View style={styles.formSection}>
-      {/* Header de la sección (icono al final) */}
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTextContainer}>
           <Text style={styles.sectionTitle}>{title}</Text>
@@ -69,7 +67,6 @@ const FormSection = ({
         )}
       </View>
 
-      {/* Contenido */}
       <View style={styles.sectionContent}>{children}</View>
     </View>
   );
@@ -91,11 +88,9 @@ interface NookFormValues {
 }
 
 export default function NookFormScreen({ initialValues, mode: modeProp }: NookFormProps) {
-  // Leer params de la ruta
   const params = useLocalSearchParams<{ id?: string; realmId?: string; from?: string }>();
   const nookId = params.id as string | undefined;
   const realmId = params.realmId as string | undefined;
-  // Determinar modo
   const mode: 'create' | 'edit' = modeProp || (nookId ? 'edit' : 'create');
   const theme = useAppTheme();
   const { user } = useAuth();
@@ -108,23 +103,17 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   useInvalidateTagsOnFocus(user?.id || '');
   const isOnline = useIsOnline();
 
-  // Cargar datos del nook si es edición
   const { data: nook, isLoading: isLoadingNook } = useNookQuery(nookId || '');
-  // Cargar tags asociados al nook en edición
   const { data: nookTags = [], isLoading: isLoadingNookTags } = useLocationTagsQuery(nookId);
-  // Precargar imagen principal en modo edición
   const { data: primaryImageUrl } = useNookPrimaryImageUrl(nookId || '');
 
-  // Estado para Snackbar y navegación pendiente
   const [snackbar, setSnackbar] = useState({
     visible: false,
     message: '',
     type: 'success' as 'success' | 'error' | 'warning',
   });
-  // Para saber si hay navegación pendiente tras feedback
   const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
-  // Formulario controlado
   const methods = useForm<NookFormValues>({
     defaultValues: {
       name: nook?.name || initialValues?.name || '',
@@ -142,10 +131,8 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   const { handleSubmit, setValue, watch, reset } = methods;
   const watchedValues = watch();
 
-  // Ref para el ScrollView principal
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Si es edición, setear los valores cuando nook esté disponible
   useEffect(() => {
     if (mode === 'edit' && nook && !isLoadingNookTags) {
       try {
@@ -170,14 +157,12 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
     }
   }, [mode, nook, nookTags, isLoadingNookTags, reset, primaryImageUrl]);
 
-  // Forzar la precarga de tags en edición cuando nookTags cambian
   useEffect(() => {
     if (mode === 'edit' && !isLoadingNookTags && nookTags) {
       setValue('tags', nookTags);
     }
   }, [mode, isLoadingNookTags, nookTags, setValue]);
 
-  // Selección inicial de Realm (creación y edición)
   useEffect(() => {
     if (selectedRealm) return;
     // Prioridad: edición con nook cargado > initialValues > realmId
@@ -193,7 +178,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
     }
   }, [realms, initialValues?.realm_id, realmId, selectedRealm, mode, nook]);
 
-  // Actualizar realm_id en el formulario cuando se selecciona un realm
   useEffect(() => {
     if (selectedRealm) {
       setValue('realm_id', selectedRealm.id);
@@ -240,7 +224,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
       let imageUploadSuccess = false;
       try {
         if (mode === 'edit' && nookId) {
-          // Actualizar nook
           nookResult = await updateNookMutation.mutateAsync({
             id: nookId,
             data: {
@@ -253,7 +236,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
             },
           });
         } else {
-          // Crear nook
           nookResult = await createNookMutation.mutateAsync({
             name: data.name,
             description: data.description,
@@ -264,28 +246,24 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           });
         }
 
-        // Sincronizar tags
         if (nookResult && Array.isArray(data.tags)) {
           const selectedTags = data.tags || [];
           let currentTags: any[] = [];
           if (mode === 'edit' && nookTags) {
             currentTags = nookTags;
           }
-          // Calcular tags a añadir y eliminar
           const tagsToAdd = selectedTags.filter(
             (tag: any) => !currentTags.some((t: any) => t.id === tag.id)
           );
           const tagsToRemove = currentTags.filter(
             (tag: any) => !selectedTags.some((t: any) => t.id === tag.id)
           );
-          // Añadir nuevos tags
           for (const tag of tagsToAdd) {
             await addTagToLocationMutation.mutateAsync({
               location_id: nookResult.id,
               tag_id: tag.id,
             });
           }
-          // Eliminar tags desasociados
           for (const tag of tagsToRemove) {
             await removeTagFromLocationMutation.mutateAsync({
               location_id: nookResult.id,
@@ -294,7 +272,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           }
         }
 
-        // Subir imagen si existe y es diferente
         if (data.image && nookResult && data.image !== primaryImageUrl) {
           imageChanged = true;
           try {
@@ -316,13 +293,11 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                   : 'Nook creado, pero falló la subida de la imagen'),
               type: 'error',
             });
-            // No navegues si la imagen falla
             setPendingNavigation(null);
             return;
           }
         }
 
-        // Mensaje según si hubo cambio de imagen
         let message = '';
         if (imageChanged && imageUploadSuccess) {
           message = mode === 'edit' ? 'Nook e imagen actualizados' : 'Nook e imagen creados';
@@ -334,7 +309,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           message,
           type: 'success',
         });
-        // Guardar navegación pendiente
         setPendingNavigation(() => {
           if (mode === 'edit') {
             return () => router.replace(`/nooks/${nookResult.id}`);
@@ -364,7 +338,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
   const handleRealmSelection = (realm: Realm) => {
     setSelectedRealm(realm);
-    // Reset ubicación cuando cambia el realm
     setValue('location', { latitude: 0, longitude: 0 });
   };
 
@@ -392,7 +365,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
   return (
     <FormProvider {...methods}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        {/* Header unificado */}
         <CustomFormHeader
           title={mode === 'edit' ? 'Editar Nook' : 'Crear Nook'}
           onBack={handleBackNavigation}
@@ -404,7 +376,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Selector de realm */}
           {!selectedRealm && mode === 'create' && !realmId ? (
             <FormSection
               title="Selecciona un Realm"
@@ -425,7 +396,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
             </FormSection>
           ) : (
             <>
-              {/* Sección 1: Ubicación del Nook */}
               <FormSection
                 title="Ubicación del Nook"
                 subtitle={mode === 'edit' ? '' : 'Selecciona la ubicación en el mapa'}
@@ -471,7 +441,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                 />
               </FormSection>
 
-              {/* Sección 2: Información básica */}
               <FormSection
                 title="Información Básica"
                 subtitle="Dale un nombre único y una descripción atractiva a tu nook"
@@ -496,7 +465,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                 </View>
               </FormSection>
 
-              {/* Sección 3: Imagen representativa */}
               <FormSection
                 title="Imagen Representativa"
                 subtitle="Una buena imagen que te ayuda a identificar tu nook"
@@ -506,7 +474,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                 <ControlledImagePicker name="image" aspectRatio={16 / 9} />
               </FormSection>
 
-              {/* Sección 4: Etiquetas */}
               <FormSection
                 title="Etiquetas"
                 subtitle="Ayuda a otros a encontrar tu nook con etiquetas descriptivas"
@@ -533,7 +500,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
           )}
         </ScrollView>
 
-        {/* Botones de acción flotantes */}
         <View
           style={[
             styles.floatingActionContainer,
@@ -570,7 +536,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                   ? 'Actualizar Nook'
                   : 'Crear Nook'}
             </Button>
-            {/* Botón para cambiar realm solo en modo creación */}
             {mode === 'create' && !realmId && selectedRealm && (
               <Button
                 mode="outlined"
@@ -581,7 +546,6 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
                 Cambiar Realm
               </Button>
             )}
-            {/* Botón cancelar */}
             <Button
               mode="outlined"
               onPress={handleBackNavigation}

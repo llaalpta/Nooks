@@ -34,7 +34,7 @@ export default function MapScreen() {
   const mapRef = useRef<MapViewRef | null>(null);
 
   const [region, setRegion] = useState<Region>({
-    latitude: 40.4168, // Madrid por defecto
+    latitude: 40.4168,
     longitude: -3.7038,
     latitudeDelta: 0.1,
     longitudeDelta: 0.1,
@@ -48,10 +48,8 @@ export default function MapScreen() {
   const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
-  // Ref para guardar una región pendiente de animar
   const pendingRegionRef = useRef<Region | null>(null);
 
-  // Usar hooks unificados
   const { handleMapReady, getMarkerProps } = useMapMarkers();
 
   const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } =
@@ -59,7 +57,7 @@ export default function MapScreen() {
       onLocationObtained: (coords) => {
         setUserLocation(coords);
 
-        // Si no hay realms, centrar en la ubicación del usuario
+        // if there are no realms, center map on user location
         if (!realms || realms.length === 0) {
           const newRegion = {
             ...coords,
@@ -71,7 +69,7 @@ export default function MapScreen() {
       },
     });
 
-  // Utilidad para comparar regiones con tolerancia
+  // Utility to compare regions with tolerance
   function areRegionsEqual(r1: Region, r2: Region, tolerance = 0.0002) {
     return (
       Math.abs(r1.latitude - r2.latitude) < tolerance &&
@@ -81,11 +79,10 @@ export default function MapScreen() {
     );
   }
 
-  // Solicitar permisos de ubicación al cargar el componente
+  // request location permission
   useEffect(() => {
     const initializeLocation = async () => {
       await requestLocationPermission();
-      // Obtener ubicación inicial si hay permisos
       if (hasPermission) {
         await getCurrentLocation();
       }
@@ -94,7 +91,7 @@ export default function MapScreen() {
     initializeLocation();
   }, []);
 
-  // Centrar el mapa en los realms cuando se cargan
+  // center map on realms when they are loaded
   useEffect(() => {
     if (realms && realms.length > 0) {
       centerMapOnRealms();
@@ -107,7 +104,7 @@ export default function MapScreen() {
     const validRealms = realms.filter((realm) => realm.latitude && realm.longitude);
     if (validRealms.length === 0) return;
 
-    // Calcular los límites de todos los realms
+    // calculate bounds of all realms
     const latitudes = validRealms.map((realm) => realm.latitude!);
     const longitudes = validRealms.map((realm) => realm.longitude!);
 
@@ -119,7 +116,7 @@ export default function MapScreen() {
     const centerLat = (minLat + maxLat) / 2;
     const centerLng = (minLng + maxLng) / 2;
 
-    // Agregar padding a los deltas
+    // add padding to deltas
     const latDelta = Math.max((maxLat - minLat) * 1.3, 0.01);
     const lngDelta = Math.max((maxLng - minLng) * 1.3, 0.01);
 
@@ -155,7 +152,6 @@ export default function MapScreen() {
       setRegion(newRegion);
       setUserLocation(location);
 
-      // Animar a la nueva región
       mapRef.current?.animateToRegion(newRegion, 1000);
     }
   };
@@ -218,7 +214,7 @@ export default function MapScreen() {
         Math.abs(region.longitude - newRegion.longitude) < 0.0001 &&
         (region.latitudeDelta < 0.01 || region.longitudeDelta < 0.01)
       ) {
-        // Zoom out primero, luego animar al destino real
+        // zoom out first, then animate to actual destination
         const zoomOutRegion = {
           ...newRegion,
           latitudeDelta: 0.2,
@@ -230,7 +226,7 @@ export default function MapScreen() {
         Math.abs(region.latitude - newRegion.latitude) < 0.0001 &&
         Math.abs(region.longitude - newRegion.longitude) < 0.0001
       ) {
-        // Pequeño cambio de delta para forzar animación
+        // small delta change to force animation
         const tempRegion = {
           ...newRegion,
           latitudeDelta: newRegion.latitudeDelta + 0.002,
@@ -244,11 +240,10 @@ export default function MapScreen() {
     }
   };
 
-  // Solo actualiza el estado si la región realmente cambió
+  // only update state if region actually changed
   const handleRegionChangeComplete = (newRegion: Region) => {
     if (!areRegionsEqual(region, newRegion)) {
       setRegion(newRegion);
-      // Si hay una región pendiente, animar a ella y limpiar el ref
       if (pendingRegionRef.current) {
         mapRef.current?.animateToRegion(pendingRegionRef.current, 1200);
         pendingRegionRef.current = null;
@@ -289,7 +284,6 @@ export default function MapScreen() {
           onPress={handleMapPress}
           customMapStyle={theme.dark ? darkMapStyle : []}
         >
-          {/* Círculo para mostrar el radio del realm seleccionado */}
           {selectedRealm && selectedRealm.radius && (
             <Circle
               center={{
@@ -303,7 +297,6 @@ export default function MapScreen() {
             />
           )}
 
-          {/* Mostrar realms como marcadores con hooks unificados */}
           {validRealms.map((realm) => (
             <Marker
               key={realm.id}
@@ -317,9 +310,7 @@ export default function MapScreen() {
           ))}
         </MapView>
 
-        {/* Columna de botones en la esquina superior derecha */}
         <View style={styles.topRightButtons}>
-          {/* Botón de mi ubicación */}
           <TouchableOpacity
             style={[styles.mapButton, isLocating && styles.mapButtonLoading]}
             onPress={centerOnUserLocation}
@@ -338,7 +329,6 @@ export default function MapScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Botón de detalles del realm seleccionado */}
           {selectedRealm && (
             <TouchableOpacity style={styles.mapButton} onPress={handleRealmDetails}>
               <Ionicons name="information-circle" size={16} color={theme.colors.onPrimary} />
@@ -347,15 +337,12 @@ export default function MapScreen() {
           )}
         </View>
 
-        {/* Botones en la esquina inferior izquierda */}
         {validRealms.length > 0 && (
           <View style={styles.bottomLeftButtons}>
-            {/* Botón de añadir realm */}
             <TouchableOpacity style={styles.addButton} onPress={handleCreateRealm}>
               <Ionicons name="add" size={24} color={theme.colors.onPrimary} />
             </TouchableOpacity>
 
-            {/* Botón de lista */}
             <TouchableOpacity style={styles.mapButton} onPress={toggleRealmsList}>
               <Ionicons name="list" size={16} color={theme.colors.onPrimary} />
               <Text style={styles.mapButtonText}>LISTA</Text>
@@ -364,7 +351,6 @@ export default function MapScreen() {
         )}
       </View>
 
-      {/* Lista de realms desplegable desde abajo */}
       {showRealmsList && validRealms.length > 0 && (
         <BottomRealmsList
           realms={validRealms}

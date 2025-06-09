@@ -31,11 +31,10 @@ interface BottomRealmsListProps {
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Snap points como porcentajes de la pantalla
 const SNAP_POINTS = {
-  COLLAPSED: SCREEN_HEIGHT * 0.25, // 25%
-  HALF: SCREEN_HEIGHT * 0.5, // 50%
-  EXPANDED: SCREEN_HEIGHT * 0.85, // 85%
+  COLLAPSED: SCREEN_HEIGHT * 0.25,
+  HALF: SCREEN_HEIGHT * 0.5,
+  EXPANDED: SCREEN_HEIGHT * 0.85,
 };
 
 const CLOSE_THRESHOLD = 100;
@@ -52,7 +51,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
 
   const translateY = useSharedValue(SCREEN_HEIGHT);
 
-  // Animación de entrada
   useEffect(() => {
     translateY.value = withSpring(SCREEN_HEIGHT - SNAP_POINTS.HALF, {
       damping: 50,
@@ -83,7 +81,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
     onActive: (event, context: any) => {
       const newY = context.startY + event.translationY;
 
-      // Limitar el movimiento
       const minY = SCREEN_HEIGHT - SNAP_POINTS.EXPANDED;
       const maxY = SCREEN_HEIGHT;
 
@@ -94,7 +91,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
       const currentY = translateY.value;
       const velocityY = event.velocityY;
 
-      // Si se arrastra hacia abajo con velocidad alta o pasa el threshold, cerrar
       if (velocityY > 1000 || currentY > SCREEN_HEIGHT - CLOSE_THRESHOLD) {
         translateY.value = withSpring(
           SCREEN_HEIGHT,
@@ -109,14 +105,12 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
         return;
       }
 
-      // Definir snap points como worklet
       const snapPointsY = [
         SCREEN_HEIGHT - SNAP_POINTS.EXPANDED,
         SCREEN_HEIGHT - SNAP_POINTS.HALF,
         SCREEN_HEIGHT - SNAP_POINTS.COLLAPSED,
       ];
 
-      // Encontrar el snap point más cercano
       let targetY = snapPointsY[0];
       let minDistance = Math.abs(snapPointsY[0] - currentY);
 
@@ -128,16 +122,13 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
         }
       }
 
-      // Si hay velocidad considerable, ajustar el target
       if (Math.abs(velocityY) > 500) {
         if (velocityY > 0) {
-          // Moviendo hacia abajo - ir al siguiente snap point inferior
           const currentIndex = snapPointsY.findIndex((point) => point >= currentY);
           if (currentIndex >= 0 && currentIndex < snapPointsY.length - 1) {
             targetY = snapPointsY[currentIndex + 1];
           }
         } else {
-          // Moviendo hacia arriba - ir al siguiente snap point superior
           const reversedSnapPoints = [
             SCREEN_HEIGHT - SNAP_POINTS.COLLAPSED,
             SCREEN_HEIGHT - SNAP_POINTS.HALF,
@@ -158,7 +149,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
     },
   });
 
-  // Estilo animado simplificado
   const animatedStyle = useAnimatedStyle(() => {
     const progress = interpolate(
       translateY.value,
@@ -173,7 +163,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
     };
   });
 
-  // Estilo para la barra indicadora
   const handleBarStyle = useAnimatedStyle(() => {
     const progress = interpolate(
       translateY.value,
@@ -188,7 +177,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
     };
   });
 
-  // Ordenar realms por distancia
   const sortedRealms = [...realms].sort((a, b) => {
     const distanceA = getDistance(a) || Infinity;
     const distanceB = getDistance(b) || Infinity;
@@ -214,15 +202,12 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   return (
     <GestureHandlerRootView style={styles.overlay}>
       <Animated.View style={[styles.container, animatedStyle]}>
-        {/* Header arrastrable - SOLO esta parte maneja el gesto */}
         <PanGestureHandler onGestureEvent={gestureHandler}>
           <Animated.View style={styles.draggableHeader}>
-            {/* Handle visual */}
             <View style={styles.handle}>
               <Animated.View style={[styles.handleBar, handleBarStyle]} />
             </View>
 
-            {/* Header visual */}
             <View style={styles.header}>
               <Text style={styles.title}>Realms cercanos</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -232,7 +217,6 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
           </Animated.View>
         </PanGestureHandler>
 
-        {/* Lista scrolleable - SIN PanGestureHandler */}
         <View style={styles.listContainer}>
           <FlatList
             data={sortedRealms}
@@ -273,13 +257,10 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
             )}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
-            // FORZAR que siempre sea scrolleable con bounce
             scrollEnabled={true}
             bounces={true}
             alwaysBounceVertical={true}
-            // Esto es clave: fuerza un contentSize mínimo
             contentInsetAdjustmentBehavior="never"
-            // Añade padding extra al final para forzar scroll
             ListFooterComponent={<View style={styles.forcedScrollSpace} />}
           />
         </View>

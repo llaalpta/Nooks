@@ -1,4 +1,3 @@
-// components/forms/styles/MapPickerInput.styles.ts - Versión mejorada manteniendo estructura
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';
@@ -6,7 +5,7 @@ import { AppTheme } from '@/types';
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 0, // Manejado por el contenedor padre
+      marginBottom: 0,
     },
     label: {
       marginBottom: theme.spacing.s,
@@ -15,11 +14,11 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
     },
     mapContainer: {
-      height: 320, // Más alto para incluir controles del radio
+      height: 320,
       borderRadius: theme.spacing.m,
       overflow: 'hidden',
       marginBottom: theme.spacing.m,
-      ...theme.elevation.level2, // Usando elevación del theme
+      ...theme.elevation.level2,
       borderWidth: 1,
       borderColor: theme.colors.outline,
       position: 'relative',
@@ -50,7 +49,6 @@ export const createStyles = (theme: AppTheme) =>
       letterSpacing: 0.5,
     },
 
-    // NUEVOS ESTILOS: Panel de control de radio integrado en el mapa
     radiusControlPanel: {
       position: 'absolute',
       bottom: 0,
@@ -98,7 +96,6 @@ export const createStyles = (theme: AppTheme) =>
       textAlign: 'right',
     },
 
-    // MEJORADO: Contenedor de información
     infoContainer: {
       backgroundColor: theme.colors.surfaceVariant,
       padding: theme.spacing.s,
@@ -118,7 +115,6 @@ export const createStyles = (theme: AppTheme) =>
       textAlign: 'center',
     },
 
-    // MANTENER ESTILOS ORIGINALES para compatibilidad
     sliderLabels: {
       flexDirection: 'row',
       justifyContent: 'space-between',

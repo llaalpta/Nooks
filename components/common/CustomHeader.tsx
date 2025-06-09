@@ -54,16 +54,13 @@ export const CustomHeader = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.content}>
-        {/* Botón de volver */}
         <TouchableOpacity style={styles.themeToggleButton} onPress={toggleTheme}>
           <Ionicons name={getThemeIcon()} size={24} color={theme.colors.primary} />
         </TouchableOpacity>
 
-        {/* Logo centrado */}
         <View style={styles.logoContainer}>
           <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
         </View>
-        {/* Botones de la derecha */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <TouchableOpacity style={styles.profileButton} onPress={handleProfilePress}>
             {profile?.avatar_url ? (

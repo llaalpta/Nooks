@@ -97,7 +97,6 @@ export const createStyles = (theme: AppTheme) =>
       fontWeight: '600',
     },
 
-    // === FILTROS DE TAGS ===
     tagFiltersContainer: {
       marginTop: theme.spacing.m,
       backgroundColor: theme.colors.surface,
@@ -137,7 +136,6 @@ export const createStyles = (theme: AppTheme) =>
       fontWeight: '500',
     },
 
-    // === INDICADOR DE RESULTADOS ===
     resultsIndicator: {
       flexDirection: 'row',
       justifyContent: 'space-between',

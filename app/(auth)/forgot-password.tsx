@@ -60,7 +60,6 @@ export default function ForgotPasswordScreen() {
   return (
     <FormProvider {...methods}>
       <View style={styles.container}>
-        {/* Logo y mensaje de bienvenida */}
         <View style={styles.welcomeSection}>
           <Image source={getLogoSource()} style={styles.logo} resizeMode="contain" />
           <Text variant="headlineMedium" style={styles.welcomeTitle}>
@@ -71,7 +70,6 @@ export default function ForgotPasswordScreen() {
           </Text>
         </View>
 
-        {/* Formulario */}
         <View style={styles.formSection}>
           <ControlledTextInput
             name="email"

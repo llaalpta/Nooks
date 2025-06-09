@@ -12,7 +12,6 @@ export default function TabsLayout() {
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-        {/* Header personalizado para las tabs principales */}
         <CustomHeader />
 
         <Tabs
@@ -22,7 +21,7 @@ export default function TabsLayout() {
             tabBarStyle: {
               backgroundColor: theme.colors.surface,
             },
-            // Ocultar el header nativo ya que usamos el personalizado
+            // hide native header, using custom header instead
             headerShown: false,
           }}
         >
@@ -33,16 +32,12 @@ export default function TabsLayout() {
               tabBarIcon: ({ size }) => (
                 <Image
                   source={require('@/assets/images/home.png')}
-                  style={{
-                    width: size,
-                    height: size,
-                  }}
+                  style={{ width: size, height: size }}
                   resizeMode="contain"
                 />
               ),
             }}
           />
-
           <Tabs.Screen
             name="realms"
             options={{
@@ -50,10 +45,7 @@ export default function TabsLayout() {
               tabBarIcon: ({ size }) => (
                 <Image
                   source={require('@/assets/images/realm-marker-small.png')}
-                  style={{
-                    width: size,
-                    height: size,
-                  }}
+                  style={{ width: size, height: size }}
                   resizeMode="contain"
                 />
               ),
@@ -66,10 +58,7 @@ export default function TabsLayout() {
               tabBarIcon: ({ size }) => (
                 <Image
                   source={require('@/assets/images/treasure.png')}
-                  style={{
-                    width: size,
-                    height: size,
-                  }}
+                  style={{ width: size, height: size }}
                   resizeMode="contain"
                 />
               ),
@@ -82,10 +71,7 @@ export default function TabsLayout() {
               tabBarIcon: ({ size }) => (
                 <Image
                   source={require('@/assets/images/map.png')}
-                  style={{
-                    width: size,
-                    height: size,
-                  }}
+                  style={{ width: size, height: size }}
                   resizeMode="contain"
                 />
               ),
@@ -98,16 +84,12 @@ export default function TabsLayout() {
               tabBarIcon: ({ size }) => (
                 <Image
                   source={require('@/assets/images/tags.png')}
-                  style={{
-                    width: size,
-                    height: size,
-                  }}
+                  style={{ width: size, height: size }}
                   resizeMode="contain"
                 />
               ),
             }}
           />
-          {/* Eliminamos la tab de perfil ya que ahora está en la cabecera */}
         </Tabs>
       </View>
     </SafeAreaProvider>

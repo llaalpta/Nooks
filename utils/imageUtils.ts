@@ -21,7 +21,6 @@ export async function uploadImageToStorage(
   bucket = 'media'
 ): Promise<string | null> {
   try {
-    // Obtener una URL firmada para la subida
     const { data, error } = await supabase.storage.from(bucket).createSignedUploadUrl(storagePath);
 
     if (error || !data?.signedUrl) {
@@ -29,7 +28,6 @@ export async function uploadImageToStorage(
       return null;
     }
 
-    // Subir el archivo usando FileSystem.uploadAsync
     const uploadRes = await FileSystem.uploadAsync(data.signedUrl, localUri, {
       httpMethod: 'PUT',
       headers: { 'Content-Type': 'image/jpeg' },
@@ -41,7 +39,6 @@ export async function uploadImageToStorage(
       return null;
     }
 
-    // Devolver la URL pública
     const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
     return publicUrlData.publicUrl || null;
   } catch (error) {

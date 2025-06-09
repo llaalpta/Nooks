@@ -69,7 +69,6 @@ export default function Auth() {
           value={email}
           placeholder="email@address.com"
           autoCapitalize="none"
-          // Para los íconos, necesitarías implementar un componente de ícono o usar una librería compatible
         />
       </View>
 

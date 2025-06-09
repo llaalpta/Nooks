@@ -3,7 +3,6 @@ import { StyleSheet } from 'react-native';
 import type { AppTheme } from '@/types/theme';
 
 export const createStyles = (theme: AppTheme) => {
-  // fallback para fontSize
   const baseFontSize = 16;
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },

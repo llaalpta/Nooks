@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { RealmCard } from '@/features/realms/components/RealmCard';
 import { useRealmsQuery, useRealmPrimaryImageUrl } from '@/features/realms/hooks';
-import { useSearchRealmsQuery } from '@/features/search/hooks'; // 🔥 Importar hook de búsqueda
+import { useSearchRealmsQuery } from '@/features/search/hooks'; // Search hook
 import { createStyles } from '@/styles/app/tabs/realms.style';
 
 import type { Tables } from '@/types/supabase';
@@ -44,29 +44,25 @@ export default function RealmsScreen() {
   const styles = createStyles(theme);
   const { user } = useAuth();
 
-  // 🔥 Estados para búsqueda - DOS CAMPOS SEPARADOS
   const [searchText, setSearchText] = useState('');
   const [tagSearchText, setTagSearchText] = useState('');
 
-  // Queries principales
   const { data: realmsFromApi = [], isLoading, isError, refetch } = useRealmsQuery(user?.id || '');
 
-  // 🔥 Query de búsqueda por nombre (solo se ejecuta cuando hay texto)
   const { data: searchResults = [] } = useSearchRealmsQuery(user?.id || '', searchText.trim());
 
-  // 🔥 Determinar qué datos mostrar
   const realmsToShow = useMemo(() => {
     let filteredRealms: RealmWithTags[];
 
-    // Si hay búsqueda por nombre, usar resultados de búsqueda
+    // if searching by name, use search results
     if (searchText.trim()) {
       filteredRealms = searchResults as RealmWithTags[];
     } else {
-      // Si no hay búsqueda por nombre, usar todos los realms
+      // if not, use all
       filteredRealms = realmsFromApi as RealmWithTags[];
     }
 
-    // 🔥 Filtrar por nombre de etiqueta (búsqueda local)
+    // Filter by tag name (local search) // TODO : this should be a server-side search
     if (tagSearchText.trim()) {
       const normalizedTagSearch = tagSearchText.toLowerCase().trim();
       filteredRealms = filteredRealms.filter((realm) => {
@@ -77,7 +73,6 @@ export default function RealmsScreen() {
       });
     }
 
-    // Validar realms
     return filteredRealms.filter((realm) => {
       return (
         realm &&
@@ -129,15 +124,12 @@ export default function RealmsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      {/* Header con título */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mis Realms</Text>
-        <Text style={styles.headerSubtitle}>Reinos donde guardas tus tesoros</Text>
+        <Text style={styles.headerTitle}>My Realms</Text>
+        <Text style={styles.headerSubtitle}>Kingdoms where you keep your treasures</Text>
       </View>
 
-      {/* 🔥 Sección de búsqueda - DOS CAMPOS */}
       <View style={styles.searchContainer}>
-        {/* Campo de búsqueda por nombre */}
         <TextInput
           value={searchText}
           onChangeText={setSearchText}
@@ -154,7 +146,6 @@ export default function RealmsScreen() {
           }
         />
 
-        {/* Campo de búsqueda por etiquetas */}
         <TextInput
           value={tagSearchText}
           onChangeText={setTagSearchText}
@@ -171,21 +162,18 @@ export default function RealmsScreen() {
           }
         />
 
-        {/* 🔥 Indicador de resultados */}
         {hasActiveSearch && (
           <View style={styles.resultsIndicator}>
             <Text style={styles.resultsText}>
-              {realmsToShow.length} realm{realmsToShow.length !== 1 ? 's' : ''} encontrado
-              {realmsToShow.length !== 1 ? 's' : ''}
+              {realmsToShow.length} realm{realmsToShow.length !== 1 ? 's' : ''} found
             </Text>
             <TouchableOpacity onPress={handleClearSearch}>
-              <Text style={styles.clearFiltersText}>Limpiar búsqueda</Text>
+              <Text style={styles.clearFiltersText}>Clear search</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
 
-      {/* Lista de realms */}
       {realmsToShow.length > 0 ? (
         <FlatList
           data={realmsToShow}

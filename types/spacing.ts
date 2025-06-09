@@ -1,4 +1,3 @@
-// Tipos para los espaciados
 export interface AppSpacing {
   xs: number;
   s: number;
@@ -11,7 +10,6 @@ export interface AppSpacing {
   xxxl: number;
 }
 
-// Tipos para border radius según MD3
 export interface AppBorderRadius {
   xs: number; // Extra Small: 4dp
   s: number; // Small: 8dp
@@ -20,10 +18,9 @@ export interface AppBorderRadius {
   xl: number; // Extra Large: 24dp
   xxl: number; // Extra Extra Large: 32dp
   xxxl: number; // Extra Extra Extra Large: 40dp
-  round: number; // Completamente redondeado: 50%
+  round: number; // completely rounded: 50%
 }
 
-// Tipos para elevación/sombras según MD3
 export interface AppElevation {
   level0: {
     elevation: number;

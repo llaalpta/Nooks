@@ -1,6 +1,3 @@
-// components/forms/BasicMapPickerInput.tsx
-// Componente de mapa básico sin controles de radio para nook-form
-
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
@@ -32,7 +29,6 @@ interface BasicMapPickerInputProps<T extends object> {
   initialRegion?: Region;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  // Props específicos para nook (validación dentro de área)
   realmCenter?: { latitude: number; longitude: number };
   realmRadius?: number;
   onLocationValidation?: (isValid: boolean, location: BasicLocation) => void;
@@ -42,7 +38,7 @@ export const BasicMapPickerInput = <T extends object>({
   name,
   label,
   initialRegion = {
-    latitude: 40.4168, // Madrid por defecto
+    latitude: 40.4168,
     longitude: -3.7038,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
@@ -55,10 +51,8 @@ export const BasicMapPickerInput = <T extends object>({
 }: BasicMapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
 
-  // Calcular región inicial basada en el realm (igual que en MapScreen)
   const getInitialRegion = () => {
     if (realmCenter && realmRadius) {
-      // Misma lógica que handleRealmPress en MapScreen
       return {
         latitude: realmCenter.latitude,
         longitude: realmCenter.longitude,
@@ -74,9 +68,8 @@ export const BasicMapPickerInput = <T extends object>({
   const theme = useAppTheme();
   const styles = createBasicMapPickerStyles(theme);
 
-  // Usar hooks unificados: para Nook, usar el marcador pequeño de Nook
   const { handleMapReady: originalHandleMapReady, getMarkerProps } = useMapMarkers({
-    imagePath: '@/assets/images/nook-marker-small.png',
+    imagePath: '@/assets/images/nook-big.png', // Updated to nook-big.png
   });
 
   const [snackbar, setSnackbar] = useState({
@@ -103,7 +96,6 @@ export const BasicMapPickerInput = <T extends object>({
     areaValidationMessage: 'Tu ubicación actual está fuera del área del realm.',
   });
 
-  // Actualizar región cuando cambie el realm (igual que en MapScreen)
   useEffect(() => {
     if (realmCenter && realmRadius) {
       const newRegion = {
@@ -121,7 +113,6 @@ export const BasicMapPickerInput = <T extends object>({
     if (location) {
       onChange(location);
 
-      // Notificar validación si se proporciona callback
       if (onLocationValidation && realmCenter && realmRadius) {
         const isValid = isLocationInArea(location, realmCenter, realmRadius);
         onLocationValidation(isValid, location);
@@ -131,12 +122,9 @@ export const BasicMapPickerInput = <T extends object>({
 
   const centerOnRealm = () => {
     if (realmCenter) {
-      // Calcular delta en grados para que el círculo quepa bien en pantalla
-      // 1 grado de latitud ≈ 111.32 km
-      // 1 grado de longitud ≈ 111.32 * cos(lat) km
-      const radius = realmRadius || 100; // metros
-      const MIN_DELTA = 0.0001; // Permitir zoom muy cercano para círculos pequeños
-      const latDelta = Math.max((radius / 1000 / 111.32) * 2.2, MIN_DELTA); // 2.2x para padding visual
+      const radius = realmRadius || 100;
+      const MIN_DELTA = 0.0001;
+      const latDelta = Math.max((radius / 1000 / 111.32) * 2.2, MIN_DELTA);
       const lngDelta = Math.max(
         (radius / 1000 / (111.32 * Math.cos((realmCenter.latitude * Math.PI) / 180))) * 2.2,
         MIN_DELTA
@@ -153,7 +141,6 @@ export const BasicMapPickerInput = <T extends object>({
     }
   };
 
-  // Hacer zoom automáticamente al abrir el formulario si hay realmCenter y realmRadius SOLO una vez cuando el mapa esté listo
   const hasAutoCentered = useRef(false);
   const handleMapReady = React.useCallback(() => {
     if (
@@ -179,19 +166,16 @@ export const BasicMapPickerInput = <T extends object>({
       mapRef.current.animateToRegion(realmRegion, 800);
       hasAutoCentered.current = true;
     }
-    // Llamar también al handleMapReady original si existe
     if (typeof originalHandleMapReady === 'function') {
       originalHandleMapReady();
     }
   }, [realmCenter, realmRadius, originalHandleMapReady]);
-  // El log debe ir dentro del render del Controller
   return (
     <Controller
       control={control}
       name={name}
       render={({ field: { value, onChange }, fieldState: { error } }) => {
         const fieldLocation = value as BasicLocation | undefined;
-        // LOG para detectar renders infinitos
 
         return (
           <View style={[styles.container, style]}>
@@ -204,7 +188,6 @@ export const BasicMapPickerInput = <T extends object>({
             {label && <Text style={styles.label}>{label}</Text>}
 
             <View style={styles.mapContainer}>
-              {/* Filtrar children para evitar null, false, undefined o strings en MapView */}
               <MapView
                 ref={mapRef}
                 style={{ flex: 1 }}
@@ -214,7 +197,6 @@ export const BasicMapPickerInput = <T extends object>({
                   if (disabled) return;
                   const { latitude, longitude } = e.nativeEvent.coordinate;
 
-                  // Validar ubicación si hay restricciones
                   if (realmCenter && realmRadius) {
                     const isValid = isLocationInArea(
                       { latitude, longitude },
@@ -230,7 +212,6 @@ export const BasicMapPickerInput = <T extends object>({
                       });
                       return;
                     }
-                    // Notificar validación
                     if (onLocationValidation) {
                       onLocationValidation(isValid, { latitude, longitude });
                     }
@@ -277,7 +258,6 @@ export const BasicMapPickerInput = <T extends object>({
                 ].filter(Boolean)}
               </MapView>
 
-              {/* Botón de centrar realm: esquina superior izquierda */}
               {realmCenter && (
                 <View style={styles.topLeftButton}>
                   <TouchableOpacity
@@ -293,7 +273,6 @@ export const BasicMapPickerInput = <T extends object>({
                 </View>
               )}
 
-              {/* Botón de mi ubicación: esquina superior derecha */}
               <View style={styles.topRightButton}>
                 <TouchableOpacity
                   style={[styles.mapButton, isLocating && styles.mapButtonLoading]}
@@ -315,7 +294,6 @@ export const BasicMapPickerInput = <T extends object>({
               </View>
             </View>
 
-            {/* Información de coordenadas */}
             <View style={styles.infoContainer}>
               <Text style={styles.coordsText}>
                 {fieldLocation?.latitude && fieldLocation?.longitude

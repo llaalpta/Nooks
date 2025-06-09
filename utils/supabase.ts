@@ -7,11 +7,9 @@ import type { Database } from '../types/supabase';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Verificar si estamos en un entorno que tiene window
 const isWeb = Platform.OS === 'web';
 const canUseAsyncStorage = isWeb ? typeof window !== 'undefined' : true;
 
-// Storage alternativo para entornos sin window
 const noopStorage = {
   getItem: () => Promise.resolve(null),
   setItem: () => Promise.resolve(),

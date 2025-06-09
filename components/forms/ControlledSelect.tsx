@@ -49,7 +49,7 @@ export const ControlledSelect = <T extends object>({
           {label && <Text style={styles.label}>{label}</Text>}
           <View style={[styles.selectContainer, error && styles.selectContainerError]}>
             <TouchableOpacity
-              style={styles.selectContainer} // Cambiado selectButton por selectContainer
+              style={styles.selectContainer}
               onPress={() => !disabled && setVisible(true)}
               disabled={disabled}
             >

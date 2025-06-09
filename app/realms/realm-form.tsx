@@ -38,7 +38,6 @@ interface FormValues {
   tags: any[];
 }
 
-// Componente de sección unificado (igual que en nook-form)
 const FormSection = ({
   children,
   title,
@@ -56,7 +55,6 @@ const FormSection = ({
 
   return (
     <View style={styles.formSection}>
-      {/* Header de la sección (icono al final) */}
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTextContainer}>
           <Text style={styles.sectionTitle}>{title}</Text>
@@ -69,7 +67,6 @@ const FormSection = ({
         )}
       </View>
 
-      {/* Contenido */}
       <View style={styles.sectionContent}>{children}</View>
     </View>
   );
@@ -102,7 +99,6 @@ export default function RealmForm() {
   });
   const [pendingNavigation, setPendingNavigation] = useState<null | (() => void)>(null);
 
-  // Obtener tags asociados al realm en edición
   const { data: realmTags = [], isLoading: isLoadingRealmTags } = useLocationTagsQuery(realmId);
 
   const methods = useForm<FormValues>({
@@ -146,17 +142,13 @@ export default function RealmForm() {
     }
   }, [isEditing, realmQuery.data, existingImageUrl, realmTags, isLoadingRealmTags, reset]);
 
-  // Forzar la precarga de tags en edición cuando realmTags cambian
+  // force set tags when editing realm
   useEffect(() => {
     if (isEditing && !isLoadingRealmTags && realmTags) {
-      // console.log('[RealmForm] setValue tags:', realmTags);
       setValue('tags', realmTags);
     }
   }, [isEditing, isLoadingRealmTags, realmTags, setValue]);
 
-  // handleCreateTag eliminado: ya no se usa, la creación es en página aparte
-
-  // Navegación robusta para volver atrás o a la lista de Realms
   function handleGoBackOrReplace() {
     const from = params.from;
     const detailsId = params.id;
@@ -231,7 +223,6 @@ export default function RealmForm() {
           await setTagsForRealm(newRealm.id, data.tags, isEditing);
         }
 
-        // Subir imagen si existe y es diferente
         if (data.image && newRealm && data.image !== existingImageUrl) {
           imageChanged = true;
           try {
@@ -258,7 +249,6 @@ export default function RealmForm() {
           }
         }
 
-        // Mensaje según si hubo cambio de imagen
         let message = '';
         if (imageChanged && imageUploadSuccess) {
           message = isEditing ? 'Realm e imagen actualizados' : 'Realm e imagen creados';
@@ -310,7 +300,6 @@ export default function RealmForm() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Sección 1: Información Básica */}
           <FormSection
             title="Información Básica"
             subtitle="Dale un nombre único y una descripción atractiva a tu realm"
@@ -334,7 +323,6 @@ export default function RealmForm() {
               />
             </View>
           </FormSection>
-          {/* Sección 2: Ubicación y Área */}
           <FormSection
             title="Ubicación y Área"
             subtitle="Define la ubicación geográfica y el radio de tu realm"
@@ -343,17 +331,15 @@ export default function RealmForm() {
           >
             <CircleMapPickerInput name="location" label="Selecciona ubicación y ajusta el radio" />
           </FormSection>
-          {/* Sección 3: Imagen Representativa */}
           <FormSection
             title="Imagen Representativa"
             subtitle="Una buena imagen que te ayuda a identificar tu realm"
             icon="image-outline"
             styles={styles}
           >
-            {/* Usamos aspectRatio 120/140 para que la previsualización sea igual que en la card */}
+            {/* same size as card */}
             <ControlledImagePicker name="image" aspectRatio={16 / 9} />
           </FormSection>
-          {/* Sección 4: Etiquetas */}
           <FormSection
             title="Etiquetas"
             subtitle="Ayuda a otros a encontrar tu realm con etiquetas descriptivas"
@@ -366,15 +352,12 @@ export default function RealmForm() {
               </View>
             ) : (
               <>
-                {/* console.log('[RealmForm] render TagSelector, tags en form:', watchedValues.tags) */}
                 <TagSelector name="tags" options={tags} loading={createTagMutation.isPending} />
               </>
             )}
           </FormSection>
-          {/* El bloque de botones ahora es flotante y fijo abajo */}
         </ScrollView>
 
-        {/* Botones de acción flotantes */}
         <View
           style={[
             styles.floatingActionContainer,

@@ -17,7 +17,7 @@ export function Switch({ value, onValueChange, disabled, color, style }: SwitchP
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Creamos una animación para el movimiento del thumb
+  // create an animated value that will be used to animate the thumb position
   const animatedValue = React.useRef(new Animated.Value(value ? 1 : 0)).current;
 
   React.useEffect(() => {
@@ -29,13 +29,12 @@ export function Switch({ value, onValueChange, disabled, color, style }: SwitchP
     }).start();
   }, [value, animatedValue]);
 
-  // Calculamos la posición del thumb basado en el valor de la animación
+  // to calculate the thumb position based on the animated value
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [2, 22], // Calculamos la posición final basada en el ancho del track menos el ancho del thumb
+    outputRange: [2, 22],
   });
 
-  // Usamos el color personalizado si se proporciona, de lo contrario usamos el color primario del tema
   const trackColor = color || theme.colors.primary;
 
   const handleToggle = () => {

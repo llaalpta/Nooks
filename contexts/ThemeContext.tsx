@@ -17,7 +17,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [theme, setTheme] = useState<AppTheme>(colorScheme === 'dark' ? darkTheme : lightTheme);
 
-  // Actualizar el tema cuando cambie el modo o el esquema de colores del sistema
+  // update theme based on themeMode and colorScheme
   useEffect(() => {
     let newTheme: AppTheme;
     if (themeMode === 'system') {

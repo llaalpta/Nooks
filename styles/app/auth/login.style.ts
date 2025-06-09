@@ -8,21 +8,21 @@ export const createStyles = (theme: AppTheme) =>
       flex: 1,
       backgroundColor: theme.colors.surface,
       justifyContent: 'center',
-      padding: theme.spacing.l, // 24dp
+      padding: theme.spacing.l,
     },
     welcomeSection: {
       alignItems: 'center',
-      marginBottom: theme.spacing.xl, // 32dp
+      marginBottom: theme.spacing.xl,
     },
     logo: {
       width: 120,
       height: 60,
-      marginBottom: theme.spacing.m, // 16dp
+      marginBottom: theme.spacing.m,
     },
     welcomeTitle: {
       textAlign: 'center',
       color: theme.colors.onSurface,
-      marginBottom: theme.spacing.xs, // 4dp
+      marginBottom: theme.spacing.xs,
     },
     brandTitle: {
       textAlign: 'center',
@@ -33,17 +33,17 @@ export const createStyles = (theme: AppTheme) =>
       width: '100%',
     },
     title: {
-      marginBottom: theme.spacing.l, // 24dp
+      marginBottom: theme.spacing.l,
       textAlign: 'center',
-      fontSize: 24, // headlineSmall según MD3
+      fontSize: 24,
       fontWeight: '400',
       lineHeight: 32,
       color: theme.colors.onSurface,
     },
     button: {
-      marginTop: theme.spacing.m, // 16dp
+      marginTop: theme.spacing.m,
     },
     textButton: {
-      marginTop: theme.spacing.s, // 8dp
+      marginTop: theme.spacing.s,
     },
   });

@@ -2,7 +2,7 @@ import { supabase } from '../utils/supabase';
 
 import type { TablesInsert, TablesUpdate } from '../types/supabase';
 
-// Realms (ubicaciones generales)
+// Realms
 export const getRealms = async (userId: string) =>
   supabase.from('locations').select('*').eq('user_id', userId).is('parent_location_id', null);
 
@@ -17,7 +17,7 @@ export const updateRealm = async (id: string, data: TablesUpdate<'locations'>) =
 
 export const deleteRealm = async (id: string) => supabase.from('locations').delete().eq('id', id);
 
-// Nooks (ubicaciones específicas dentro de un Realm)
+// Nooks
 export const getNooks = async (realmId: string) =>
   supabase.from('locations').select('*').eq('parent_location_id', realmId);
 
@@ -32,7 +32,7 @@ export const updateNook = async (id: string, data: TablesUpdate<'locations'>) =>
 
 export const deleteNook = async (id: string) => supabase.from('locations').delete().eq('id', id);
 
-// Treasures (objetos dentro de un Nook)
+// Treasures
 export const getTreasures = async (nookId: string) =>
   supabase.from('treasures').select('*').eq('nook_location_id', nookId);
 
@@ -48,7 +48,7 @@ export const updateTreasure = async (id: string, data: TablesUpdate<'treasures'>
 export const deleteTreasure = async (id: string) =>
   supabase.from('treasures').delete().eq('id', id);
 
-// Tags (etiquetas)
+// Tags
 export const getTags = async (userId: string) =>
   supabase.from('tags').select('*').eq('user_id', userId);
 
@@ -60,7 +60,7 @@ export const updateTag = async (id: string, data: TablesUpdate<'tags'>) =>
 
 export const deleteTag = async (id: string) => supabase.from('tags').delete().eq('id', id);
 
-// Asociaciones de tags
+// tag associations
 export const addTagToLocation = async (location_id: string, tag_id: string) =>
   supabase.from('location_tags').insert([{ location_id, tag_id }]);
 
@@ -73,7 +73,7 @@ export const addTagToTreasure = async (treasure_id: string, tag_id: string) =>
 export const removeTagFromTreasure = async (treasure_id: string, tag_id: string) =>
   supabase.from('treasure_tags').delete().eq('treasure_id', treasure_id).eq('tag_id', tag_id);
 
-// Media (imágenes asociadas)
+// Media
 export const getMedia = async (entityType: 'location' | 'treasure', entityId: string) =>
   supabase.from('media').select('*').eq('entity_type', entityType).eq('entity_id', entityId);
 
@@ -82,7 +82,7 @@ export const addMedia = async (data: TablesInsert<'media'>) =>
 
 export const deleteMedia = async (id: string) => supabase.from('media').delete().eq('id', id);
 
-// Búsqueda global (ejemplo básico por texto en nombre/descripcion)
+// global search
 export const searchAll = async (userId: string, searchText: string) => {
   const realms = await supabase
     .from('locations')

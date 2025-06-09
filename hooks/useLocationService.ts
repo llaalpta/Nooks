@@ -1,6 +1,3 @@
-// hooks/useLocationService.ts
-// Hook unificado para manejo de ubicación en todos los componentes de mapas
-
 import * as Location from 'expo-location';
 import { useState } from 'react';
 
@@ -20,7 +17,7 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
   const [isLocating, setIsLocating] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
-  // Solicitar permisos de ubicación
+  // ask for location permission
   const requestLocationPermission = async (): Promise<boolean> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -34,12 +31,11 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
     }
   };
 
-  // Obtener ubicación actual
   const getCurrentLocation = async (): Promise<LocationCoords | null> => {
     setIsLocating(true);
 
     try {
-      // Verificar/solicitar permisos
+      // Check/request permissions
       const hasPermissionGranted = hasPermission ?? (await requestLocationPermission());
 
       if (!hasPermissionGranted) {
@@ -48,7 +44,6 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
         return null;
       }
 
-      // Obtener ubicación
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
@@ -58,7 +53,6 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
         longitude: location.coords.longitude,
       };
 
-      // Validar área si se proporciona validador
       if (options.validateArea && !options.validateArea(coords)) {
         console.error(
           options.areaValidationMessage || 'Tu ubicación actual está fuera del área permitida.'
@@ -67,7 +61,6 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
         return null;
       }
 
-      // Notificar éxito
       if (options.onLocationObtained) {
         options.onLocationObtained(coords);
       }
@@ -90,14 +83,14 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
     }
   };
 
-  // Verificar si una ubicación está dentro de un área circular
+  // Check if a location is within a circular area
   const isLocationInArea = (
     location: LocationCoords,
     center: LocationCoords,
     radiusInMeters: number
   ): boolean => {
     const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const R = 6371000; // Radio de la tierra en metros
+    const R = 6371000; // Earth's radius in meters
 
     const dLat = toRad(location.latitude - center.latitude);
     const dLng = toRad(location.longitude - center.longitude);

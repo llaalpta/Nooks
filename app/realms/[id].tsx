@@ -1,5 +1,3 @@
-// Aquí está el archivo completo con la función NookCardWithImage corregida:
-
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState } from 'react';
@@ -40,11 +38,8 @@ export default function RealmDetailScreen() {
   const { user } = useAuth();
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const deleteMutation = useDeleteRealmMutation();
-  // Obtener los datos del realm desde Supabase
   const { data: realm, isLoading: isLoadingRealm, isError: isErrorRealm } = useRealmQuery(realmId);
-  // Obtener la imagen principal del realm
   const { data: imageUrl } = useRealmPrimaryImageUrl(realmId);
-  // Obtener los nooks del realm desde Supabase
   const {
     data: nooks = [],
     isLoading: isLoadingNooks,
@@ -124,11 +119,9 @@ export default function RealmDetailScreen() {
     });
   };
 
-  // FUNCIÓN CORREGIDA - Componente que inyecta la imagen principal del nook usando el hook
   function NookCardWithImage({ nook }: { nook: any }) {
     const { data: imageUrl } = useNookPrimaryImageUrl(nook.id);
 
-    // Filtrar y validar tags antes de pasarlas al componente
     const validTags = (nook.tags || [])
       .filter((tag: any) => tag && tag.name && typeof tag.name === 'string')
       .map((tag: any) => ({
@@ -141,7 +134,7 @@ export default function RealmDetailScreen() {
       <NookCard
         nook={{
           ...nook,
-          name: nook.name || 'Sin nombre', // Validar nombre también
+          name: nook.name || 'Sin nombre',
           description:
             nook.description && typeof nook.description === 'string' ? nook.description : null,
           imageUrl,
@@ -152,10 +145,8 @@ export default function RealmDetailScreen() {
     );
   }
 
-  // Usar el nuevo componente en el renderItem
   const renderNookItem = ({ item }: { item: any }) => <NookCardWithImage nook={item} />;
 
-  // Componente Header para FlatList
   const renderHeader = () => {
     if (!realm) return null;
 
@@ -175,7 +166,6 @@ export default function RealmDetailScreen() {
           )}
         </View>
 
-        {/* Contenido principal */}
         <View style={styles.contentContainer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{realm.name || 'Sin nombre'}</Text>
@@ -229,7 +219,6 @@ export default function RealmDetailScreen() {
                   }}
                 >
                   {(realm as any).tags.map((tag: Tag) => {
-                    // Validar que el tag tenga nombre válido
                     if (!tag || !tag.name || typeof tag.name !== 'string') return null;
 
                     return (
@@ -259,7 +248,6 @@ export default function RealmDetailScreen() {
             )}
           </View>
         </View>
-        {/* Sección de nooks con validación */}
         <View style={styles.nooksCard}>
           <View style={styles.nooksTitleContainer}>
             <Text style={styles.nooksTitle}>Nooks</Text>
@@ -277,7 +265,6 @@ export default function RealmDetailScreen() {
     );
   };
 
-  // Componente Empty para cuando no hay nooks
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>No hay nooks en este realm. ¡Crea el primero!</Text>
@@ -359,7 +346,6 @@ export default function RealmDetailScreen() {
         loading={deleteLoading}
       />
       <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-        {/* Header fijo */}
         <DetailsScreenHeader
           title={'Detalles del Realm'}
           backRoute="/(tabs)/realms"
@@ -385,7 +371,6 @@ export default function RealmDetailScreen() {
           }
         />
 
-        {/* Lista con contenido */}
         <FlatList
           data={nooks}
           renderItem={renderNookItem}
@@ -407,7 +392,6 @@ export default function RealmDetailScreen() {
           ListFooterComponent={<View style={styles.listFooter} />}
         />
 
-        {/* Snackbar para feedback */}
         <FeedbackSnackbar
           visible={snackbar.visible}
           onDismiss={() => setSnackbar({ ...snackbar, visible: false })}

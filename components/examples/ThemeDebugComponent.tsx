@@ -23,7 +23,6 @@ const ThemeDebugComponent = () => {
         </Text>
       </View>
 
-      {/* Ejemplo de uso condicional */}
       <View
         style={[
           styles.exampleBox,

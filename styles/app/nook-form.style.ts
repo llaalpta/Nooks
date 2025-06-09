@@ -1,6 +1,3 @@
-// --- ESTILOS MIGRADOS ---
-// Estos estilos deben ir dentro del objeto pasado a StyleSheet.create, no fuera.
-// styles/app/nook-form.style.ts - Hoja de estilos específica para el formulario de Nooks
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';

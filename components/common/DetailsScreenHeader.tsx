@@ -57,7 +57,6 @@ export const DetailsScreenHeader: React.FC<DetailsScreenHeaderProps> = ({
             <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
 
-          {/* Título centrado */}
           <View style={styles.titleContainer}>
             <Text style={styles.title} numberOfLines={1}>
               {title}
@@ -79,7 +78,6 @@ export const DetailsScreenHeader: React.FC<DetailsScreenHeaderProps> = ({
         </View>
       </View>
 
-      {/* Menú de opciones */}
       {showOptionsMenu && optionsMenuItems.length > 0 && (
         <View style={styles.optionsMenu}>
           {optionsMenuItems.map((item, index) => (

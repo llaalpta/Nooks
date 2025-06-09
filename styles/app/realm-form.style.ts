@@ -1,11 +1,9 @@
-// styles/app/modals/realm-form.style.ts - Versión simple usando tu tema
 import { StyleSheet } from 'react-native';
 
 import { AppTheme } from '@/types';
 
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    // Estilos base mantenidos
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
@@ -16,31 +14,30 @@ export const createStyles = (theme: AppTheme) =>
     },
     header: {
       paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.m, // Menos espacio vertical
+      paddingVertical: theme.spacing.m,
       backgroundColor: theme.colors.surface,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,
       ...theme.elevation.level1,
     },
     headerTitle: {
-      fontSize: 28, // Ligeramente más grande
-      fontWeight: '600', // Más peso
+      fontSize: 28,
+      fontWeight: '600',
       lineHeight: 36,
       color: theme.colors.onSurface,
       textAlign: 'center',
     },
 
-    // NUEVOS ESTILOS PARA SECCIONES SIN CARDS - VERSION LIMPIA
     formSection: {
-      marginBottom: theme.spacing.xl, // Separación entre secciones
+      marginBottom: theme.spacing.xl,
     },
     sectionHeader: {
       flexDirection: 'row',
-      alignItems: 'center', // Centrado vertical
-      marginBottom: theme.spacing.m, // Menos espacio
+      alignItems: 'center',
+      marginBottom: theme.spacing.m,
     },
     sectionIconContainer: {
-      width: 32, // Más pequeño
+      width: 32,
       height: 32,
       borderRadius: 16,
       backgroundColor: theme.colors.primaryContainer,
@@ -52,22 +49,19 @@ export const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
     sectionTitle: {
-      fontSize: 18, // Más pequeño
+      fontSize: 18,
       fontWeight: '600',
       lineHeight: 24,
       color: theme.colors.onSurface,
-      marginBottom: theme.spacing.xs, // Menos espacio
+      marginBottom: theme.spacing.xs,
     },
     sectionSubtitle: {
       fontSize: 14,
       color: theme.colors.onSurfaceVariant,
       lineHeight: 20,
     },
-    sectionContent: {
-      // Sin padding left - alineado al margen normal
-    },
+    sectionContent: {},
 
-    // Estilos originales mantenidos
     formControl: {
       marginBottom: theme.spacing.xs,
     },
@@ -75,7 +69,6 @@ export const createStyles = (theme: AppTheme) =>
       marginBottom: theme.spacing.m,
     },
     sectionTitleOld: {
-      // Renombrado para evitar conflicto
       fontSize: 18,
       fontWeight: '500',
       lineHeight: 24,
@@ -111,7 +104,6 @@ export const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurfaceVariant,
     },
 
-    // Estilos para botones de acción
     actionContainer: {
       marginTop: theme.spacing.xl,
       marginBottom: theme.spacing.l,
@@ -132,7 +124,7 @@ export const createStyles = (theme: AppTheme) =>
     },
     primaryButton: {
       borderRadius: theme.spacing.s,
-      ...theme.elevation.level1, // Sutil elevación usando tu tema
+      ...theme.elevation.level1,
     },
     secondaryButton: {
       borderRadius: theme.spacing.s,
@@ -143,7 +135,6 @@ export const createStyles = (theme: AppTheme) =>
       opacity: 0.7,
     },
 
-    // Espaciado para inputs
     inputSpacing: {
       marginBottom: theme.spacing.m,
     },
@@ -152,11 +143,10 @@ export const createStyles = (theme: AppTheme) =>
     },
   });
 
-// components/forms/styles/ControlledImagePicker.styles.ts - Versión mejorada
 export const createImagePickerStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 0, // Manejado por el contenedor padre
+      marginBottom: 0,
     },
     label: {
       marginBottom: theme.spacing.s,
@@ -174,7 +164,7 @@ export const createImagePickerStyles = (theme: AppTheme) =>
     },
     image: {
       width: '100%',
-      aspectRatio: 16 / 9, // Más moderno que 1:1
+      aspectRatio: 16 / 9,
       maxWidth: 300,
       maxHeight: 200,
       borderRadius: theme.borderRadius.m,
@@ -242,11 +232,10 @@ export const createImagePickerStyles = (theme: AppTheme) =>
     },
   });
 
-// components/forms/styles/MapPickerInput.styles.ts - Versión mejorada
 export const createMapPickerStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 0, // Manejado por el contenedor padre
+      marginBottom: 0,
     },
     label: {
       marginBottom: theme.spacing.s,

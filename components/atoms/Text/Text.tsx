@@ -36,7 +36,6 @@ export function Text({
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
-  // Crear objeto de estilos de manera más segura
   const textStyles: TextStyle = {
     ...styles.base,
     ...(styles[variant] || {}),

@@ -43,7 +43,7 @@ export const createStyles = (theme: AppTheme) =>
     },
     optionsMenu: {
       position: 'absolute',
-      top: 62 + theme.spacing.sm, // Removido insets.top porque ya está aplicado al container
+      top: 62 + theme.spacing.sm,
       right: theme.spacing.m,
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
@@ -52,7 +52,7 @@ export const createStyles = (theme: AppTheme) =>
       ...theme.elevation.level3,
       minWidth: 180,
       paddingVertical: 8,
-      zIndex: 1001, // Asegurar que esté por encima del header
+      zIndex: 1001,
     },
     optionItem: {
       flexDirection: 'row',
