@@ -10,7 +10,7 @@ export const createStyles = (theme: AppTheme) =>
     },
     header: {
       paddingHorizontal: theme.spacing.m,
-      paddingVertical: theme.spacing.m,
+      paddingVertical: theme.spacing.s,
       backgroundColor: theme.colors.surface,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.primaryContainer,
@@ -22,10 +22,12 @@ export const createStyles = (theme: AppTheme) =>
       fontWeight: 'bold',
       color: theme.colors.onSurface,
       marginBottom: theme.spacing.s,
+      lineHeight: 32,
     },
     headerSubtitle: {
       fontSize: 16,
       color: theme.colors.onSurfaceVariant,
+      lineHeight: 22,
     },
     listContainer: {
       flex: 1,

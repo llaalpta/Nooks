@@ -1,8 +1,10 @@
-// Polyfills for React Native Web must be imported before any other imports
 import '../shims';
+
+// Polyfills for React Native Web must be imported before any other imports
 
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Linking from 'expo-linking';
 import { Slot, useSegments, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState, useCallback } from 'react';
@@ -12,6 +14,8 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import '../global.css';
+// Manejo de deep links para confirmación/restablecimiento de Supabase
+
 const queryClient = new QueryClient();
 
 // prevent the splash screen from hiding automatically
@@ -38,6 +42,30 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const router = useRouter();
+
+  // Manejo de deep links para confirmación/restablecimiento de Supabase
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      // Ejemplo de URL: nooks://auth/callback?token=abc123&type=recovery
+      if (url) {
+        const { queryParams } = Linking.parse(url);
+        // Si hay un token, navega a la pantalla de confirmación/restablecimiento
+        if (queryParams?.token) {
+          const confirmPath = '/(auth)/confirm' as any;
+          router.push({
+            pathname: confirmPath,
+            params: {
+              token: queryParams.token,
+              type: queryParams.type,
+              email: queryParams.email,
+            },
+          });
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, [router]);
 
   useEffect(() => {
     async function prepare() {

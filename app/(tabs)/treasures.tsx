@@ -1,19 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState, useMemo } from 'react';
-import { View, FlatList, TouchableOpacity } from 'react-native';
+import { View, FlatList, TouchableOpacity, Modal, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/atoms/Button';
 import { FloatingActionButton } from '@/components/atoms/FloatingActionButton';
 import { Text } from '@/components/atoms/Text';
 import { TextInput } from '@/components/atoms/TextInput';
+import BottomRealmsList from '@/components/common/BottomRealmsList';
 import { EmptyState } from '@/components/common/EmptyState';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
+import { useRealmsQuery } from '@/features/realms/hooks';
 import { useSearchTreasuresQuery, useAllTreasuresQuery } from '@/features/search/hooks'; // CORRECTED IMPORT
 import { TreasureCard } from '@/features/treasures/components/TreasureCard';
 import { useTreasurePrimaryImageUrl } from '@/features/treasures/hooks';
+import { useLocationService } from '@/hooks/useLocationService';
 import { createStyles } from '@/styles/app/tabs/realms.style';
 
 import type { Tables } from '@/types/supabase';
@@ -58,6 +62,14 @@ export default function TreasuresScreen() {
 
   const [searchText, setSearchText] = useState('');
   const [tagSearchText, setTagSearchText] = useState('');
+  const [showRealmsList, setShowRealmsList] = useState(false);
+  const [showRealmMenu, setShowRealmMenu] = useState(false);
+  const { data: realms = [] } = useRealmsQuery(user?.id || '');
+  const { getCurrentLocation } = useLocationService();
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
+    null
+  );
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
   const {
     data: treasuresFromApi = [],
@@ -99,8 +111,40 @@ export default function TreasuresScreen() {
     });
   }, [searchText, searchResults, treasuresFromApi, tagSearchText]);
 
-  const handleCreateTreasure = () => {
-    router.push({ pathname: '/(modals)/treasure-form', params: { from: 'list' } });
+  // Obtener ubicación del usuario al abrir el selector de realms
+  const handleCreateTreasure = async () => {
+    setShowRealmMenu(true);
+  };
+
+  const handleChooseRealm = async () => {
+    setIsLoadingLocation(true);
+
+    try {
+      if (!userLocation) {
+        const location = await getCurrentLocation();
+        setUserLocation(location);
+      }
+
+      // Pequeño delay para mostrar el loading antes de abrir la lista
+      setTimeout(() => {
+        setShowRealmMenu(false);
+        setShowRealmsList(true);
+        setIsLoadingLocation(false);
+      }, 800);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setIsLoadingLocation(false);
+      setShowRealmMenu(false);
+    }
+  };
+  const handleCreateRealm = () => {
+    setShowRealmMenu(false);
+    router.push({ pathname: '/realms/realm-form', params: { from: 'treasures' } });
+  };
+  // Cuando el usuario selecciona un realm, continuar con el flujo de selección de nook o creación de treasure
+  const handleRealmSelect = (realm: any) => {
+    setShowRealmsList(false);
+    router.push({ pathname: '/treasures/nook-selector', params: { realmId: realm.id } });
   };
 
   const handleRetry = () => {
@@ -134,13 +178,25 @@ export default function TreasuresScreen() {
   }
 
   const hasActiveSearch = searchText.trim() || tagSearchText.trim();
-
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       {/* Header with title */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Treasures</Text>
-        <Text style={styles.headerSubtitle}>All your saved items</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Mis Treasures</Text>
+            <Text style={styles.headerSubtitle}>Todos tus elementos guardados</Text>
+          </View>
+          <Image
+            source={require('@/assets/images/treasure.png')}
+            style={{
+              width: 40,
+              height: 40,
+              marginLeft: theme.spacing.m,
+            }}
+            resizeMode="contain"
+          />
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
@@ -163,7 +219,7 @@ export default function TreasuresScreen() {
         <TextInput
           value={tagSearchText}
           onChangeText={setTagSearchText}
-          placeholder="Buscar por nombre de etiqueta..."
+          placeholder="Buscar por etiqueta..."
           style={styles.searchInput}
           rightElement={
             tagSearchText ? (
@@ -182,7 +238,7 @@ export default function TreasuresScreen() {
               {treasuresToShow.length} treasure{treasuresToShow.length !== 1 ? 's' : ''} found
             </Text>
             <TouchableOpacity onPress={handleClearSearch}>
-              <Text style={styles.clearFiltersText}>Clear search</Text>
+              <Text style={styles.clearFiltersText}>Limpiar filtro</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -219,6 +275,87 @@ export default function TreasuresScreen() {
       )}
 
       <FloatingActionButton onPress={handleCreateTreasure} icon="add" />
+
+      {/* Menú previo para crear o elegir realm */}
+      <Modal visible={showRealmMenu} transparent animationType="fade">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: theme.spacing.l,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.borderRadius.l,
+              padding: theme.spacing.l,
+              minWidth: 280,
+              maxWidth: '90%',
+              ...theme.elevation.level3,
+            }}
+          >
+            <Text
+              variant="headlineSmall"
+              style={{
+                color: theme.colors.onSurface,
+                fontWeight: '600',
+                marginBottom: theme.spacing.l,
+                textAlign: 'center',
+              }}
+            >
+              ¿Qué quieres hacer?
+            </Text>
+            <Button
+              mode="contained"
+              onPress={handleCreateRealm}
+              style={{ marginBottom: theme.spacing.l }}
+            >
+              Crear nuevo realm
+            </Button>
+            <Button
+              mode="outlined"
+              onPress={handleChooseRealm}
+              loading={isLoadingLocation}
+              disabled={isLoadingLocation}
+              style={{ marginBottom: theme.spacing.l }}
+            >
+              {isLoadingLocation ? 'Obteniendo ubicación...' : 'Elegir realm existente'}
+            </Button>
+            <TouchableOpacity
+              onPress={() => setShowRealmMenu(false)}
+              style={{
+                alignSelf: 'center',
+              }}
+            >
+              <Text
+                variant="bodyMedium"
+                style={{
+                  color: theme.colors.primary,
+                  fontWeight: '500',
+                }}
+              >
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {showRealmsList && (
+        <BottomRealmsList
+          realms={realms}
+          userLocation={userLocation}
+          onRealmSelect={handleRealmSelect}
+          onClose={() => {
+            setShowRealmsList(false);
+            setIsLoadingLocation(false);
+          }}
+          showAllRealms={true}
+        />
+      )}
     </SafeAreaView>
   );
 }

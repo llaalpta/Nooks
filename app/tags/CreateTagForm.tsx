@@ -89,7 +89,7 @@ export function CreateTagForm({
           </View>
         )}
 
-        <View style={[styles.content, { marginTop: showTitle ? 16 : 0, padding: theme.spacing.l }]}>
+        <View style={[styles.content, { marginTop: showTitle ? 16 : 8, padding: theme.spacing.l }]}>
           <TextInput
             label="Nombre de la etiqueta"
             value={tagName}

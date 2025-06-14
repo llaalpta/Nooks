@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { StyleProp, ViewStyle, View, TouchableOpacity, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/atoms/Text';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -35,6 +36,8 @@ export const ControlledImagePicker = <T extends object>({
   const { control } = useFormContext<T>();
   const theme = useAppTheme();
   const styles = createStyles(theme);
+  const insets = useSafeAreaInsets();
+
   const pickImageFromLibrary = async (onChange: (uri: string) => void) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -103,15 +106,36 @@ export const ControlledImagePicker = <T extends object>({
   const { showActionSheetWithOptions } = useActionSheet();
   const handleImagePickerPress = (onChange: (uri: string) => void, currentValue?: string) => {
     const options = currentValue
-      ? ['Cancelar', 'Tomar foto', 'Elegir de galería', 'Eliminar foto']
-      : ['Cancelar', 'Tomar foto', 'Elegir de galería'];
+      ? ['Cancelar', 'Usar cámara', 'Elegir de la galería', 'Eliminar foto']
+      : ['Cancelar', 'Usar cámara', 'Elegir de la galería'];
     const cancelButtonIndex = 0;
     const deleteButtonIndex = currentValue ? 3 : -1;
+
     showActionSheetWithOptions(
       {
         options,
         cancelButtonIndex,
         destructiveButtonIndex: deleteButtonIndex !== -1 ? deleteButtonIndex : undefined,
+        containerStyle: {
+          paddingBottom: insets.bottom,
+          backgroundColor: theme.colors.surfaceContainerHigh,
+          borderTopLeftRadius: theme.borderRadius.l,
+          borderTopRightRadius: theme.borderRadius.l,
+        },
+        textStyle: {
+          color: theme.colors.onSurface,
+          fontSize: 16,
+          fontWeight: '500',
+        },
+        titleTextStyle: {
+          color: theme.colors.onSurfaceVariant,
+          fontSize: 14,
+        },
+        destructiveColor: theme.colors.error,
+        separatorStyle: {
+          backgroundColor: theme.colors.outlineVariant,
+        },
+        showSeparators: true,
       },
       (buttonIndex: number | undefined) => {
         if (buttonIndex === 1) {

@@ -179,7 +179,7 @@ export function RealmCard({ realm }: RealmCardProps) {
                 }}
               >
                 <Image
-                  source={require('@/assets/images/realm-marker-small.png')}
+                  source={require('@/assets/images/realm-marker.png')}
                   style={{
                     width: 32,
                     height: 32,

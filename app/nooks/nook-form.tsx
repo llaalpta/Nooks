@@ -61,7 +61,7 @@ const FormSection = ({
           {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
         </View>
         {icon && (
-          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.m }]}>
+          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.s }]}>
             <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
           </View>
         )}
@@ -312,6 +312,12 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
         setPendingNavigation(() => {
           if (mode === 'edit') {
             return () => router.replace(`/nooks/${nookResult.id}`);
+          } else if (params.from === 'nook-selector') {
+            return () =>
+              router.replace({
+                pathname: '/treasures/nook-selector',
+                params: { realmId: selectedRealm.id },
+              });
           } else {
             return () => router.replace(`/realms/${selectedRealm.id}`);
           }
@@ -340,10 +346,14 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
     setSelectedRealm(realm);
     setValue('location', { latitude: 0, longitude: 0 });
   };
-
   const handleBackNavigation = () => {
     if (mode === 'edit' && nookId) {
       router.replace(`/nooks/${nookId}`);
+    } else if (params.from === 'nook-selector' && realmId) {
+      router.replace({
+        pathname: '/treasures/nook-selector',
+        params: { realmId },
+      });
     } else if (selectedRealm) {
       router.replace(`/realms/${selectedRealm.id}`);
     } else {
@@ -443,7 +453,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
               <FormSection
                 title="Información Básica"
-                subtitle="Dale un nombre único y una descripción atractiva a tu nook"
+                subtitle="Dale un nombre único y atractivo a tu nook"
                 icon="create-outline"
                 styles={styles}
               >
@@ -467,7 +477,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
               <FormSection
                 title="Imagen Representativa"
-                subtitle="Una buena imagen que te ayuda a identificar tu nook"
+                subtitle="Una imagen que identifique a tu nook"
                 icon="image-outline"
                 styles={styles}
               >
@@ -476,7 +486,7 @@ export default function NookFormScreen({ initialValues, mode: modeProp }: NookFo
 
               <FormSection
                 title="Etiquetas"
-                subtitle="Ayuda a otros a encontrar tu nook con etiquetas descriptivas"
+                subtitle="Ayuda a encontrar tu nook con etiquetas descriptivas"
                 icon="pricetag-outline"
                 styles={styles}
               >

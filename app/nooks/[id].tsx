@@ -97,10 +97,9 @@ export default function NookDetailScreen() {
       setShowDeleteDialog(false);
     }
   };
-
   const handleCreateTreasure = () => {
     router.push({
-      pathname: '/(modals)/treasure-form',
+      pathname: '/treasures/treasure-form',
       params: { nookId },
     });
   };
@@ -168,7 +167,7 @@ export default function NookDetailScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
             >
               <Image
-                source={require('@/assets/images/realm-marker-small.png')}
+                source={require('@/assets/images/realm-marker.png')}
                 style={{
                   width: 32,
                   height: 32,
@@ -229,18 +228,30 @@ export default function NookDetailScreen() {
             )}
           </View>
         </View>
-        <View style={styles.nooksCard}>
-          <View style={styles.nooksTitleContainer}>
-            <Text style={styles.nooksTitle}>Treasures</Text>
-            {treasures && treasures.length !== undefined && (
-              <View style={styles.nooksCounter}>
-                <Text style={styles.nooksCounterText}>{treasures.length}</Text>
-              </View>
-            )}
+
+        <View style={styles.treasuresSection}>
+          <View style={styles.treasuresSectionHeader}>
+            <View style={styles.treasuresTitleContainer}>
+              <Text style={styles.treasuresTitle}>Treasures</Text>
+              <Image
+                source={require('@/assets/images/treasure.png')}
+                style={{
+                  width: 24,
+                  height: 24,
+                  marginRight: theme.spacing.s,
+                }}
+                resizeMode="contain"
+              />
+              {treasures && treasures.length !== undefined && (
+                <View style={styles.treasuresCounter}>
+                  <Text style={styles.treasuresCounterText}>{treasures.length}</Text>
+                </View>
+              )}
+            </View>
+            <Button mode="contained" onPress={handleCreateTreasure}>
+              Crear Treasure
+            </Button>
           </View>
-          <Button mode="contained" onPress={handleCreateTreasure}>
-            Crear Treasure
-          </Button>
         </View>
       </>
     );
@@ -368,14 +379,13 @@ export default function NookDetailScreen() {
             treasures.length === 0
               ? { flexGrow: 1 }
               : {
-                  paddingTop: 10,
                   gap: 10,
                   paddingBottom: 85,
-                  minHeight: '100%',
                 }
           }
           showsVerticalScrollIndicator={false}
           bounces={true}
+          alwaysBounceVertical={false}
           ListFooterComponent={<View style={styles.listFooter} />}
         />
 

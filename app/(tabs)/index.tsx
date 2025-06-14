@@ -35,7 +35,7 @@ const features: FeatureCardProps[] = [
     icon: '🏠',
     color: '#6366f1',
     route: '/(tabs)/realms',
-    imagePath: require('@/assets/images/realm-marker-small.png'),
+    imagePath: require('@/assets/images/realm-marker.png'),
   },
   {
     id: 'nooks',
@@ -59,7 +59,7 @@ const features: FeatureCardProps[] = [
   },
   {
     id: 'map',
-    title: 'Mapa',
+    title: 'Mapa de realms',
     subtitle: 'Geolocalización',
     description: 'Encuentra tus Realms en un mapa interactivo',
     icon: '🗺️',
@@ -410,7 +410,7 @@ export default function HomeScreen() {
             }}
           >
             <Image
-              source={require('@/assets/images/realm-marker-small.png')}
+              source={require('@/assets/images/realm-marker.png')}
               style={{ width: 36, height: 36, marginBottom: 2 }}
               resizeMode="contain"
             />

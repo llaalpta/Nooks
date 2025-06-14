@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Image } from 'react-native';
 
 import { Text } from '@/components/atoms/Text';
 import { FeedbackSnackbar } from '@/components/common/FeedbackSnackbar';
@@ -246,12 +245,8 @@ export const BasicMapPickerInput = <T extends object>({
                         latitude: fieldLocation.latitude,
                         longitude: fieldLocation.longitude,
                       }}
-                    >
-                      <Image
-                        source={require('../../assets/images/nook-final.png')}
-                        style={{ width: 40, height: 55, resizeMode: 'contain' }}
-                      />
-                    </Marker>
+                      image={require('../../assets/images/nook-final.png')}
+                    />
                   ) : null,
                 ].filter(Boolean)}
               </MapView>

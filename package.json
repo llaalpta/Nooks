@@ -36,6 +36,7 @@
     "ajv-keywords": "^5.1.0",
     "base64-arraybuffer": "^1.0.2",
     "date-fns": "^4.1.0",
+    "eas": "^0.1.0",
     "expo": "53.0.10",
     "expo-blur": "~14.1.5",
     "expo-camera": "~16.1.7",

@@ -145,7 +145,11 @@ export default function RealmDetailScreen() {
     );
   }
 
-  const renderNookItem = ({ item }: { item: any }) => <NookCardWithImage nook={item} />;
+  const renderNookItem = ({ item }: { item: any }) => (
+    <View style={{ paddingHorizontal: theme.spacing.m }}>
+      <NookCardWithImage nook={item} />
+    </View>
+  );
 
   const renderHeader = () => {
     if (!realm) return null;
@@ -186,7 +190,7 @@ export default function RealmDetailScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing.m }}
             >
               <Image
-                source={require('@/assets/images/realm-marker-small.png')}
+                source={require('@/assets/images/realm-marker.png')}
                 style={{
                   width: 32,
                   height: 32,
@@ -248,18 +252,70 @@ export default function RealmDetailScreen() {
             )}
           </View>
         </View>
-        <View style={styles.nooksCard}>
-          <View style={styles.nooksTitleContainer}>
-            <Text style={styles.nooksTitle}>Nooks</Text>
-            {nooks && nooks.length !== undefined && (
-              <View style={styles.nooksCounter}>
-                <Text style={styles.nooksCounterText}>{nooks.length}</Text>
-              </View>
-            )}
+
+        <View
+          style={{
+            marginTop: theme.spacing.s,
+            paddingHorizontal: theme.spacing.m,
+            paddingVertical: theme.spacing.m,
+            backgroundColor: theme.colors.surfaceVariant,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <Text
+                variant="headlineSmall"
+                style={{
+                  color: theme.colors.onSurface,
+                  fontWeight: '600',
+                  marginRight: theme.spacing.s,
+                }}
+              >
+                Nooks
+              </Text>
+              <Image
+                source={require('@/assets/images/nook-marker.png')}
+                style={{
+                  width: 24,
+                  height: 24,
+                  marginRight: theme.spacing.s,
+                }}
+                resizeMode="contain"
+              />
+              {nooks && nooks.length !== undefined && (
+                <View
+                  style={{
+                    backgroundColor: theme.colors.primaryContainer,
+                    paddingHorizontal: theme.spacing.m,
+                    paddingVertical: theme.spacing.xs,
+                    borderRadius: theme.spacing.l,
+                    minWidth: 32,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: '600',
+                      color: theme.colors.onPrimaryContainer,
+                    }}
+                  >
+                    {nooks.length}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Button mode="contained" onPress={handleCreateNook}>
+              Crear Nook
+            </Button>
           </View>
-          <Button mode="contained" onPress={handleCreateNook}>
-            Crear Nook
-          </Button>
         </View>
       </>
     );
@@ -381,14 +437,13 @@ export default function RealmDetailScreen() {
             nooks.length === 0
               ? { flexGrow: 1 }
               : {
-                  paddingTop: 10,
                   gap: 10,
                   paddingBottom: 85,
-                  minHeight: '100%',
                 }
           }
           showsVerticalScrollIndicator={false}
           bounces={true}
+          alwaysBounceVertical={false}
           ListFooterComponent={<View style={styles.listFooter} />}
         />
 

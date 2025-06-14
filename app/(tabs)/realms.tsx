@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState, useMemo } from 'react';
-import { View, FlatList, TouchableOpacity } from 'react-native';
+import { View, FlatList, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FloatingActionButton } from '@/components/atoms/FloatingActionButton';
@@ -121,12 +121,24 @@ export default function RealmsScreen() {
   }
 
   const hasActiveSearch = searchText.trim() || tagSearchText.trim();
-
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Realms</Text>
-        <Text style={styles.headerSubtitle}>Kingdoms where you keep your treasures</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>Mis Realms</Text>
+            <Text style={styles.headerSubtitle}>Reinos en los que guardas tus tesoros</Text>
+          </View>
+          <Image
+            source={require('@/assets/images/realm-marker.png')}
+            style={{
+              width: 40,
+              height: 40,
+              marginLeft: theme.spacing.m,
+            }}
+            resizeMode="contain"
+          />
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
@@ -149,7 +161,7 @@ export default function RealmsScreen() {
         <TextInput
           value={tagSearchText}
           onChangeText={setTagSearchText}
-          placeholder="Buscar por nombre de etiqueta..."
+          placeholder="Buscar por etiqueta..."
           style={styles.searchInput}
           rightElement={
             tagSearchText ? (
@@ -168,7 +180,7 @@ export default function RealmsScreen() {
               {realmsToShow.length} realm{realmsToShow.length !== 1 ? 's' : ''} found
             </Text>
             <TouchableOpacity onPress={handleClearSearch}>
-              <Text style={styles.clearFiltersText}>Clear search</Text>
+              <Text style={styles.clearFiltersText}>Limpiar filtro</Text>
             </TouchableOpacity>
           </View>
         )}

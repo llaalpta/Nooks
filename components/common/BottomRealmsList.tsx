@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
-import { View, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, TouchableOpacity, FlatList, Dimensions, Image } from 'react-native';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -27,6 +27,7 @@ interface BottomRealmsListProps {
   userLocation: { latitude: number; longitude: number } | null;
   onRealmSelect: (realm: Realm) => void;
   onClose: () => void;
+  showAllRealms?: boolean; // Si es true, muestra todos los realms, si es false o undefined, solo los cercanos
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -44,6 +45,7 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   userLocation,
   onRealmSelect,
   onClose,
+  showAllRealms = false,
 }) => {
   const theme = useAppTheme();
   const router = useRouter();
@@ -178,12 +180,34 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   });
 
   const sortedRealms = [...realms].sort((a, b) => {
-    const distanceA = getDistance(a) || Infinity;
-    const distanceB = getDistance(b) || Infinity;
-    return distanceA - distanceB;
-  });
+    if (showAllRealms) {
+      // Si se muestran todos los realms, ordenar alfabéticamente por defecto
+      // pero si hay ubicación del usuario, priorizar los más cercanos primero
+      if (userLocation) {
+        const distanceA = getDistance(a) || Infinity;
+        const distanceB = getDistance(b) || Infinity;
 
+        // Si ambos tienen distancia válida, ordenar por distancia
+        if (distanceA !== Infinity && distanceB !== Infinity) {
+          return distanceA - distanceB;
+        }
+        // Si solo uno tiene distancia válida, priorizarlo
+        if (distanceA !== Infinity) return -1;
+        if (distanceB !== Infinity) return 1;
+      }
+      // Fallback: ordenar alfabéticamente
+      return (a.name || '').localeCompare(b.name || '');
+    } else {
+      // Comportamiento original: ordenar por distancia
+      const distanceA = getDistance(a) || Infinity;
+      const distanceB = getDistance(b) || Infinity;
+      return distanceA - distanceB;
+    }
+  });
   const formatDistance = (distance: number | null) => {
+    if (showAllRealms && !userLocation) {
+      return ''; // No mostrar distancia si no hay ubicación y se muestran todos los realms
+    }
     if (distance === null) return '—';
     if (distance < 1) {
       return `${Math.round(distance * 1000)} m`;
@@ -209,7 +233,9 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
             </View>
 
             <View style={styles.header}>
-              <Text style={styles.title}>Realms cercanos</Text>
+              <Text style={styles.title}>
+                {showAllRealms ? 'Selecciona un realm' : 'Realms cercanos'}
+              </Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color={theme.colors.onSurfaceVariant} />
               </TouchableOpacity>
@@ -230,9 +256,11 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={styles.realmIconContainer}>
-                      <View style={styles.realmIcon}>
-                        <Ionicons name="map" size={22} color={theme.colors.onPrimary} />
-                      </View>
+                      <Image
+                        source={require('@/assets/images/realm-marker.png')}
+                        style={styles.realmIcon}
+                        resizeMode="contain"
+                      />
                     </View>
 
                     <View style={styles.realmInfo}>
@@ -243,7 +271,11 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
                     </View>
 
                     <View style={styles.realmActions}>
-                      <Text style={styles.realmDistance}>{formatDistance(getDistance(item))}</Text>
+                      {(!showAllRealms || userLocation) && (
+                        <Text style={styles.realmDistance}>
+                          {formatDistance(getDistance(item))}
+                        </Text>
+                      )}
                       <TouchableOpacity
                         style={styles.detailsButton}
                         onPress={() => handleRealmDetails(item)}
@@ -256,11 +288,13 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
               </View>
             )}
             contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             scrollEnabled={true}
             bounces={true}
             alwaysBounceVertical={true}
             contentInsetAdjustmentBehavior="never"
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={false}
             ListFooterComponent={<View style={styles.forcedScrollSpace} />}
           />
         </View>

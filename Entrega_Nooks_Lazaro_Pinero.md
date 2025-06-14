@@ -32,10 +32,10 @@ El repositorio contiene todo el código fuente, documentación técnica, scripts
 
 ### Aplicación para Testing (Android)
 
-- **APK Direct Download:** [Descargar APK de Nooks (Expo Build)](https://expo.dev/accounts/llaalpta/projects/Nooks/builds/3fdb8a6f-316d-4df4-bc6e-b720bef80217)
+- **APK Direct Download:** [Descargar APK de Nooks (Expo Build)](https://expo.dev/accounts/llaalpta/projects/Nooks/builds/f1d05f0d-96ca-4d6e-8de8-0ed777e6c8bd)
 - **QR Code para instalación:**
 
-![1749416551664](image/Entrega_Nooks_Lazaro_Pinero/1749416551664.png)
+  ![1749483580216](image/Entrega_Nooks_Lazaro_Pinero/1749483580216.png)
 
 ### iOS (En desarrollo)
 

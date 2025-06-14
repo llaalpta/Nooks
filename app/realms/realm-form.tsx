@@ -61,7 +61,7 @@ const FormSection = ({
           {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
         </View>
         {icon && (
-          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.m }]}>
+          <View style={[styles.sectionIconContainer, { marginLeft: theme.spacing.s }]}>
             <Ionicons name={icon as any} size={18} color={theme.colors.primary} />
           </View>
         )}
@@ -156,6 +156,8 @@ export default function RealmForm() {
       router.replace('/map');
     } else if (from === 'details' && detailsId) {
       router.replace(`/realms/${detailsId}`);
+    } else if (from === 'treasures') {
+      router.replace('/treasures');
     } else {
       router.replace('/realms');
     }
@@ -302,7 +304,7 @@ export default function RealmForm() {
         >
           <FormSection
             title="Información Básica"
-            subtitle="Dale un nombre único y una descripción atractiva a tu realm"
+            subtitle="Dale un nombre único y atractivo a tu realm"
             icon="create-outline"
             styles={styles}
           >
@@ -325,7 +327,7 @@ export default function RealmForm() {
           </FormSection>
           <FormSection
             title="Ubicación y Área"
-            subtitle="Define la ubicación geográfica y el radio de tu realm"
+            subtitle="Define la ubicación y el radio de tu realm"
             icon="location-outline"
             styles={styles}
           >
@@ -333,7 +335,7 @@ export default function RealmForm() {
           </FormSection>
           <FormSection
             title="Imagen Representativa"
-            subtitle="Una buena imagen que te ayuda a identificar tu realm"
+            subtitle="Una imagen que identifique a tu realm"
             icon="image-outline"
             styles={styles}
           >
@@ -342,7 +344,7 @@ export default function RealmForm() {
           </FormSection>
           <FormSection
             title="Etiquetas"
-            subtitle="Ayuda a otros a encontrar tu realm con etiquetas descriptivas"
+            subtitle="Ayuda a encontrar tu realm con etiquetas descriptivas"
             icon="pricetag-outline"
             styles={styles}
           >

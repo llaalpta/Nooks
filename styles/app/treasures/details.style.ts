@@ -24,7 +24,7 @@ export const createStyles = (theme: AppTheme) => {
       width: 180,
       height: 180,
       borderRadius: theme.borderRadius.l,
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: theme.colors.surfaceContainer,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
     },

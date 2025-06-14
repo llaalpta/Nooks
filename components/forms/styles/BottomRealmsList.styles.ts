@@ -20,13 +20,13 @@ export const createStyles = (theme: AppTheme) =>
       left: 0,
       right: 0,
       height: SCREEN_HEIGHT,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.surfaceContainerHigh,
       borderTopLeftRadius: theme.borderRadius.l,
       borderTopRightRadius: theme.borderRadius.l,
       ...theme.elevation.level3,
     },
     draggableHeader: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.surfaceContainerHigh,
       borderTopLeftRadius: theme.borderRadius.l,
       borderTopRightRadius: theme.borderRadius.l,
     },
@@ -57,15 +57,19 @@ export const createStyles = (theme: AppTheme) =>
     closeButton: {
       padding: theme.spacing.xs,
     },
+
     listContainer: {
       flex: 1,
+      paddingBottom: theme.spacing.s, // Añadir padding para evitar que el contenido se corte
     },
     listContent: {
-      paddingBottom: theme.spacing.l,
-      minHeight: '120%',
+      paddingHorizontal: 0,
+      paddingTop: theme.spacing.xs,
+      paddingBottom: theme.spacing.m, // Aumentar padding bottom significativamente
+      flexGrow: 1, // Cambiar de minHeight a flexGrow
     },
     forcedScrollSpace: {
-      height: 100,
+      height: 200, // Aumentar significativamente el espacio de scroll forzado
       backgroundColor: 'transparent',
     },
     realmItem: {
@@ -80,12 +84,8 @@ export const createStyles = (theme: AppTheme) =>
       marginRight: theme.spacing.m,
     },
     realmIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
+      width: 32,
+      height: 32,
     },
     realmInfo: {
       flex: 1,

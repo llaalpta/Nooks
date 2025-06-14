@@ -4,7 +4,13 @@ import type { TablesInsert, TablesUpdate } from '../../types/supabase';
 
 // Registro de usuario
 export const signUp = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: 'nooks://',
+    },
+  });
   if (error) throw new Error(error.message || 'No se pudo registrar');
   return data;
 };
@@ -24,8 +30,18 @@ export const signOut = async () => {
 
 // Recuperación de contraseña
 export const resetPassword = async (email: string) => {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'nooks://reset-password',
+  });
   if (error) throw new Error(error.message || 'No se pudo enviar el email');
+};
+
+// Actualizar contraseña
+export const updatePassword = async (newPassword: string) => {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  if (error) throw new Error(error.message || 'No se pudo actualizar la contraseña');
 };
 
 // Obtener usuario actual

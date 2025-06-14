@@ -30,7 +30,6 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       return false;
     }
   };
-
   const getCurrentLocation = async (): Promise<LocationCoords | null> => {
     setIsLocating(true);
 
@@ -44,9 +43,28 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
         return null;
       }
 
-      const location = await Location.getCurrentPositionAsync({
+      // Add timeout for location request to prevent hanging
+      const locationPromise = Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
+        timeInterval: 10000, // 10 seconds timeout
       });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Location request timeout')), 15000)
+      );
+
+      const location = await Promise.race([locationPromise, timeoutPromise]);
+
+      // Validate location data
+      if (
+        !location?.coords ||
+        typeof location.coords.latitude !== 'number' ||
+        typeof location.coords.longitude !== 'number' ||
+        isNaN(location.coords.latitude) ||
+        isNaN(location.coords.longitude)
+      ) {
+        throw new Error('Invalid location data received');
+      }
 
       const coords: LocationCoords = {
         latitude: location.coords.latitude,
@@ -70,9 +88,11 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       const errorMessage =
-        'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.';
+        error instanceof Error && error.message.includes('timeout')
+          ? 'Se agotó el tiempo de espera para obtener la ubicación. Inténtalo de nuevo.'
+          : 'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.';
 
-      console.error(errorMessage);
+      console.error('Location error:', errorMessage, error);
 
       if (options.onLocationError) {
         options.onLocationError(errorMessage);

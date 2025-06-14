@@ -14,14 +14,19 @@ type Tag = Tables<'tags'>;
 
 export interface NookCardProps {
   nook: Tables<'locations'> & { imageUrl?: string | null; tags: Tag[]; treasuresCount?: number };
+  onPress?: () => void;
 }
 
-export function NookCard({ nook }: NookCardProps) {
+export function NookCard({ nook, onPress }: NookCardProps) {
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
   const handlePress = () => {
-    router.push(`/nooks/${nook.id}`);
+    if (onPress) {
+      onPress();
+    } else {
+      router.push(`/nooks/${nook.id}`);
+    }
   };
 
   // Configuración para el cálculo de espacio (mismo que RealmCard)

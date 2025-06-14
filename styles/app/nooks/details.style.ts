@@ -14,6 +14,7 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     imageContainer: {
       height: 280,
       position: 'relative',
+      marginTop: theme.spacing.s,
     },
     image: {
       width: '100%',
@@ -22,14 +23,12 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     placeholderImage: {
       width: '100%',
       height: '100%',
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: theme.colors.surfaceContainer,
       justifyContent: 'center',
       alignItems: 'center',
     },
     contentContainer: {
       backgroundColor: theme.colors.surface,
-      borderTopLeftRadius: theme.borderRadius.l,
-      borderTopRightRadius: theme.borderRadius.l,
       marginTop: -24,
       paddingTop: theme.spacing.l,
       paddingHorizontal: theme.spacing.l,
@@ -98,7 +97,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       fontWeight: '500',
       color: theme.colors.onPrimaryContainer,
     },
-
     treasureCard: {
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
@@ -120,7 +118,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       color: theme.colors.onSurfaceVariant,
       lineHeight: 20,
     },
-
     emptyContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -138,25 +135,23 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     listFooter: {
       height: 80,
     },
-    nooksCard: {
-      marginHorizontal: theme.spacing.m,
-      backgroundColor: theme.colors.surface,
+    treasuresSection: {
+      marginTop: theme.spacing.s,
       paddingHorizontal: theme.spacing.m,
       paddingVertical: theme.spacing.m,
-      borderRadius: theme.spacing.m,
+      backgroundColor: theme.colors.surfaceVariant,
+    },
+    treasuresSectionHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      ...theme.elevation.level2,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
     },
-    nooksTitleContainer: {
+    treasuresTitleContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       flex: 1,
     },
-    nooksCounter: {
+    treasuresCounter: {
       backgroundColor: theme.colors.primaryContainer,
       paddingHorizontal: theme.spacing.m,
       paddingVertical: theme.spacing.xs,
@@ -165,14 +160,12 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
-    nooksCounterText: {
+    treasuresCounterText: {
       fontSize: 14,
       fontWeight: '600',
       color: theme.colors.onPrimaryContainer,
     },
-
-    nooksTitle: {
+    treasuresTitle: {
       fontSize: 20,
       fontWeight: '600',
       color: theme.colors.onSurface,

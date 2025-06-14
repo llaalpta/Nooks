@@ -14,12 +14,11 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     imageContainer: {
       height: 280,
       position: 'relative',
+      marginTop: theme.spacing.s,
     },
     image: {
       width: '100%',
       height: '100%',
-      borderTopLeftRadius: theme.borderRadius.l,
-      borderTopRightRadius: theme.borderRadius.l,
     },
     placeholderImage: {
       width: '100%',
@@ -30,8 +29,6 @@ export const createStyles = (theme: AppTheme, insets: { top: number }) =>
     },
     contentContainer: {
       backgroundColor: theme.colors.surface,
-      borderTopLeftRadius: theme.borderRadius.l,
-      borderTopRightRadius: theme.borderRadius.l,
       marginTop: -24,
       paddingTop: theme.spacing.l,
       paddingHorizontal: theme.spacing.l,

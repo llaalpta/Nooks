@@ -86,11 +86,15 @@ export const TagSelector = <T extends object>({
                       key={tag.id}
                       style={[styles.tagChip, tag.color ? { backgroundColor: tag.color } : null]}
                     >
-                      <Text style={styles.tagText}>{tag.name}</Text>
+                      <Text style={[styles.tagText, tag.color ? { color: '#FFFFFF' } : null]}>
+                        {tag.name}
+                      </Text>
                       <TouchableOpacity
                         onPress={() => onChange(value.filter((t: Tag) => t.id !== tag.id))}
                       >
-                        <Text style={styles.removeIcon}>✕</Text>
+                        <Text style={[styles.removeIcon, tag.color ? { color: '#FFFFFF' } : null]}>
+                          ✕
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -133,7 +137,7 @@ export const TagSelector = <T extends object>({
                   <Text
                     style={{
                       color: theme.colors.onPrimary,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: '600',
                       marginLeft: 4,
                       letterSpacing: 0.5,

@@ -12,11 +12,10 @@ export const createUnifiedFormStyles = (theme: AppTheme) =>
       padding: theme.spacing.m,
       paddingBottom: theme.spacing.xl,
     },
-
     header: {
       paddingHorizontal: theme.spacing.m,
       paddingVertical: theme.spacing.m,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.surfaceContainerHigh,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.outlineVariant,
       ...theme.elevation.level1,

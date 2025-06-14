@@ -31,7 +31,7 @@ export const createStyles = (theme: AppTheme) =>
     horizontalPlaceholder: {
       width: '100%',
       height: '100%',
-      backgroundColor: theme.colors.surfaceContainer,
+      backgroundColor: theme.colors.surfaceVariant,
       alignItems: 'center',
       justifyContent: 'center',
       borderTopLeftRadius: theme.borderRadius.m,

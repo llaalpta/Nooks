@@ -5,7 +5,6 @@ import { AppTheme } from '@/types';
 export const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     card: {
-      marginHorizontal: theme.spacing.m, // 🔥 Agregar esto
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.m,
       borderWidth: 1,
