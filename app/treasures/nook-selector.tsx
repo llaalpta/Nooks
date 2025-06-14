@@ -1,5 +1,4 @@
 import { useLocalSearchParams, router } from 'expo-router';
-import React, { useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,19 +20,6 @@ export default function NookSelectorScreen() {
 
   const { data: nooks = [], isLoading: isLoadingNooks } = useNooksQuery(realmId || '');
 
-  // Debug logs para verificar que los datos están llegando correctamente
-  useEffect(() => {
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.log('🐛 [NookSelector] Debug info:', {
-        realmId,
-        nooksCount: nooks.length,
-        isLoadingNooks,
-      });
-      // eslint-disable-next-line no-console
-      console.log('🐛 [NookSelector] Nooks data:', nooks);
-    }
-  }, [realmId, nooks.length, isLoadingNooks, nooks]);
   const handleNookSelect = (nook: any) => {
     router.push({
       pathname: '/treasures/treasure-form',

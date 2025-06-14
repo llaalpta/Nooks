@@ -15,7 +15,6 @@ import { TagSelector } from '@/components/forms/TagSelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useUploadMediaMutation } from '@/features/media/hooks';
-import { useNooksQuery } from '@/features/nooks/hooks';
 import {
   useTagsQuery,
   useCreateTagMutation,
@@ -81,7 +80,6 @@ export default function TreasureFormScreen() {
     realmId?: string;
   }>();
   const nookId = params.nookId;
-  const realmId = params.realmId;
   const treasureId = params.id;
   const mode: 'create' | 'edit' = treasureId ? 'edit' : 'create';
   const theme = useAppTheme();
@@ -187,23 +185,8 @@ export default function TreasureFormScreen() {
   const addTagToTreasureMutation = useAddTagToTreasureMutation();
   const removeTagFromTreasureMutation = useRemoveTagFromTreasureMutation();
   const { data: tags = [] } = useTagsQuery(userId);
-  const { data: nooks = [], isLoading: isLoadingNooks } = useNooksQuery(realmId || '');
   useInvalidateTagsOnFocus(userId);
   // Debug logs para verificar que los datos están llegando correctamente
-  useEffect(() => {
-    if (__DEV__) {
-      // eslint-disable-next-line no-console
-      console.log('🐛 [TreasureForm] Debug info:', {
-        realmId,
-        nookId,
-        nooksCount: nooks.length,
-        isLoadingNooks,
-        mode,
-      });
-      // eslint-disable-next-line no-console
-      console.log('🐛 [TreasureForm] Nooks data:', nooks);
-    }
-  }, [realmId, nookId, nooks.length, isLoadingNooks, mode, nooks]);
 
   const loading =
     createTreasureMutation.isPending ||

@@ -25,12 +25,20 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       setHasPermission(granted);
       return granted;
     } catch (error) {
-      console.error('Error requesting location permission:', error);
+      console.error('LocationService: Error requesting location permission:', error);
       setHasPermission(false);
+      if (options.onLocationError) {
+        options.onLocationError('Error al solicitar permisos de ubicación');
+      }
       return false;
     }
   };
+
   const getCurrentLocation = async (): Promise<LocationCoords | null> => {
+    if (isLocating) {
+      return null;
+    }
+
     setIsLocating(true);
 
     try {
@@ -38,22 +46,18 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       const hasPermissionGranted = hasPermission ?? (await requestLocationPermission());
 
       if (!hasPermissionGranted) {
-        console.error('Activa los permisos de ubicación para usar esta función.');
+        const errorMsg = 'Activa los permisos de ubicación para usar esta función.';
+        if (options.onLocationError) {
+          options.onLocationError(errorMsg);
+        }
         setIsLocating(false);
         return null;
       }
 
-      // Add timeout for location request to prevent hanging
-      const locationPromise = Location.getCurrentPositionAsync({
+      // Usar configuración simple sin opciones no soportadas
+      const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-        timeInterval: 10000, // 10 seconds timeout
       });
-
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Location request timeout')), 15000)
-      );
-
-      const location = await Promise.race([locationPromise, timeoutPromise]);
 
       // Validate location data
       if (
@@ -72,9 +76,11 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
       };
 
       if (options.validateArea && !options.validateArea(coords)) {
-        console.error(
-          options.areaValidationMessage || 'Tu ubicación actual está fuera del área permitida.'
-        );
+        const errorMsg =
+          options.areaValidationMessage || 'Tu ubicación actual está fuera del área permitida.';
+        if (options.onLocationError) {
+          options.onLocationError(errorMsg);
+        }
         setIsLocating(false);
         return null;
       }
@@ -85,14 +91,10 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
 
       setIsLocating(false);
       return coords;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+      console.error('LocationService: Error getting location:', error);
       const errorMessage =
-        error instanceof Error && error.message.includes('timeout')
-          ? 'Se agotó el tiempo de espera para obtener la ubicación. Inténtalo de nuevo.'
-          : 'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.';
-
-      console.error('Location error:', errorMessage, error);
+        'No se pudo obtener tu ubicación actual. Verifica que el GPS esté activado.';
 
       if (options.onLocationError) {
         options.onLocationError(errorMessage);
@@ -109,23 +111,28 @@ export const useLocationService = (options: UseLocationServiceOptions = {}) => {
     center: LocationCoords,
     radiusInMeters: number
   ): boolean => {
-    const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const R = 6371000; // Earth's radius in meters
+    try {
+      const toRad = (deg: number) => (deg * Math.PI) / 180;
+      const R = 6371000; // Earth's radius in meters
 
-    const dLat = toRad(location.latitude - center.latitude);
-    const dLng = toRad(location.longitude - center.longitude);
+      const dLat = toRad(location.latitude - center.latitude);
+      const dLng = toRad(location.longitude - center.longitude);
 
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(center.latitude)) *
-        Math.cos(toRad(location.latitude)) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(center.latitude)) *
+          Math.cos(toRad(location.latitude)) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c;
 
-    return distance <= radiusInMeters;
+      return distance <= radiusInMeters;
+    } catch (error) {
+      console.error('LocationService: Error calculating distance:', error);
+      return false;
+    }
   };
 
   return {

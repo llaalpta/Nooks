@@ -25,7 +25,6 @@ if (typeof window !== 'undefined' && typeof window.crypto === 'undefined') {
 try {
   const testArray = new Uint8Array(1);
   global.crypto.getRandomValues(testArray);
-  console.log('✅ Polyfill crypto.getRandomValues funcionando correctamente');
 } catch (error) {
-  console.error('❌ Error en polyfill crypto.getRandomValues:', error);
+  console.error('Error en polyfill crypto.getRandomValues:', error);
 }

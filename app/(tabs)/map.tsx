@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
-// import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/atoms/Button';
@@ -20,122 +19,113 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useRealmsQuery } from '@/features/realms/hooks';
 import { useLocationService } from '@/hooks/useLocationService';
-// import { useMapMarkers } from '@/hooks/useMapMarkers';
+import darkMapStyle from '@/styles/app/tabs/map.dark.style';
 import { createStyles } from '@/styles/app/tabs/map.style';
-import darkMapStyle from '@/styles/app/tabs/map.style';
 
 import type { Tables } from '@/types/supabase';
 
 type Realm = Tables<'locations'>;
 
+// Tipo para coordenadas
+type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
+
 export default function MapScreen() {
   const { user } = useAuth();
   const theme = useAppTheme();
   const styles = createStyles(theme);
+
   const mapRef = useRef<MapViewRef | null>(null);
+  const isMountedRef = useRef(true);
+  const pendingRegionRef = useRef<Region | null>(null);
+  const hasInitializedRef = useRef(false);
 
-  const [region, setRegion] = useState<Region>({
-    latitude: 40.4168,
-    longitude: -3.7038,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  });
+  // Pre-cargar la imagen una sola vez
+  const [markerImage, setMarkerImage] = useState<any>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  // ✅ Inicializar region como null - se calculará basada en realms
+  const [region, setRegion] = useState<Region | null>(null);
+
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const [showRealmsList, setShowRealmsList] = useState(false);
   const [selectedRealm, setSelectedRealm] = useState<Realm | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const { data: realms, isLoading, error } = useRealmsQuery(user?.id || '');
 
-  const pendingRegionRef = useRef<Region | null>(null);
-
-  const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } =
-    useLocationService({
-      onLocationObtained: (coords) => {
-        setUserLocation(coords);
-
-        // if there are no realms, center map on user location
-        if (!realms || realms.length === 0) {
-          const newRegion = {
-            ...coords,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          };
-          setRegion(newRegion);
-        }
-      },
-    });
-
-  // Utility to compare regions with tolerance
-  function areRegionsEqual(r1: Region, r2: Region, tolerance = 0.0002) {
-    return (
-      Math.abs(r1.latitude - r2.latitude) < tolerance &&
-      Math.abs(r1.longitude - r2.longitude) < tolerance &&
-      Math.abs(r1.latitudeDelta - r2.latitudeDelta) < tolerance &&
-      Math.abs(r1.longitudeDelta - r2.longitudeDelta) < tolerance
-    );
-  }
-  // request location permission
-  useEffect(() => {
-    const initializeLocation = async () => {
-      try {
-        await requestLocationPermission();
-        if (hasPermission) {
-          await getCurrentLocation();
-        }
-      } catch (error) {
-        console.error('Error initializing location:', error);
-      }
-    };
-
-    initializeLocation();
+  // Memoizar validaciones para evitar re-cálculos
+  const isValidNumber = useCallback((value: any): value is number => {
+    return typeof value === 'number' && !isNaN(value) && isFinite(value);
   }, []);
-  // center map on realms when they are loaded
-  useEffect(() => {
-    if (realms && realms.length > 0) {
-      try {
-        centerMapOnRealms();
-      } catch (error) {
-        console.error('Error centering map on realms:', error);
-      }
-    }
-  }, [realms]);
-  const centerMapOnRealms = () => {
-    if (!realms || realms.length === 0) return;
 
-    const validRealms = realms.filter(
-      (realm) =>
-        realm &&
-        typeof realm.latitude === 'number' &&
-        typeof realm.longitude === 'number' &&
-        !isNaN(realm.latitude) &&
-        !isNaN(realm.longitude)
-    );
+  const isValidRealm = useCallback(
+    (realm: any): realm is Realm => {
+      return realm && realm.id && isValidNumber(realm.latitude) && isValidNumber(realm.longitude);
+    },
+    [isValidNumber]
+  );
 
-    if (validRealms.length === 0) return;
+  // Memoizar realms válidos
+  const validRealms = useMemo(() => {
+    return realms?.filter(isValidRealm) || [];
+  }, [realms, isValidRealm]);
 
+  const areRegionsEqual = useCallback((r1: Region, r2: Region, tolerance = 0.0002): boolean => {
     try {
-      // calculate bounds of all realms
-      const latitudes = validRealms.map((realm) => realm.latitude!);
-      const longitudes = validRealms.map((realm) => realm.longitude!);
+      return (
+        Math.abs(r1.latitude - r2.latitude) < tolerance &&
+        Math.abs(r1.longitude - r2.longitude) < tolerance &&
+        Math.abs(r1.latitudeDelta - r2.latitudeDelta) < tolerance &&
+        Math.abs(r1.longitudeDelta - r2.longitudeDelta) < tolerance
+      );
+    } catch (error) {
+      console.error('MapScreen: Error comparing regions:', error);
+      return false;
+    }
+  }, []);
+
+  // Memoizar función de centrado de mapa - ahora es la inicialización principal
+  const initializeMapRegion = useCallback(() => {
+    try {
+      // ✅ Solo establecer región si tenemos realms o si ya no está cargando
+      if (!validRealms || validRealms.length === 0) {
+        if (isLoading) {
+          return; // No establecer región aún, esperar a que terminen de cargar
+        }
+
+        // Solo usar región por defecto si confirmamos que NO hay realms
+        const defaultRegion = {
+          latitude: 40.0, // Volver a España ya que sabemos que funciona
+          longitude: -3.0,
+          latitudeDelta: 8.0,
+          longitudeDelta: 12.0,
+        };
+        setRegion(defaultRegion);
+        return;
+      }
+
+      const latitudes = validRealms.map((realm) => realm.latitude as number);
+      const longitudes = validRealms.map((realm) => realm.longitude as number);
 
       const minLat = Math.min(...latitudes);
       const maxLat = Math.max(...latitudes);
       const minLng = Math.min(...longitudes);
       const maxLng = Math.max(...longitudes);
 
-      // Validate calculated bounds
-      if (isNaN(minLat) || isNaN(maxLat) || isNaN(minLng) || isNaN(maxLng)) {
-        console.error('Invalid bounds calculated for realms');
+      if (
+        !isValidNumber(minLat) ||
+        !isValidNumber(maxLat) ||
+        !isValidNumber(minLng) ||
+        !isValidNumber(maxLng)
+      ) {
         return;
       }
 
       const centerLat = (minLat + maxLat) / 2;
       const centerLng = (minLng + maxLng) / 2;
-
-      // add padding to deltas
       const latDelta = Math.max((maxLat - minLat) * 1.3, 0.01);
       const lngDelta = Math.max((maxLng - minLng) * 1.3, 0.01);
 
@@ -146,144 +136,121 @@ export default function MapScreen() {
         longitudeDelta: lngDelta,
       };
 
-      // Validate final region
       if (
-        isNaN(newRegion.latitude) ||
-        isNaN(newRegion.longitude) ||
-        isNaN(newRegion.latitudeDelta) ||
-        isNaN(newRegion.longitudeDelta)
+        !isValidNumber(newRegion.latitude) ||
+        !isValidNumber(newRegion.longitude) ||
+        !isValidNumber(newRegion.latitudeDelta) ||
+        !isValidNumber(newRegion.longitudeDelta)
       ) {
-        console.error('Invalid region calculated');
         return;
       }
 
       setRegion(newRegion);
     } catch (error) {
-      console.error('Error calculating map region:', error);
+      console.error('MapScreen: Error calculating initial map region:', error);
     }
-  };
-  const centerOnUserLocation = async () => {
-    try {
-      if (!hasPermission) {
-        Alert.alert(
-          'Permisos requeridos',
-          'La aplicación necesita acceso a tu ubicación para centrarse en tu posición.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Configurar', onPress: () => requestLocationPermission() },
-          ]
-        );
-        return;
-      }
+  }, [validRealms, isValidNumber, realms, isLoading]);
 
-      const location = await getCurrentLocation();
-      if (location && !isNaN(location.latitude) && !isNaN(location.longitude)) {
-        const newRegion = {
-          ...location,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        };
-
-        setRegion(newRegion);
-        setUserLocation(location);
-
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(newRegion, 1000);
+  // ✅ Callback tipado correctamente - solo se ejecuta si es necesario
+  const onLocationObtained = useCallback(
+    (coords: Coordinates) => {
+      try {
+        if (
+          !coords ||
+          typeof coords.latitude !== 'number' ||
+          typeof coords.longitude !== 'number' ||
+          !isValidNumber(coords.latitude) ||
+          !isValidNumber(coords.longitude)
+        ) {
+          console.warn('MapScreen: Invalid coordinates received:', coords);
+          return;
         }
+
+        setUserLocation(coords);
+      } catch (error) {
+        console.error('MapScreen: Error processing location:', error);
       }
-    } catch (error) {
-      console.error('Error centering on user location:', error);
-      Alert.alert('Error', 'No se pudo obtener tu ubicación. Inténtalo de nuevo.', [
-        { text: 'OK' },
-      ]);
-    }
-  };
-  const handleRealmPress = (realm: Realm) => {
+    },
+    [isValidNumber]
+  );
+
+  const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } =
+    useLocationService({
+      onLocationObtained,
+    });
+
+  // Cargar imagen al inicializar - solo una vez
+  useEffect(() => {
+    if (imageLoaded) return;
+
     try {
-      if (!realm) return;
+      const image = require('@/assets/images/realm-final.png');
+      setMarkerImage(image);
+      setImageLoaded(true);
+    } catch (error) {
+      console.error('MapScreen: Error pre-loading marker image:', error);
+      setImageLoaded(false);
+    }
+  }, [imageLoaded]);
 
-      setSelectedRealm(realm);
-      if (
-        realm.latitude &&
-        realm.longitude &&
-        typeof realm.latitude === 'number' &&
-        typeof realm.longitude === 'number' &&
-        !isNaN(realm.latitude) &&
-        !isNaN(realm.longitude)
-      ) {
-        const newRegion = {
-          latitude: realm.latitude,
-          longitude: realm.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        };
+  // Inicializar el mapa directamente - sin depender de permisos
+  useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    setIsInitialized(true);
+  }, []);
 
-        if (mapRef.current) {
-          mapRef.current.animateToRegion(newRegion, 1200);
+  // Inicializar región del mapa - esperar a que los datos estén listos
+  useEffect(() => {
+    // Solo intentar inicializar cuando:
+    // 1. El componente esté inicializado
+    // 2. No tengamos región aún
+    // 3. Los datos hayan terminado de cargar O tengamos realms
+    if (isInitialized && !region && (!isLoading || validRealms.length > 0)) {
+      initializeMapRegion();
+    }
+  }, [isInitialized, region, isLoading, validRealms.length, initializeMapRegion]);
+
+  // Función unificada para seleccionar y enfocar un realm
+  const selectAndFocusRealm = useCallback(
+    (realm: Realm) => {
+      try {
+        if (!isValidRealm(realm)) {
+          console.warn('MapScreen: Invalid realm data received');
+          return;
         }
-      }
-    } catch (error) {
-      console.error('Error handling realm press:', error);
-    }
-  };
 
-  const handleRealmDetails = () => {
-    if (selectedRealm) {
-      router.push(`/realms/${selectedRealm.id}`);
-    }
-  };
+        setSelectedRealm(realm);
 
-  const handleMapPress = () => {
-    setSelectedRealm(null);
-  };
+        if (!region) return;
 
-  const handleCreateRealm = () => {
-    router.push({ pathname: '/realms/realm-form', params: { from: 'map' } });
-  };
+        // Calcular el nivel de zoom dinámicamente basado en la distancia actual
+        const latDiff = Math.abs(region.latitude - (realm.latitude as number));
+        const lngDiff = Math.abs(region.longitude - (realm.longitude as number));
 
-  const toggleRealmsList = () => {
-    setShowRealmsList(!showRealmsList);
-  };
-  const handleRealmSelect = (realm: Realm) => {
-    try {
-      if (!realm) return;
-
-      setShowRealmsList(false);
-      setSelectedRealm(realm);
-
-      if (
-        realm.latitude &&
-        realm.longitude &&
-        typeof realm.latitude === 'number' &&
-        typeof realm.longitude === 'number' &&
-        !isNaN(realm.latitude) &&
-        !isNaN(realm.longitude)
-      ) {
-        const latDiff = Math.abs(region.latitude - realm.latitude);
-        const lngDiff = Math.abs(region.longitude - realm.longitude);
-
-        let delta = 0.003;
+        let delta = 0.005; // Zoom cercano por defecto
         if (latDiff > 0.2 || lngDiff > 0.2) {
-          delta = 0.05;
+          delta = 0.05; // Zoom medio si está muy lejos
         } else if (latDiff > 0.05 || lngDiff > 0.05) {
-          delta = 0.01;
+          delta = 0.01; // Zoom intermedio si está moderadamente lejos
         }
 
-        const newRegion = {
-          latitude: realm.latitude,
-          longitude: realm.longitude,
+        const newRegion: Region = {
+          latitude: realm.latitude as number,
+          longitude: realm.longitude as number,
           latitudeDelta: delta,
           longitudeDelta: delta,
         };
 
-        if (!mapRef.current) return;
+        if (!mapRef.current || !isMountedRef.current) return;
 
+        // Lógica especial para animaciones suaves cuando el realm está muy cerca
         if (
           Math.abs(region.latitude - newRegion.latitude) < 0.0001 &&
           Math.abs(region.longitude - newRegion.longitude) < 0.0001 &&
           (region.latitudeDelta < 0.01 || region.longitudeDelta < 0.01)
         ) {
-          // zoom out first, then animate to actual destination
+          // Zoom out primero, luego animar al destino
           const zoomOutRegion = {
             ...newRegion,
             latitudeDelta: 0.2,
@@ -295,7 +262,7 @@ export default function MapScreen() {
           Math.abs(region.latitude - newRegion.latitude) < 0.0001 &&
           Math.abs(region.longitude - newRegion.longitude) < 0.0001
         ) {
-          // small delta change to force animation
+          // Pequeño cambio de delta para forzar animación
           const tempRegion = {
             ...newRegion,
             latitudeDelta: newRegion.latitudeDelta + 0.002,
@@ -304,28 +271,213 @@ export default function MapScreen() {
           mapRef.current.animateToRegion(tempRegion, 200);
           pendingRegionRef.current = newRegion;
         } else {
+          // Animación normal
           mapRef.current.animateToRegion(newRegion, 1200);
         }
+      } catch (error) {
+        console.error('MapScreen: Error selecting and focusing realm:', error);
       }
-    } catch (error) {
-      console.error('Error selecting realm:', error);
-    }
-  };
-  // only update state if region actually changed
-  const handleRegionChangeComplete = (newRegion: Region) => {
+    },
+    [isValidRealm, region]
+  );
+
+  // Handlers memoizados
+  const centerOnUserLocation = useCallback(async () => {
     try {
-      if (!areRegionsEqual(region, newRegion)) {
-        setRegion(newRegion);
-        if (pendingRegionRef.current && mapRef.current) {
-          mapRef.current.animateToRegion(pendingRegionRef.current, 1200);
-          pendingRegionRef.current = null;
+      // Solicitar permisos justo cuando se necesiten
+      if (!hasPermission) {
+        const permissionGranted = await requestLocationPermission();
+
+        if (!permissionGranted) {
+          Alert.alert(
+            'Permisos requeridos',
+            'La aplicación necesita acceso a tu ubicación para centrarse en tu posición.',
+            [{ text: 'OK' }]
+          );
+          return;
         }
       }
-    } catch (error) {
-      console.error('Error handling region change:', error);
-    }
-  };
 
+      const location = await getCurrentLocation();
+
+      if (location && isValidNumber(location.latitude) && isValidNumber(location.longitude)) {
+        const newRegion = {
+          ...location,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        };
+
+        setRegion(newRegion);
+        setUserLocation(location);
+
+        if (mapRef.current && isMountedRef.current) {
+          mapRef.current.animateToRegion(newRegion, 1000);
+        }
+      } else {
+        Alert.alert('Error', 'No se pudo obtener tu ubicación. Inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('MapScreen: Error centering on user location:', error);
+      Alert.alert('Error', 'No se pudo obtener tu ubicación. Inténtalo de nuevo.');
+    }
+  }, [hasPermission, getCurrentLocation, requestLocationPermission, isValidNumber]);
+
+  // Handler para cuando se toca un marcador en el mapa
+  const handleRealmPress = useCallback(
+    (realm: Realm) => {
+      selectAndFocusRealm(realm);
+    },
+    [selectAndFocusRealm]
+  );
+
+  const handleRealmDetails = useCallback(() => {
+    if (selectedRealm?.id) {
+      router.push(`/realms/${selectedRealm.id}`);
+    }
+  }, [selectedRealm?.id]);
+
+  const handleMapPress = useCallback(() => {
+    setSelectedRealm(null);
+  }, []);
+
+  const handleCreateRealm = useCallback(() => {
+    router.push({ pathname: '/realms/realm-form', params: { from: 'map' } });
+  }, []);
+
+  const toggleRealmsList = useCallback(async () => {
+    if (showRealmsList) {
+      // Si ya está abierto, simplemente cerrarlo
+      setShowRealmsList(false);
+      return;
+    }
+
+    try {
+      // Para mostrar "realms cercanos" necesitamos la ubicación del usuario
+      if (!userLocation) {
+        if (!hasPermission) {
+          const permissionGranted = await requestLocationPermission();
+
+          if (!permissionGranted) {
+            Alert.alert(
+              'Permisos requeridos',
+              'Para mostrar los realms cercanos necesitamos acceso a tu ubicación.',
+              [{ text: 'OK' }]
+            );
+            return;
+          }
+        }
+
+        const location = await getCurrentLocation();
+
+        if (!location || !isValidNumber(location.latitude) || !isValidNumber(location.longitude)) {
+          Alert.alert(
+            'Error de ubicación',
+            'No se pudo obtener tu ubicación para mostrar los realms cercanos.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        setUserLocation(location);
+      }
+
+      // Si llegamos aquí, tenemos ubicación del usuario
+      setShowRealmsList(true);
+    } catch (error) {
+      console.error('MapScreen: Error getting location for realms list:', error);
+      Alert.alert('Error', 'No se pudo obtener tu ubicación. Inténtalo de nuevo.', [
+        { text: 'OK' },
+      ]);
+    }
+  }, [
+    showRealmsList,
+    userLocation,
+    hasPermission,
+    requestLocationPermission,
+    getCurrentLocation,
+    isValidNumber,
+  ]);
+
+  // Handler para cuando se selecciona un realm de la lista
+  const handleRealmSelect = useCallback(
+    (realm: Realm) => {
+      setShowRealmsList(false); // Cerrar la lista
+      selectAndFocusRealm(realm);
+    },
+    [selectAndFocusRealm]
+  );
+
+  const handleRegionChangeComplete = useCallback(
+    (newRegion: Region) => {
+      try {
+        if (!newRegion || !region) return;
+
+        if (
+          !isValidNumber(newRegion.latitude) ||
+          !isValidNumber(newRegion.longitude) ||
+          !isValidNumber(newRegion.latitudeDelta) ||
+          !isValidNumber(newRegion.longitudeDelta)
+        ) {
+          console.warn('MapScreen: Invalid region data received');
+          return;
+        }
+
+        if (!areRegionsEqual(region, newRegion)) {
+          setRegion(newRegion);
+          if (pendingRegionRef.current && mapRef.current && isMountedRef.current) {
+            mapRef.current.animateToRegion(pendingRegionRef.current, 1200);
+            pendingRegionRef.current = null;
+          }
+        }
+      } catch (error) {
+        console.error('MapScreen: Error handling region change:', error);
+      }
+    },
+    [region, areRegionsEqual, isValidNumber]
+  );
+
+  // Memoizar componentes de marcadores para evitar re-renders
+  const renderMarkers = useMemo(() => {
+    return validRealms.map((realm) => {
+      const coordinate = {
+        latitude: realm.latitude as number,
+        longitude: realm.longitude as number,
+      };
+
+      // ✅ Pasar key directamente, no en el spread
+      if (imageLoaded && markerImage) {
+        return (
+          <Marker
+            key={realm.id}
+            coordinate={coordinate}
+            onPress={() => handleRealmPress(realm)}
+            image={markerImage}
+          />
+        );
+      } else {
+        return (
+          <Marker
+            key={realm.id}
+            coordinate={coordinate}
+            onPress={() => handleRealmPress(realm)}
+            pinColor="#6366f1"
+          />
+        );
+      }
+    });
+  }, [validRealms, imageLoaded, markerImage, handleRealmPress]);
+
+  // Validar región antes de renderizar
+  const isRegionValid =
+    region &&
+    isValidNumber(region.latitude) &&
+    isValidNumber(region.longitude) &&
+    isValidNumber(region.latitudeDelta) &&
+    isValidNumber(region.longitudeDelta) &&
+    region.latitudeDelta > 0 &&
+    region.longitudeDelta > 0;
+
+  // Early returns
   if (!user) {
     return (
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -339,7 +491,7 @@ export default function MapScreen() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !isInitialized || !region) {
     return <LoadingScreen message="Cargando mapa..." />;
   }
 
@@ -348,22 +500,23 @@ export default function MapScreen() {
       <SafeAreaView style={styles.container} edges={['left', 'right']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error al cargar los realms</Text>
-          <Button mode="outlined" onPress={() => requestLocationPermission()}>
+          <Button mode="outlined" onPress={() => router.replace('/(tabs)/map')}>
             Reintentar
           </Button>
         </View>
       </SafeAreaView>
     );
   }
-  const validRealms =
-    realms?.filter(
-      (realm) =>
-        realm &&
-        typeof realm.latitude === 'number' &&
-        typeof realm.longitude === 'number' &&
-        !isNaN(realm.latitude) &&
-        !isNaN(realm.longitude)
-    ) || [];
+
+  if (!isRegionValid) {
+    return (
+      <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>No se puede mostrar el mapa: región inválida.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -379,36 +532,23 @@ export default function MapScreen() {
           customMapStyle={theme.dark ? darkMapStyle : []}
         >
           {selectedRealm &&
+            isValidRealm(selectedRealm) &&
             selectedRealm.radius &&
-            selectedRealm.latitude &&
-            selectedRealm.longitude &&
-            typeof selectedRealm.latitude === 'number' &&
-            typeof selectedRealm.longitude === 'number' &&
-            !isNaN(selectedRealm.latitude) &&
-            !isNaN(selectedRealm.longitude) && (
+            isValidNumber(selectedRealm.radius) &&
+            selectedRealm.radius > 0 && (
               <Circle
                 center={{
-                  latitude: selectedRealm.latitude,
-                  longitude: selectedRealm.longitude,
+                  latitude: selectedRealm.latitude as number,
+                  longitude: selectedRealm.longitude as number,
                 }}
-                radius={selectedRealm.radius}
+                radius={selectedRealm.radius as number}
                 fillColor={`${theme.colors.primary}20`}
                 strokeColor={theme.colors.primary}
                 strokeWidth={2}
               />
             )}
 
-          {validRealms.map((realm) => (
-            <Marker
-              key={realm.id}
-              coordinate={{
-                latitude: realm.latitude!,
-                longitude: realm.longitude!,
-              }}
-              onPress={() => handleRealmPress(realm)}
-              image={require('../../assets/images/realm-final.png')}
-            />
-          ))}
+          {renderMarkers}
         </MapView>
 
         <View style={styles.topRightButtons}>
