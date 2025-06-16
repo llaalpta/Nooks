@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useFormContext, Controller, Path } from 'react-hook-form';
 import { View, StyleProp, ViewStyle, TouchableOpacity, ActivityIndicator } from 'react-native';
 // import { Image } from 'react-native';
@@ -12,6 +12,7 @@ import {
   PlatformMarker as Marker,
   PlatformCircle as Circle,
   Region,
+  MapViewRef,
 } from '@/components/common/PlatformMap';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { useLocationService } from '@/hooks/useLocationService';
@@ -52,6 +53,7 @@ export const CircleMapPickerInput = <T extends object>({
 }: CircleMapPickerInputProps<T>) => {
   const { control } = useFormContext<T>();
   const [region, setRegion] = useState<Region>(initialRegion);
+  const mapRef = useRef<MapViewRef | null>(null);
 
   const theme = useAppTheme();
   const styles = createStyles(theme);
@@ -63,7 +65,7 @@ export const CircleMapPickerInput = <T extends object>({
     message: '',
     type: 'error' as 'error' | 'success' | 'info',
   });
-  const { isLocating, getCurrentLocation } = useLocationService({
+  const { isLocating, getCurrentLocation, requestLocationPermission, hasPermission } = useLocationService({
     onLocationObtained: (coords) => {
       const newRegion = {
         ...coords,
@@ -71,6 +73,10 @@ export const CircleMapPickerInput = <T extends object>({
         longitudeDelta: 0.01,
       };
       setRegion(newRegion);
+      // Centrar el mapa animadamente si es posible
+      if (mapRef.current && typeof mapRef.current.animateToRegion === 'function') {
+        mapRef.current.animateToRegion(newRegion, 1000);
+      }
     },
     onLocationError: (msg) => setSnackbar({ visible: true, message: msg, type: 'error' }),
   });
@@ -79,6 +85,14 @@ export const CircleMapPickerInput = <T extends object>({
     onChange: (coords: CircleLocation) => void,
     currentValue?: CircleLocation
   ) => {
+    // Solicitar permisos si no los tiene
+    if (!hasPermission) {
+      const permissionGranted = await requestLocationPermission();
+      if (!permissionGranted) {
+        setSnackbar({ visible: true, message: 'Activa los permisos de ubicación para usar esta función.', type: 'error' });
+        return;
+      }
+    }
     const location = await getCurrentLocation();
     if (location) {
       const newRegion = {
@@ -90,6 +104,10 @@ export const CircleMapPickerInput = <T extends object>({
       setRegion(() => {
         return newRegion;
       });
+      // Centrar el mapa animadamente si es posible
+      if (mapRef.current && typeof mapRef.current.animateToRegion === 'function') {
+        mapRef.current.animateToRegion(newRegion, 1000);
+      }
       onChange({
         latitude: location.latitude,
         longitude: location.longitude,
@@ -116,6 +134,7 @@ export const CircleMapPickerInput = <T extends object>({
 
             <View style={styles.mapContainer}>
               <MapView
+                ref={mapRef}
                 style={{ flex: 1 }}
                 region={region}
                 onMapReady={handleMapReady}
