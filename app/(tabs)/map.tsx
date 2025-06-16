@@ -332,7 +332,7 @@ export default function MapScreen() {
 
   const handleRealmDetails = useCallback(() => {
     if (selectedRealm?.id) {
-      router.push(`/realms/${selectedRealm.id}`);
+      router.push({ pathname: '/realms/[id]', params: { id: selectedRealm.id, returnTo: 'map' } });
     }
   }, [selectedRealm?.id]);
 
@@ -530,6 +530,9 @@ export default function MapScreen() {
           showsMyLocationButton={false}
           onPress={handleMapPress}
           customMapStyle={theme.dark ? darkMapStyle : []}
+          showsBuildings={false} // Desactiva edificios 3D
+          showsTraffic={false}  // Desactiva tráfico
+          showsIndoors={false}  // Opcional: desactiva interiores
         >
           {selectedRealm &&
             isValidRealm(selectedRealm) &&

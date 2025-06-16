@@ -78,9 +78,11 @@ export default function TreasureFormScreen() {
     id?: string;
     from?: string;
     realmId?: string;
+    returnTo?: string;
   }>();
   const nookId = params.nookId;
   const treasureId = params.id;
+  const returnTo = params.returnTo;
   const mode: 'create' | 'edit' = treasureId ? 'edit' : 'create';
   const theme = useAppTheme();
   const { user } = useAuth();
@@ -340,7 +342,13 @@ export default function TreasureFormScreen() {
   };
 
   const handleBackNavigation = () => {
-    if (mode === 'edit' && treasure?.nook_location_id) {
+    if (returnTo === 'nook-selector' && params.realmId) {
+      router.replace({ pathname: '/treasures/nook-selector', params: { realmId: params.realmId } });
+    } else if (returnTo === 'treasures') {
+      router.replace('/(tabs)/treasures');
+    } else if (returnTo === 'nook' && nookId) {
+      router.replace(`/nooks/${nookId}`);
+    } else if (mode === 'edit' && treasure?.nook_location_id) {
       router.replace(`/nooks/${treasure.nook_location_id}`);
     } else if (nookId) {
       router.replace(`/nooks/${nookId}`);

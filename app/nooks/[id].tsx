@@ -116,6 +116,13 @@ export default function NookDetailScreen() {
         color: tag.color ?? undefined,
       }));
 
+    const handleTreasurePress = () => {
+      router.push({
+        pathname: `/treasures/${treasure.id}` as any,
+        params: { returnTo: 'nook', nookId }
+      });
+    };
+
     return (
       <TreasureCard
         treasure={{
@@ -128,6 +135,7 @@ export default function NookDetailScreen() {
           imageUrl,
           tags: validTags,
         }}
+        onPress={handleTreasurePress}
       />
     );
   }

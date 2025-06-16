@@ -130,6 +130,9 @@ export const CircleMapPickerInput = <T extends object>({
                 }}
                 pointerEvents={disabled ? 'none' : 'auto'}
                 customMapStyle={theme.dark ? darkMapStyle : undefined}
+                showsBuildings={false} // Desactiva edificios 3D
+                showsTraffic={false}  // Desactiva tráfico
+                showsIndoors={false}  // Desactiva interiores
               >
                 {circleLocation?.latitude && circleLocation?.longitude && (
                   <>

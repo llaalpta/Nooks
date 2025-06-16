@@ -28,6 +28,7 @@ interface BottomRealmsListProps {
   onRealmSelect: (realm: Realm) => void;
   onClose: () => void;
   showAllRealms?: boolean; // Si es true, muestra todos los realms, si es false o undefined, solo los cercanos
+  currentTab?: string; // Parámetro para indicar la tab actual (para navegación de retorno)
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -46,6 +47,7 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
   onRealmSelect,
   onClose,
   showAllRealms = false,
+  currentTab = 'map',
 }) => {
   const theme = useAppTheme();
   const router = useRouter();
@@ -217,10 +219,11 @@ const BottomRealmsList: React.FC<BottomRealmsListProps> = ({
 
   const handleRealmPress = (realm: Realm) => {
     onRealmSelect(realm);
-  };
-
-  const handleRealmDetails = (realm: Realm) => {
-    router.push(`/realms/${realm.id}`);
+  };  const handleRealmDetails = (realm: Realm) => {
+    router.push({
+      pathname: `/realms/${realm.id}` as any,
+      params: { returnTo: currentTab }
+    });
   };
 
   return (

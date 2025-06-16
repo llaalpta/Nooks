@@ -7,14 +7,16 @@ import { Text } from '@/components/atoms/Text';
 import { CustomFormHeader } from '@/components/common/CustomFormHeader';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { NookCard } from '@/features/nooks/components/NookCard';
-import { useNooksQuery } from '@/features/nooks/hooks';
+import { useNooksQuery, useNookPrimaryImageUrl } from '@/features/nooks/hooks';
 import { createRealmFormStyles } from '@/styles/app/modals/form.style';
 
 export default function NookSelectorScreen() {
   const params = useLocalSearchParams<{
     realmId?: string;
+    returnTo?: string;
   }>();
   const realmId = params.realmId;
+  const returnTo = params.returnTo;
   const theme = useAppTheme();
   const styles = createRealmFormStyles(theme);
 
@@ -23,7 +25,7 @@ export default function NookSelectorScreen() {
   const handleNookSelect = (nook: any) => {
     router.push({
       pathname: '/treasures/treasure-form',
-      params: { realmId, nookId: nook.id },
+      params: { realmId, nookId: nook.id, returnTo: 'nook-selector' },
     });
   };
 
@@ -35,7 +37,11 @@ export default function NookSelectorScreen() {
   };
 
   const handleBack = () => {
-    router.back();
+    if (returnTo === 'treasures') {
+      router.replace('/(tabs)/treasures');
+    } else {
+      router.back();
+    }
   };
 
   if (!realmId) {
@@ -53,6 +59,17 @@ export default function NookSelectorScreen() {
           </Text>
         </View>
       </SafeAreaView>
+    );
+  }
+
+  // Componente auxiliar para cargar la imagen principal del nook
+  function NookCardWithImage({ nook, onPress }: { nook: any; onPress: () => void }) {
+    const { data: imageUrl } = useNookPrimaryImageUrl(nook.id);
+    return (
+      <NookCard
+        nook={{ ...nook, imageUrl: imageUrl || null, tags: nook.tags || [] }}
+        onPress={onPress}
+      />
     );
   }
 
@@ -149,9 +166,9 @@ export default function NookSelectorScreen() {
               showsVerticalScrollIndicator={true}
             >
               {nooks.map((nook: any) => (
-                <NookCard
+                <NookCardWithImage
                   key={nook.id}
-                  nook={{ ...nook, imageUrl: nook.imageUrl || null, tags: nook.tags || [] }}
+                  nook={nook}
                   onPress={() => handleNookSelect(nook)}
                 />
               ))}

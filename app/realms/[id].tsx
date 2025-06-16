@@ -33,9 +33,20 @@ export default function RealmDetailScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(theme, insets);
-  const params = useLocalSearchParams<{ id: string }>();
-  const realmId = params.id;
+  const params = useLocalSearchParams<{ id: string; returnTo?: string }>();
+  const realmId = params.id;  const returnTo = params.returnTo;
   const { user } = useAuth();
+    // Determinar la ruta de retorno basada en el parámetro returnTo
+  const getBackRoute = (): any => {
+    switch (returnTo) {
+      case 'map':
+        return '/(tabs)/map';
+      case 'treasures':
+        return '/(tabs)/treasures';
+      default:
+        return '/(tabs)/realms'; // Fallback al comportamiento original
+    }
+  };
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const deleteMutation = useDeleteRealmMutation();
   const { data: realm, isLoading: isLoadingRealm, isError: isErrorRealm } = useRealmQuery(realmId);
@@ -398,13 +409,12 @@ export default function RealmDetailScreen() {
         onConfirm={handleConfirmDeleteRealm}
         onCancel={() => setShowDeleteDialog(false)}
         confirmColor={theme.colors.error}
-        cancelColor={theme.colors.onSurfaceVariant}
-        loading={deleteLoading}
+        cancelColor={theme.colors.onSurfaceVariant}        loading={deleteLoading}
       />
       <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
         <DetailsScreenHeader
           title={'Detalles del Realm'}
-          backRoute="/(tabs)/realms"
+          backRoute={getBackRoute()}
           showOptionsMenu={showOptionsMenu}
           onToggleOptionsMenu={() => setShowOptionsMenu(!showOptionsMenu)}
           optionsMenuItems={

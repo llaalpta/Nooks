@@ -144,7 +144,7 @@ export default function TreasuresScreen() {
   // Cuando el usuario selecciona un realm, continuar con el flujo de selección de nook o creación de treasure
   const handleRealmSelect = (realm: any) => {
     setShowRealmsList(false);
-    router.push({ pathname: '/treasures/nook-selector', params: { realmId: realm.id } });
+    router.push({ pathname: '/treasures/nook-selector', params: { realmId: realm.id, returnTo: 'treasures' } });
   };
 
   const handleRetry = () => {

@@ -14,14 +14,19 @@ type Tag = Tables<'tags'>;
 
 export interface TreasureCardProps {
   treasure: Tables<'treasures'> & { imageUrl?: string | null; tags: Tag[] };
+  onPress?: () => void;
 }
 
-export function TreasureCard({ treasure }: TreasureCardProps) {
+export function TreasureCard({ treasure, onPress }: TreasureCardProps) {
   const theme = useAppTheme();
   const styles = createStyles(theme);
 
   const handlePress = () => {
-    router.push(`/treasures/${treasure.id}`);
+    if (onPress) {
+      onPress();
+    } else {
+      router.push({ pathname: '/treasures/[id]', params: { id: treasure.id, returnTo: 'treasures' } });
+    }
   };
 
   // Configuración para el cálculo de espacio (mismo que RealmCard/NookCard)
