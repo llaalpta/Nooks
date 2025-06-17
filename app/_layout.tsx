@@ -50,7 +50,7 @@ export default function RootLayout() {
       // Ejemplo de URL: nooks://auth/callback?token=abc123&type=recovery
       if (url) {
         const { queryParams } = Linking.parse(url);
-        // Si hay un token, navega a la pantalla de confirmación/restablecimiento
+        // Redirigir a confirmación si hay token
         if (queryParams?.token) {
           const confirmPath = '/(auth)/confirm' as any;
           router.push({
@@ -59,6 +59,16 @@ export default function RootLayout() {
               token: queryParams.token,
               type: queryParams.type,
               email: queryParams.email,
+            },
+          });
+        // Redirigir a reset-password si hay access_token y refresh_token
+        } else if (queryParams?.access_token && queryParams?.refresh_token) {
+          const resetPath = '/(auth)/reset-password' as any;
+          router.push({
+            pathname: resetPath,
+            params: {
+              access_token: queryParams.access_token,
+              refresh_token: queryParams.refresh_token,
             },
           });
         }
